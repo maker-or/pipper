@@ -11,6 +11,7 @@
     "@effect/platform-node": "catalog:",
     "@t3tools/contracts": "workspace:*",
     "@t3tools/shared": "workspace:*",
+    "@vercel/blob": "^2.4.0",
     "effect": "catalog:"
   },
   "devDependencies": {

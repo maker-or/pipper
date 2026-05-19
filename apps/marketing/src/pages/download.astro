@@ -2,12 +2,25 @@
 import Layout from "../layouts/Layout.astro";
 import { RELEASES_URL } from "../lib/releases";
 
-const manualDownloadVersion = import.meta.env.PUBLIC_POLARISH_DOWNLOAD_VERSION ?? "";
+const manualDownloadVersion =
+  import.meta.env.PUBLIC_PIPPER_DOWNLOAD_VERSION ?? import.meta.env.PUBLIC_POLARISH_DOWNLOAD_VERSION ?? "";
 const manualDownloads = {
-  macArm64: import.meta.env.PUBLIC_POLARISH_MAC_ARM64_DMG_URL ?? "",
-  macX64: import.meta.env.PUBLIC_POLARISH_MAC_X64_DMG_URL ?? "",
-  windowsX64: import.meta.env.PUBLIC_POLARISH_WINDOWS_X64_EXE_URL ?? "",
-  linuxX64: import.meta.env.PUBLIC_POLARISH_LINUX_X64_APPIMAGE_URL ?? "",
+  macArm64:
+    import.meta.env.PUBLIC_PIPPER_MAC_ARM64_DMG_URL ??
+    import.meta.env.PUBLIC_POLARISH_MAC_ARM64_DMG_URL ??
+    "",
+  macX64:
+    import.meta.env.PUBLIC_PIPPER_MAC_X64_DMG_URL ??
+    import.meta.env.PUBLIC_POLARISH_MAC_X64_DMG_URL ??
+    "",
+  windowsX64:
+    import.meta.env.PUBLIC_PIPPER_WINDOWS_X64_EXE_URL ??
+    import.meta.env.PUBLIC_POLARISH_WINDOWS_X64_EXE_URL ??
+    "",
+  linuxX64:
+    import.meta.env.PUBLIC_PIPPER_LINUX_X64_APPIMAGE_URL ??
+    import.meta.env.PUBLIC_POLARISH_LINUX_X64_APPIMAGE_URL ??
+    "",
 };
 ---
 
