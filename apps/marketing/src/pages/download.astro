@@ -1,6 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { RELEASES_URL } from "../lib/releases";
+
+const manualDownloadVersion = import.meta.env.PUBLIC_POLARISH_DOWNLOAD_VERSION ?? "";
+const manualDownloads = {
+  macArm64: import.meta.env.PUBLIC_POLARISH_MAC_ARM64_DMG_URL ?? "",
+  macX64: import.meta.env.PUBLIC_POLARISH_MAC_X64_DMG_URL ?? "",
+  windowsX64: import.meta.env.PUBLIC_POLARISH_WINDOWS_X64_EXE_URL ?? "",
+  linuxX64: import.meta.env.PUBLIC_POLARISH_LINUX_X64_APPIMAGE_URL ?? "",
+};
 ---
 
 <Layout
@@ -18,7 +26,7 @@ import { RELEASES_URL } from "../lib/releases";
     <strong>Launch build note:</strong> macOS and Windows downloads are currently unsigned. On macOS, right-click the app and choose <strong>Open</strong> the first time you launch it.
   </aside>
 
-  <div class="platforms" id="platforms">
+  <div class="platforms" id="platforms" data-manual-version={manualDownloadVersion || undefined}>
     <!-- macOS -->
     <section class="platform-section">
       <div class="platform-header">
@@ -26,11 +34,11 @@ import { RELEASES_URL } from "../lib/releases";
         <h2 class="platform-name">macOS</h2>
       </div>
       <div class="download-cards">
-        <a class="download-card" data-asset="arm64.dmg" href={RELEASES_URL}>
+        <a class="download-card" data-asset="arm64.dmg" data-manual-url={manualDownloads.macArm64 || undefined} href={manualDownloads.macArm64 || RELEASES_URL}>
           <span class="card-arch">Apple Silicon (arm64)</span>
           <span class="card-format">.dmg</span>
         </a>
-        <a class="download-card" data-asset="x64.dmg" href={RELEASES_URL}>
+        <a class="download-card" data-asset="x64.dmg" data-manual-url={manualDownloads.macX64 || undefined} href={manualDownloads.macX64 || RELEASES_URL}>
           <span class="card-arch">Intel (x64)</span>
           <span class="card-format">.dmg</span>
         </a>
@@ -44,7 +52,7 @@ import { RELEASES_URL } from "../lib/releases";
         <h2 class="platform-name">Windows</h2>
       </div>
       <div class="download-cards">
-        <a class="download-card" data-asset="x64.exe" href={RELEASES_URL}>
+        <a class="download-card" data-asset="x64.exe" data-manual-url={manualDownloads.windowsX64 || undefined} href={manualDownloads.windowsX64 || RELEASES_URL}>
           <span class="card-arch">Windows 10, 11</span>
           <span class="card-format">.exe</span>
         </a>
@@ -58,7 +66,7 @@ import { RELEASES_URL } from "../lib/releases";
         <h2 class="platform-name">Linux</h2>
       </div>
       <div class="download-cards">
-        <a class="download-card" data-asset="x86_64.AppImage" href={RELEASES_URL}>
+        <a class="download-card" data-asset="x86_64.AppImage" data-manual-url={manualDownloads.linuxX64 || undefined} href={manualDownloads.linuxX64 || RELEASES_URL}>
           <span class="card-arch">x86_64</span>
           <span class="card-format">AppImage</span>
         </a>
@@ -85,7 +93,10 @@ import { RELEASES_URL } from "../lib/releases";
     });
 
     const versionLabel = document.getElementById("version-label");
+    const platforms = document.getElementById("platforms");
     const cards = document.querySelectorAll<HTMLAnchorElement>(".download-card");
+    const manualVersion = platforms?.dataset.manualVersion ?? "";
+    const hasManualDownloads = Array.from(cards).some((card) => card.dataset.manualUrl);
     cards.forEach((card) => {
       card.addEventListener("click", () => {
         trackPosthogEvent("marketing.download.button_clicked", {
@@ -97,6 +108,18 @@ import { RELEASES_URL } from "../lib/releases";
         });
       });
     });
+
+    if (hasManualDownloads) {
+      if (versionLabel) {
+        versionLabel.textContent = manualVersion ? `Latest (${manualVersion})` : "Latest release";
+      }
+      cards.forEach((card) => {
+        if (card.dataset.manualUrl) {
+          card.href = card.dataset.manualUrl;
+        }
+      });
+      return;
+    }
 
     try {
       const release = await fetchLatestRelease();
