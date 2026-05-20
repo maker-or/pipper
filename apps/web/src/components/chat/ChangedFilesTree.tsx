@@ -5,7 +5,7 @@ import { buildTurnDiffTree, type TurnDiffTreeNode } from "../../lib/turnDiffTree
 import { ChevronRightIcon, FolderIcon, FolderClosedIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { DiffStatLabel, hasNonZeroStat } from "./DiffStatLabel";
-import { VscodeEntryIcon } from "./VscodeEntryIcon";
+// import { VscodeEntryIcon } from "./VscodeEntryIcon";
 
 const EMPTY_DIRECTORY_OVERRIDES: Record<string, boolean> = {};
 
@@ -17,6 +17,7 @@ export const ChangedFilesTree = memo(function ChangedFilesTree(props: {
   onOpenTurnDiff: (turnId: TurnId, filePath?: string) => void;
 }) {
   const { files, allDirectoriesExpanded, onOpenTurnDiff, resolvedTheme, turnId } = props;
+  void resolvedTheme;
   const treeNodes = useMemo(() => buildTurnDiffTree(files), [files]);
   const directoryPathsKey = useMemo(
     () => collectDirectoryPaths(treeNodes).join("\u0000"),
@@ -103,12 +104,12 @@ export const ChangedFilesTree = memo(function ChangedFilesTree(props: {
         onClick={() => onOpenTurnDiff(turnId, node.path)}
       >
         <span aria-hidden="true" className="size-3.5 shrink-0" />
-        <VscodeEntryIcon
+        {/* <VscodeEntryIcon
           pathValue={node.path}
           kind="file"
           theme={resolvedTheme}
           className="size-3.5 text-muted-foreground/70"
-        />
+        /> */}
         <span className="truncate font-mono text-[11px] text-muted-foreground/80 group-hover:text-foreground/90">
           {node.name}
         </span>

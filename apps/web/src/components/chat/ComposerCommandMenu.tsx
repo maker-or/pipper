@@ -18,7 +18,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "../ui/command";
-import { VscodeEntryIcon } from "./VscodeEntryIcon";
+// import { VscodeEntryIcon } from "./VscodeEntryIcon";
 
 export type ComposerCommandItem =
   | {
@@ -211,6 +211,7 @@ const ComposerCommandMenuItem = memo(function ComposerCommandMenuItem(props: {
 }) {
   const skillSourceLabel =
     props.item.type === "skill" ? formatProviderSkillInstallSource(props.item.skill) : null;
+  void props.resolvedTheme;
 
   return (
     <CommandItem
@@ -230,13 +231,14 @@ const ComposerCommandMenuItem = memo(function ComposerCommandMenuItem(props: {
         props.onSelect(props.item);
       }}
     >
-      {props.item.type === "path" ? (
-        <VscodeEntryIcon
+      {props.item.type === "path"
+        ? /* <VscodeEntryIcon
           pathValue={props.item.path}
           kind={props.item.pathKind}
           theme={props.resolvedTheme}
-        />
-      ) : null}
+        /> */
+          null
+        : null}
       {props.item.type === "slash-command" ? (
         <BotIcon className="size-4 shrink-0 text-muted-foreground/80" />
       ) : null}

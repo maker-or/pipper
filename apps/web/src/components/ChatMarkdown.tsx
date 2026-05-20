@@ -21,7 +21,7 @@ import ReactMarkdown from "react-markdown";
 import { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { type ServerProviderSkill } from "@t3tools/contracts";
-import { VscodeEntryIcon } from "./chat/VscodeEntryIcon";
+// import { VscodeEntryIcon } from "./chat/VscodeEntryIcon";
 import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "./ui/tooltip";
 import { stackedThreadToast, toastManager } from "./ui/toast";
@@ -478,12 +478,12 @@ const MarkdownFileLink = memo(function MarkdownFileLink({
             }}
             onContextMenu={handleContextMenu}
           >
-            <VscodeEntryIcon
+            {/* <VscodeEntryIcon
               pathValue={filePath}
               kind="file"
               theme={theme}
               className={cn(MARKDOWN_FILE_LINK_ICON_CLASS_NAME, "text-current")}
-            />
+            /> */}
             <span className={MARKDOWN_FILE_LINK_LABEL_CLASS_NAME}>{label}</span>
           </a>
         }
