@@ -1,15 +1,25 @@
 ---
+import Analytics from "@vercel/analytics/astro";
+
 interface Props {
     title?: string;
     description?: string;
     pageClass?: string;
+    trackPageView?: boolean;
 }
 
 const {
     title = "pipper",
     description = "pipper — Better Interface for your agent.",
     pageClass,
+    trackPageView = true,
 } = Astro.props;
+const pagePath = Astro.url.pathname;
+const pageName =
+    pagePath === "/"
+        ? "home"
+        : pagePath.replace(/^\/+|\/+$/g, "").replace(/\//g, ".") || "home";
+const showDownloadNavLink = pageClass !== "download-page";
 ---
 
 <html lang="en">
@@ -17,6 +27,7 @@ const {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content={description} />
+        <Analytics />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -39,7 +50,7 @@ const {
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <title>{title}</title>
     </head>
-    <body class={pageClass}>
+    <body class={pageClass} data-page={pageName}>
         <div class="page">
             <header
                 class="w-full max-w-7xl mx-auto px-8 pt-6 md:pt-10 flex justify-between items-center flex-shrink-0"
@@ -60,17 +71,31 @@ const {
                         class="hover:text-[#0C3A8F] transition-colors"
                         >Discord</a
                     >
-                    <a
-                        href="/download"
-                        class="hover:text-[#0C3A8F] transition-colors"
-                        >Download</a
-                    >
+                    {
+                        showDownloadNavLink ? (
+                            <a
+                                href="/download"
+                                class="hover:text-[#0C3A8F] transition-colors"
+                            >
+                                Download
+                            </a>
+                        ) : null
+                    }
                 </nav>
             </header>
             <main class="main flex-1 flex flex-col items-center w-full min-h-0">
                 <slot />
             </main>
         </div>
+        {
+            trackPageView ? (
+                <script>
+                    import { initializePosthogPageLifecycle } from "../lib/posthog";
+
+                    initializePosthogPageLifecycle();
+                </script>
+            ) : null
+        }
     </body>
 </html>
 
