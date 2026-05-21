@@ -1186,7 +1186,7 @@ export default function ThreadTerminalDrawer({
     <aside
       className={`thread-terminal-drawer relative flex min-h-0 min-w-0 w-full flex-col overflow-hidden bg-[var(--surface-subtle)] ${
         layout === "panel"
-          ? "min-h-0 flex-1 self-stretch rounded-xl border-l border-border/80"
+          ? "min-h-0 flex-1 self-stretch border-l border-border/80"
           : "border-t border-border/80"
       }`}
       style={layout === "drawer" ? { height: `${drawerHeight}px` } : undefined}

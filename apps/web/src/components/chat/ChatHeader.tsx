@@ -1,24 +1,11 @@
-import {
-  type EnvironmentId,
-  type EditorId,
-  type ProjectId,
-  type ProjectScript,
-  type ResolvedKeybindingsConfig,
-  type ThreadId,
-} from "@t3tools/contracts";
+import { type EnvironmentId, type ProjectId, type ThreadId } from "@t3tools/contracts";
 import { scopeProjectRef, scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import GitActionsControl from "../GitActionsControl";
-import { type DraftId } from "~/composerDraftStore";
 import { PlusMinusIcon, TerminalIcon, XIcon } from "@phosphor-icons/react";
-import { Badge } from "../ui/badge";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
-import ProjectScriptsControl, { type NewProjectScriptInput } from "../ProjectScriptsControl";
 import { SidebarTrigger } from "../ui/sidebar";
-import { OpenInPicker } from "./OpenInPicker";
-import { usePrimaryEnvironmentId } from "../../environments/primary";
 import { selectSidebarThreadsForProjectRefs, useStore } from "../../store";
 import { buildThreadRouteParams } from "../../threadRoutes";
 import { useUiStateStore } from "../../uiStateStore";
@@ -34,25 +21,13 @@ const DOCK_ICON_BUTTON_CLASS_NAME =
 interface ChatHeaderProps {
   activeThreadEnvironmentId: EnvironmentId;
   activeThreadId: ThreadId;
-  draftId?: DraftId;
   activeProjectId: ProjectId | undefined;
-  activeProjectName: string | undefined;
   isGitRepo: boolean;
-  openInCwd: string | null;
-  activeProjectScripts: ProjectScript[] | undefined;
-  preferredScriptId: string | null;
-  keybindings: ResolvedKeybindingsConfig;
-  availableEditors: ReadonlyArray<EditorId>;
   terminalAvailable: boolean;
   terminalOpen: boolean;
   terminalToggleShortcutLabel: string | null;
   diffToggleShortcutLabel: string | null;
-  gitCwd: string | null;
   diffOpen: boolean;
-  onRunProjectScript: (script: ProjectScript) => void;
-  onAddProjectScript: (input: NewProjectScriptInput) => Promise<void>;
-  onUpdateProjectScript: (scriptId: string, input: NewProjectScriptInput) => Promise<void>;
-  onDeleteProjectScript: (scriptId: string) => Promise<void>;
   onToggleTerminal: () => void;
   onToggleDiff: () => void;
 }
@@ -72,49 +47,21 @@ export function shouldShowOpenInPicker(input: {
 export const ChatHeader = memo(function ChatHeader({
   activeThreadEnvironmentId,
   activeThreadId,
-  draftId,
   activeProjectId,
-  activeProjectName,
   isGitRepo,
-  openInCwd,
-  activeProjectScripts,
-  preferredScriptId,
-  keybindings,
-  availableEditors,
   terminalAvailable,
   terminalOpen,
   terminalToggleShortcutLabel,
   diffToggleShortcutLabel,
-  gitCwd,
   diffOpen,
-  onRunProjectScript,
-  onAddProjectScript,
-  onUpdateProjectScript,
-  onDeleteProjectScript,
   onToggleTerminal,
   onToggleDiff,
 }: ChatHeaderProps) {
-  const primaryEnvironmentId = usePrimaryEnvironmentId();
-  const showOpenInPicker = shouldShowOpenInPicker({
-    activeProjectName,
-    activeThreadEnvironmentId,
-    primaryEnvironmentId,
-  });
   const { handleNewThread } = useNewThreadHandler();
   const activeProjectRef = useMemo(
     () => (activeProjectId ? scopeProjectRef(activeThreadEnvironmentId, activeProjectId) : null),
     [activeProjectId, activeThreadEnvironmentId],
   );
-  const preferredProjectScript = useMemo(() => {
-    if (!activeProjectScripts?.length) {
-      return null;
-    }
-    return (
-      activeProjectScripts.find((script) => script.id === preferredScriptId) ??
-      activeProjectScripts[0] ??
-      null
-    );
-  }, [activeProjectScripts, preferredScriptId]);
   const projectThreads = useStore(
     useShallow((store) =>
       activeProjectRef
@@ -138,10 +85,12 @@ export const ChatHeader = memo(function ChatHeader({
     });
   }, [projectThreads, dismissedHeaderThreadKeys, activeThreadEnvironmentId, activeThreadId]);
 
+  const visibleThreadsInDisplayOrder = useMemo(() => visibleThreads.toReversed(), [visibleThreads]);
+
   // Recompute visited-at values for the filtered visible threads.
   const visibleThreadLastVisitedAts = useUiStateStore(
     useShallow((state) =>
-      visibleThreads.map(
+      visibleThreadsInDisplayOrder.map(
         (thread) =>
           state.threadLastVisitedAtById[
             scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id))
@@ -158,12 +107,14 @@ export const ChatHeader = memo(function ChatHeader({
       const isActive =
         thread.environmentId === activeThreadEnvironmentId && thread.id === activeThreadId;
 
-      if (isActive && visibleThreads.length > 1) {
+      if (isActive && visibleThreadsInDisplayOrder.length > 1) {
         // Navigate to the nearest sibling before dismissing.
-        const currentIndex = visibleThreads.findIndex(
+        const currentIndex = visibleThreadsInDisplayOrder.findIndex(
           (t) => t.environmentId === thread.environmentId && t.id === thread.id,
         );
-        const nextThread = visibleThreads[currentIndex + 1] ?? visibleThreads[currentIndex - 1];
+        const nextThread =
+          visibleThreadsInDisplayOrder[currentIndex + 1] ??
+          visibleThreadsInDisplayOrder[currentIndex - 1];
         if (nextThread) {
           void navigate({
             to: "/$environmentId/$threadId",
@@ -177,15 +128,40 @@ export const ChatHeader = memo(function ChatHeader({
 
       dismissHeaderThread(key);
     },
-    [activeThreadEnvironmentId, activeThreadId, visibleThreads, navigate, dismissHeaderThread],
+    [
+      activeThreadEnvironmentId,
+      activeThreadId,
+      visibleThreadsInDisplayOrder,
+      navigate,
+      dismissHeaderThread,
+    ],
   );
 
   return (
-    <div className="@container/header-actions flex min-w-0 flex-1 items-center gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
+    <div className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-center gap-2">
+      <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-hidden">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                type="button"
+                aria-label="New thread"
+                className="inline-flex h-full w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground"
+                onClick={() => {
+                  if (activeProjectRef) {
+                    void handleNewThread(activeProjectRef);
+                  }
+                }}
+              />
+            }
+          >
+            +
+          </TooltipTrigger>
+          <TooltipPopup side="bottom">New thread</TooltipPopup>
+        </Tooltip>
         <SidebarTrigger className="size-7 shrink-0 md:hidden" />
-        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {visibleThreads.map((thread, threadIndex) => {
+        <div className="flex h-full min-w-0 flex-1 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {visibleThreadsInDisplayOrder.map((thread, threadIndex) => {
             const selected =
               thread.environmentId === activeThreadEnvironmentId && thread.id === activeThreadId;
             const runningTab = isThreadTabRunning(thread);
@@ -202,7 +178,7 @@ export const ChatHeader = memo(function ChatHeader({
                 lastVisitedAt: visibleThreadLastVisitedAts[threadIndex] ?? undefined,
               });
             // Only show the dismiss button when there are multiple visible tabs.
-            const canDismiss = visibleThreads.length > 1;
+            const canDismiss = visibleThreadsInDisplayOrder.length > 1;
             return (
               <div
                 key={`${thread.environmentId}:${thread.id}`}
@@ -214,10 +190,10 @@ export const ChatHeader = memo(function ChatHeader({
                     environmentId: thread.environmentId,
                     threadId: thread.id,
                   })}
-                  className={`relative flex max-w-48 shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 pr-6 text-xs transition-colors ${
+                  className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 px-4 pr-7 text-sm transition-colors ${
                     selected
-                      ? "bg-[var(--surface-elevated)] px-3.5 py-2 text-foreground"
-                      : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                      ? "rounded-t-sm bg-[var(--surface-subtle)] text-foreground"
+                      : "text-muted-foreground hover:bg-accent/45 hover:text-foreground"
                   }`}
                   title={thread.title}
                 >
@@ -234,7 +210,7 @@ export const ChatHeader = memo(function ChatHeader({
                   <button
                     type="button"
                     aria-label={`Close ${thread.title} tab`}
-                    className="absolute right-1 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent group-hover/tab:opacity-100"
+                    className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent group-hover/tab:opacity-100"
                     onClick={(e) => handleDismissThread(thread, e)}
                   >
                     <XIcon size={10} weight="bold" />
@@ -244,71 +220,8 @@ export const ChatHeader = memo(function ChatHeader({
             );
           })}
         </div>
-        {/*{activeProjectName && (
-          <Badge variant="outline" className="min-w-0 shrink overflow-hidden">
-            <span className="min-w-0 truncate">{activeProjectName}</span>
-          </Badge>
-        )}*/}
-        {activeProjectName && !isGitRepo && (
-          <Badge variant="outline" className="shrink-0 text-[10px] text-amber-700">
-            No Git
-          </Badge>
-        )}
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                aria-label="New thread"
-                className="inline-flex size-7 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                onClick={() => {
-                  if (activeProjectRef) {
-                    void handleNewThread(activeProjectRef);
-                  }
-                }}
-              />
-            }
-          >
-            +
-          </TooltipTrigger>
-          <TooltipPopup side="bottom">New thread</TooltipPopup>
-        </Tooltip>
       </div>
-      <div className="fixed right-3 bottom-[calc(5dvh-18px)] z-40 flex h-10 shrink-0 items-center justify-end gap-2">
-        {/*{activeProjectScripts && (
-          <ProjectScriptsControl
-            scripts={activeProjectScripts}
-            keybindings={keybindings}
-            preferredScriptId={preferredScriptId}
-            onRunScript={onRunProjectScript}
-            onAddScript={onAddProjectScript}
-            onUpdateScript={onUpdateProjectScript}
-            onDeleteScript={onDeleteProjectScript}
-            dockIconOnly
-            dockIconButtonClassName={DOCK_ICON_BUTTON_CLASS_NAME}
-          />
-        )}*/}
-        {/*{showOpenInPicker && (
-          <OpenInPicker
-            keybindings={keybindings}
-            availableEditors={availableEditors}
-            openInCwd={openInCwd}
-            iconOnly
-            iconButtonClassName={DOCK_ICON_BUTTON_CLASS_NAME}
-          />
-        )}*/}
-        {/*{activeProjectName && (
-          <GitActionsControl
-            gitCwd={gitCwd}
-            activeThreadRef={scopeThreadRef(
-              activeThreadEnvironmentId,
-              activeThreadId,
-            )}
-            {...(draftId ? { draftId } : {})}
-            dockIconOnly
-            dockIconButtonClassName={DOCK_ICON_BUTTON_CLASS_NAME}
-          />
-        )}*/}
+      <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2">
         <Tooltip>
           <TooltipTrigger
             render={

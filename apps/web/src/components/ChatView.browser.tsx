@@ -1745,12 +1745,12 @@ describe("ChatView timeline estimator parity (full app)", () => {
       await waitForElement(
         () =>
           Array.from(document.querySelectorAll<HTMLElement>("span")).find(
-            (element) => element.textContent?.trim() === "Local checkout",
+            (element) => element.textContent?.trim() === "main",
           ) ?? null,
         "Unable to find static mobile workspace label.",
       );
 
-      expect(findButtonByText("Local checkout")).toBeNull();
+      expect(findButtonByText("main")).toBeNull();
     } finally {
       await mounted.cleanup();
     }
@@ -2736,12 +2736,12 @@ describe("ChatView timeline estimator parity (full app)", () => {
     });
 
     try {
-      (await waitForButtonByText("Current checkout")).click();
-      await page.getByText("New worktree", { exact: true }).click();
+      (await waitForButtonByText("main")).click();
+      await page.getByText("Create worktree", { exact: true }).click();
 
       await vi.waitFor(
         () => {
-          expect(findButtonByText("New worktree")).toBeTruthy();
+          expect(findButtonByText("Create worktree")).toBeTruthy();
         },
         { timeout: 8_000, interval: 16 },
       );
@@ -2835,8 +2835,8 @@ describe("ChatView timeline estimator parity (full app)", () => {
     });
 
     try {
-      (await waitForButtonByText("Current checkout")).click();
-      await page.getByText("New worktree", { exact: true }).click();
+      (await waitForButtonByText("main")).click();
+      await page.getByText("Create worktree", { exact: true }).click();
       await page.getByText("From main", { exact: true }).click();
       await page.getByText("release/next", { exact: true }).click();
 
@@ -2931,8 +2931,8 @@ describe("ChatView timeline estimator parity (full app)", () => {
     });
 
     try {
-      (await waitForButtonByText("Current checkout")).click();
-      await page.getByText("New worktree", { exact: true }).click();
+      (await waitForButtonByText("main")).click();
+      await page.getByText("Create worktree", { exact: true }).click();
       await page.getByText("From main", { exact: true }).click();
       await page.getByText("release/next", { exact: true }).click();
 
@@ -2959,14 +2959,14 @@ describe("ChatView timeline estimator parity (full app)", () => {
 
       await vi.waitFor(
         () => {
-          expect(findButtonByText("Current checkout")).toBeTruthy();
+          expect(findButtonByText("main")).toBeTruthy();
           expect(findButtonByText("From release/next")).toBeNull();
         },
         { timeout: 8_000, interval: 16 },
       );
 
-      (await waitForButtonByText("Current checkout")).click();
-      await page.getByText("New worktree", { exact: true }).click();
+      (await waitForButtonByText("main")).click();
+      await page.getByText("Create worktree", { exact: true }).click();
 
       await vi.waitFor(
         () => {

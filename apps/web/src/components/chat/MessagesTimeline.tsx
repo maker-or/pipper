@@ -38,7 +38,10 @@ import {
   ZapIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { buildExpandedImagePreview, ExpandedImagePreview } from "./ExpandedImagePreview";
+import {
+  buildExpandedImagePreview,
+  ExpandedImagePreview,
+} from "./ExpandedImagePreview";
 import { ProposedPlanCard } from "./ProposedPlanCard";
 import { SkillInlineText } from "./SkillInlineText";
 import { ChangedFilesTree } from "./ChangedFilesTree";
@@ -62,6 +65,11 @@ import {
 import { cn } from "~/lib/utils";
 import { useUiStateStore } from "~/uiStateStore";
 import { type TimestampFormat } from "@t3tools/contracts/settings";
+import {
+  PlusMinusIcon,
+  ArrowsInSimpleIcon,
+  ArrowsOutSimpleIcon,
+} from "@phosphor-icons/react";
 
 import {
   buildInlineTerminalContextText,
@@ -105,7 +113,9 @@ const TimelineRowCtx = createContext<TimelineRowSharedState>(null!);
 const TimelineRowActivityCtx = createContext<TimelineRowActivityState>(null!);
 const TIMELINE_LIST_HEADER = <div className="h-3 sm:h-4" />;
 const TIMELINE_LIST_FOOTER = <div className="h-3 sm:h-4" />;
-const EMPTY_TIMELINE_SKILLS: ReadonlyArray<Pick<ServerProviderSkill, "name" | "displayName">> = [];
+const EMPTY_TIMELINE_SKILLS: ReadonlyArray<
+  Pick<ServerProviderSkill, "name" | "displayName">
+> = [];
 
 // ---------------------------------------------------------------------------
 // Props (public API)
@@ -268,7 +278,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   // from TimelineRowCtx, which propagates through LegendList's memo.
   const renderItem = useCallback(
     ({ item }: { item: MessagesTimelineRow }) => (
-      <div className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden" data-timeline-root="true">
+      <div
+        className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden"
+        data-timeline-root="true"
+      >
         <TimelineRowContent row={item} />
       </div>
     ),
@@ -328,7 +341,10 @@ function keyExtractor(item: MessagesTimelineRow) {
 
 type TimelineEntry = ReturnType<typeof deriveTimelineEntries>[number];
 type TimelineMessage = Extract<TimelineEntry, { kind: "message" }>["message"];
-type TimelineWorkEntry = Extract<MessagesTimelineRow, { kind: "work" }>["groupedEntries"][number];
+type TimelineWorkEntry = Extract<
+  MessagesTimelineRow,
+  { kind: "work" }
+>["groupedEntries"][number];
 type TimelineRow = MessagesTimelineRow;
 
 /** Whether this row kind should receive a soft-blur-in enter animation. */
@@ -340,7 +356,11 @@ function shouldAnimateRowEnter(row: TimelineRow): boolean {
   return false;
 }
 
-const TimelineRowContent = memo(function TimelineRowContent({ row }: { row: TimelineRow }) {
+const TimelineRowContent = memo(function TimelineRowContent({
+  row,
+}: {
+  row: TimelineRow;
+}) {
   const activity = use(TimelineRowActivityCtx);
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -350,7 +370,11 @@ const TimelineRowContent = memo(function TimelineRowContent({ row }: { row: Time
   // own input — animating them feels wrong).
   useLayoutEffect(() => {
     const el = rowRef.current;
-    if (!el || !activity.allowRowEnterAnimation || !shouldAnimateRowEnter(row)) {
+    if (
+      !el ||
+      !activity.allowRowEnterAnimation ||
+      !shouldAnimateRowEnter(row)
+    ) {
       return;
     }
 
@@ -381,28 +405,42 @@ const TimelineRowContent = memo(function TimelineRowContent({ row }: { row: Time
       ref={rowRef}
       className={cn(
         "pb-4",
-        row.kind === "message" && row.message.role === "assistant" ? "group/assistant" : null,
+        row.kind === "message" && row.message.role === "assistant"
+          ? "group/assistant"
+          : null,
       )}
       data-timeline-row-id={row.id}
       data-timeline-row-kind={row.kind}
       data-message-id={row.kind === "message" ? row.message.id : undefined}
       data-message-role={row.kind === "message" ? row.message.role : undefined}
     >
-      {row.kind === "work" ? <WorkGroupSection groupedEntries={row.groupedEntries} /> : null}
-      {row.kind === "message" && row.message.role === "user" ? <UserTimelineRow row={row} /> : null}
+      {row.kind === "work" ? (
+        <WorkGroupSection groupedEntries={row.groupedEntries} />
+      ) : null}
+      {row.kind === "message" && row.message.role === "user" ? (
+        <UserTimelineRow row={row} />
+      ) : null}
       {row.kind === "message" && row.message.role === "assistant" ? (
         <AssistantTimelineRow row={row} />
       ) : null}
-      {row.kind === "proposed-plan" ? <ProposedPlanTimelineRow row={row} /> : null}
+      {row.kind === "proposed-plan" ? (
+        <ProposedPlanTimelineRow row={row} />
+      ) : null}
       {row.kind === "working" ? <WorkingTimelineRow row={row} /> : null}
     </div>
   );
 });
 
-function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
+function UserTimelineRow({
+  row,
+}: {
+  row: Extract<TimelineRow, { kind: "message" }>;
+}) {
   const ctx = use(TimelineRowCtx);
   const userImages = row.message.attachments ?? [];
-  const displayedUserMessage = deriveDisplayedUserMessageState(row.message.text);
+  const displayedUserMessage = deriveDisplayedUserMessageState(
+    row.message.text,
+  );
   const terminalContexts = displayedUserMessage.contexts;
   const canRevertAgentWork = typeof row.revertTurnCount === "number";
 
@@ -413,36 +451,45 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
           <div className="opacity-60">
             {userImages.length > 0 && (
               <div className="mb-2 grid max-w-[420px] grid-cols-2 gap-2">
-                {userImages.map((image: NonNullable<TimelineMessage["attachments"]>[number]) => (
-                  <div
-                    key={image.id}
-                    className="overflow-hidden rounded-lg border border-border/80 bg-background/70"
-                  >
-                    {image.previewUrl ? (
-                      <button
-                        type="button"
-                        className="h-full w-full cursor-zoom-in"
-                        aria-label={`Preview ${image.name}`}
-                        onClick={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const preview = buildExpandedImagePreview(userImages, image.id, rect);
-                          if (!preview) return;
-                          ctx.onImageExpand(preview);
-                        }}
-                      >
-                        <img
-                          src={image.previewUrl}
-                          alt={image.name}
-                          className="block h-auto max-h-[220px] w-full object-cover"
-                        />
-                      </button>
-                    ) : (
-                      <div className="flex min-h-[72px] items-center justify-center px-2 py-3 text-center text-[11px] text-muted-foreground/70">
-                        {image.name}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {userImages.map(
+                  (
+                    image: NonNullable<TimelineMessage["attachments"]>[number],
+                  ) => (
+                    <div
+                      key={image.id}
+                      className="overflow-hidden rounded-lg border border-border/80 bg-background/70"
+                    >
+                      {image.previewUrl ? (
+                        <button
+                          type="button"
+                          className="h-full w-full cursor-zoom-in"
+                          aria-label={`Preview ${image.name}`}
+                          onClick={(e) => {
+                            const rect =
+                              e.currentTarget.getBoundingClientRect();
+                            const preview = buildExpandedImagePreview(
+                              userImages,
+                              image.id,
+                              rect,
+                            );
+                            if (!preview) return;
+                            ctx.onImageExpand(preview);
+                          }}
+                        >
+                          <img
+                            src={image.previewUrl}
+                            alt={image.name}
+                            className="block h-auto max-h-[220px] w-full object-cover"
+                          />
+                        </button>
+                      ) : (
+                        <div className="flex min-h-[72px] items-center justify-center px-2 py-3 text-center text-[11px] text-muted-foreground/70">
+                          {image.name}
+                        </div>
+                      )}
+                    </div>
+                  ),
+                )}
               </div>
             )}
             {(displayedUserMessage.visibleText.trim().length > 0 ||
@@ -460,7 +507,9 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
             {displayedUserMessage.copyText && (
               <MessageCopyButton text={displayedUserMessage.copyText} />
             )}
-            {canRevertAgentWork && <RevertUserMessageButton messageId={row.message.id} />}
+            {canRevertAgentWork && (
+              <RevertUserMessageButton messageId={row.message.id} />
+            )}
           </div>
         </div>
       </div>
@@ -486,13 +535,20 @@ function RevertUserMessageButton({ messageId }: { messageId: MessageId }) {
   );
 }
 
-function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
+function AssistantTimelineRow({
+  row,
+}: {
+  row: Extract<TimelineRow, { kind: "message" }>;
+}) {
   const ctx = use(TimelineRowCtx);
-  const messageText = row.message.text || (row.message.streaming ? "" : "(empty response)");
+  const messageText =
+    row.message.text || (row.message.streaming ? "" : "(empty response)");
 
   return (
     <>
-      {row.showCompletionDivider && <CompletionAccordion turnRows={row.completionTurnRows} />}
+      {row.showCompletionDivider && (
+        <CompletionAccordion turnRows={row.completionTurnRows} />
+      )}
       <div className="min-w-0 px-1 py-0.5">
         <ChatMarkdown
           text={messageText}
@@ -529,7 +585,11 @@ function CompletionAccordion({
   const summaryText = activity.completionSummary ?? "Completed";
 
   if (!hasTurnRows) {
-    return <div className="my-2 px-1 py-1 text-xs text-muted-foreground/50">{summaryText}</div>;
+    return (
+      <div className="my-2 px-1 py-1 text-xs text-muted-foreground/50">
+        {summaryText}
+      </div>
+    );
   }
 
   return (
@@ -601,7 +661,11 @@ function CompletionAccordionRow({ row }: { row: MessagesTimelineRow }) {
   return null;
 }
 
-function AssistantCopyButton({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
+function AssistantCopyButton({
+  row,
+}: {
+  row: Extract<TimelineRow, { kind: "message" }>;
+}) {
   const activity = use(TimelineRowActivityCtx);
   const assistantTurnStillInProgress =
     activity.activeTurnInProgress &&
@@ -649,7 +713,11 @@ function ProposedPlanTimelineRow({
   );
 }
 
-function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "working" }> }) {
+function WorkingTimelineRow({
+  row,
+}: {
+  row: Extract<TimelineRow, { kind: "working" }>;
+}) {
   return (
     <div className="py-0.5 pl-1.5">
       <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground/70">
@@ -685,7 +753,9 @@ function WorkingTimer({ createdAt }: { createdAt: string }) {
     const id = setInterval(() => setNowMs(Date.now()), 1000);
     return () => clearInterval(id);
   }, [createdAt]);
-  return <>{formatWorkingTimer(createdAt, new Date(nowMs).toISOString()) ?? "0s"}</>;
+  return (
+    <>{formatWorkingTimer(createdAt, new Date(nowMs).toISOString()) ?? "0s"}</>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -698,11 +768,16 @@ function WorkingTimer({ createdAt }: { createdAt: string }) {
 const WorkGroupSection = memo(function WorkGroupSection({
   groupedEntries,
 }: {
-  groupedEntries: Extract<MessagesTimelineRow, { kind: "work" }>["groupedEntries"];
+  groupedEntries: Extract<
+    MessagesTimelineRow,
+    { kind: "work" }
+  >["groupedEntries"];
 }) {
   const { workspaceRoot } = use(TimelineRowCtx);
   const [isExpanded, setIsExpanded] = useState(false);
-  const onlyToolEntries = groupedEntries.every((entry) => entry.tone === "tool");
+  const onlyToolEntries = groupedEntries.every(
+    (entry) => entry.tone === "tool",
+  );
   const isCollapsibleToolGroup = onlyToolEntries && groupedEntries.length > 1;
   const hasOverflow = groupedEntries.length > MAX_VISIBLE_WORK_LOG_ENTRIES;
   const visibleEntries = isCollapsibleToolGroup
@@ -714,7 +789,9 @@ const WorkGroupSection = memo(function WorkGroupSection({
       : groupedEntries;
   const hiddenCount = groupedEntries.length - visibleEntries.length;
   const showHeader = isCollapsibleToolGroup || hasOverflow || !onlyToolEntries;
-  const groupLabel = onlyToolEntries ? toolGroupLabel(groupedEntries) : "Work log";
+  const groupLabel = onlyToolEntries
+    ? toolGroupLabel(groupedEntries)
+    : "Work log";
   const containerClassName = onlyToolEntries
     ? "px-1 py-0.5"
     : "rounded-xl border border-border/45 bg-card/25 px-2 py-1.5";
@@ -737,7 +814,9 @@ const WorkGroupSection = memo(function WorkGroupSection({
             >
               <>
                 <span className="shrink-0">Exploring</span>
-                <span className="truncate text-muted-foreground/70">{groupLabel}</span>
+                <span className="truncate text-muted-foreground/70">
+                  {groupLabel}
+                </span>
                 <ChevronDownIcon
                   className={cn(
                     "size-3 shrink-0 text-muted-foreground/45 transition-transform duration-150",
@@ -778,31 +857,33 @@ const WorkGroupSection = memo(function WorkGroupSection({
 
 /** Subscribes directly to the UI state store for expand/collapse state,
  *  so toggling re-renders only this component — not the entire list. */
-const AssistantChangedFilesSection = memo(function AssistantChangedFilesSection({
-  turnSummary,
-  routeThreadKey,
-  resolvedTheme,
-  onOpenTurnDiff,
-}: {
-  turnSummary: TurnDiffSummary | undefined;
-  routeThreadKey: string;
-  resolvedTheme: "light" | "dark";
-  onOpenTurnDiff: (turnId: TurnId, filePath?: string) => void;
-}) {
-  if (!turnSummary) return null;
-  const checkpointFiles = turnSummary.files;
-  if (checkpointFiles.length === 0) return null;
+const AssistantChangedFilesSection = memo(
+  function AssistantChangedFilesSection({
+    turnSummary,
+    routeThreadKey,
+    resolvedTheme,
+    onOpenTurnDiff,
+  }: {
+    turnSummary: TurnDiffSummary | undefined;
+    routeThreadKey: string;
+    resolvedTheme: "light" | "dark";
+    onOpenTurnDiff: (turnId: TurnId, filePath?: string) => void;
+  }) {
+    if (!turnSummary) return null;
+    const checkpointFiles = turnSummary.files;
+    if (checkpointFiles.length === 0) return null;
 
-  return (
-    <AssistantChangedFilesSectionInner
-      turnSummary={turnSummary}
-      checkpointFiles={checkpointFiles}
-      routeThreadKey={routeThreadKey}
-      resolvedTheme={resolvedTheme}
-      onOpenTurnDiff={onOpenTurnDiff}
-    />
-  );
-});
+    return (
+      <AssistantChangedFilesSectionInner
+        turnSummary={turnSummary}
+        checkpointFiles={checkpointFiles}
+        routeThreadKey={routeThreadKey}
+        resolvedTheme={resolvedTheme}
+        onOpenTurnDiff={onOpenTurnDiff}
+      />
+    );
+  },
+);
 
 /** Inner component that only mounts when there are actual changed files,
  *  so the store subscription is unconditional (no hooks after early return). */
@@ -820,9 +901,14 @@ function AssistantChangedFilesSectionInner({
   onOpenTurnDiff: (turnId: TurnId, filePath?: string) => void;
 }) {
   const allDirectoriesExpanded = useUiStateStore(
-    (store) => store.threadChangedFilesExpandedById[routeThreadKey]?.[turnSummary.turnId] ?? true,
+    (store) =>
+      store.threadChangedFilesExpandedById[routeThreadKey]?.[
+        turnSummary.turnId
+      ] ?? true,
   );
-  const setExpanded = useUiStateStore((store) => store.setThreadChangedFilesExpanded);
+  const setExpanded = useUiStateStore(
+    (store) => store.setThreadChangedFilesExpanded,
+  );
   const summaryStat = summarizeTurnDiffStats(checkpointFiles);
   const changedFileCountLabel = String(checkpointFiles.length);
 
@@ -830,10 +916,13 @@ function AssistantChangedFilesSectionInner({
     <div className="mt-2 rounded-lg border border-border/80 bg-card/45 p-2.5">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/65">
-          <span>Changed files {changedFileCountLabel}</span>
+          <span>{changedFileCountLabel} - Files changed </span>
           {hasNonZeroStat(summaryStat) && (
             <>
-              <DiffStatLabel additions={summaryStat.additions} deletions={summaryStat.deletions} />
+              <DiffStatLabel
+                additions={summaryStat.additions}
+                deletions={summaryStat.deletions}
+              />
             </>
           )}
         </p>
@@ -843,17 +932,29 @@ function AssistantChangedFilesSectionInner({
             size="xs"
             variant="link"
             data-scroll-anchor-ignore
-            onClick={() => setExpanded(routeThreadKey, turnSummary.turnId, !allDirectoriesExpanded)}
+            onClick={() =>
+              setExpanded(
+                routeThreadKey,
+                turnSummary.turnId,
+                !allDirectoriesExpanded,
+              )
+            }
           >
-            {allDirectoriesExpanded ? "Collapse all" : "Expand all"}
+            {allDirectoriesExpanded ? (
+              <ArrowsInSimpleIcon />
+            ) : (
+              <ArrowsOutSimpleIcon />
+            )}
           </Button>
           <Button
             type="button"
             size="xs"
             variant="link"
-            onClick={() => onOpenTurnDiff(turnSummary.turnId, checkpointFiles[0]?.path)}
+            onClick={() =>
+              onOpenTurnDiff(turnSummary.turnId, checkpointFiles[0]?.path)
+            }
           >
-            View diff
+            <PlusMinusIcon />
           </Button>
         </div>
       </div>
@@ -874,13 +975,20 @@ function AssistantChangedFilesSectionInner({
 // ---------------------------------------------------------------------------
 
 const UserMessageTerminalContextInlineLabel = memo(
-  function UserMessageTerminalContextInlineLabel(props: { context: ParsedTerminalContextEntry }) {
+  function UserMessageTerminalContextInlineLabel(props: {
+    context: ParsedTerminalContextEntry;
+  }) {
     const tooltipText =
       props.context.body.length > 0
         ? `${props.context.header}\n${props.context.body}`
         : props.context.header;
 
-    return <TerminalContextInlineChip label={props.context.header} tooltipText={tooltipText} />;
+    return (
+      <TerminalContextInlineChip
+        label={props.context.header}
+        tooltipText={tooltipText}
+      />
+    );
   },
 );
 
@@ -909,8 +1017,13 @@ const UserMessageBody = memo(function UserMessageBody(props: {
         }
         if (matchIndex > cursor) {
           inlineNodes.push(
-            <span key={`user-terminal-context-inline-before:${context.header}:${cursor}`}>
-              <SkillInlineText text={props.text.slice(cursor, matchIndex)} skills={props.skills} />
+            <span
+              key={`user-terminal-context-inline-before:${context.header}:${cursor}`}
+            >
+              <SkillInlineText
+                text={props.text.slice(cursor, matchIndex)}
+                skills={props.skills}
+              />
             </span>,
           );
         }
@@ -927,7 +1040,10 @@ const UserMessageBody = memo(function UserMessageBody(props: {
         if (cursor < props.text.length) {
           inlineNodes.push(
             <span key={`user-message-terminal-context-inline-rest:${cursor}`}>
-              <SkillInlineText text={props.text.slice(cursor)} skills={props.skills} />
+              <SkillInlineText
+                text={props.text.slice(cursor)}
+                skills={props.skills}
+              />
             </span>,
           );
         }
@@ -948,7 +1064,10 @@ const UserMessageBody = memo(function UserMessageBody(props: {
         />,
       );
       inlineNodes.push(
-        <span key={`user-terminal-context-inline-space:${context.header}`} aria-hidden="true">
+        <span
+          key={`user-terminal-context-inline-space:${context.header}`}
+          aria-hidden="true"
+        >
           {" "}
         </span>,
       );
@@ -996,7 +1115,10 @@ function useStableRows(rows: MessagesTimelineRow[]): MessagesTimelineRow[] {
   });
 
   return useMemo(() => {
-    const nextState = computeStableMessagesTimelineRows(rows, prevState.current);
+    const nextState = computeStableMessagesTimelineRows(
+      rows,
+      prevState.current,
+    );
     prevState.current = nextState;
     return nextState.result;
   }, [rows]);
@@ -1013,7 +1135,10 @@ function formatWorkingTimer(startIso: string, endIso: string): string | null {
     return null;
   }
 
-  const elapsedSeconds = Math.max(0, Math.floor((endedAtMs - startedAtMs) / 1000));
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((endedAtMs - startedAtMs) / 1000),
+  );
   if (elapsedSeconds < 60) {
     return `${elapsedSeconds}s`;
   }
@@ -1097,7 +1222,10 @@ function workEntryIcon(workEntry: TimelineWorkEntry): LucideIcon {
   if (workEntry.itemType === "command_execution" || workEntry.command) {
     return TerminalIcon;
   }
-  if (workEntry.itemType === "file_change" || (workEntry.changedFiles?.length ?? 0) > 0) {
+  if (
+    workEntry.itemType === "file_change" ||
+    (workEntry.changedFiles?.length ?? 0) > 0
+  ) {
     return SquarePenIcon;
   }
   if (workEntry.itemType === "web_search") return GlobeIcon;
@@ -1115,13 +1243,16 @@ function workEntryIcon(workEntry: TimelineWorkEntry): LucideIcon {
 }
 
 function toolGroupLabel(entries: ReadonlyArray<TimelineWorkEntry>): string {
-  const readCount = entries.filter((entry) => entry.requestKind === "file-read").length;
+  const readCount = entries.filter(
+    (entry) => entry.requestKind === "file-read",
+  ).length;
   if (readCount > 0) {
     return `${readCount} read`;
   }
 
   const commandCount = entries.filter(
-    (entry) => entry.requestKind === "command" || entry.itemType === "command_execution",
+    (entry) =>
+      entry.requestKind === "command" || entry.itemType === "command_execution",
   ).length;
   if (commandCount > 0) {
     return `${commandCount} command${commandCount === 1 ? "" : "s"}`;
@@ -1146,13 +1277,19 @@ function toolWorkEntryHeading(workEntry: TimelineWorkEntry): string {
 }
 
 function inlineToolEntryHeading(workEntry: TimelineWorkEntry): string {
-  if (workEntry.requestKind === "command" || workEntry.itemType === "command_execution") {
+  if (
+    workEntry.requestKind === "command" ||
+    workEntry.itemType === "command_execution"
+  ) {
     return "Ran";
   }
   if (workEntry.requestKind === "file-read") {
     return "Read";
   }
-  if (workEntry.requestKind === "file-change" || workEntry.itemType === "file_change") {
+  if (
+    workEntry.requestKind === "file-change" ||
+    workEntry.itemType === "file_change"
+  ) {
     return "Edited";
   }
   if (workEntry.tone === "thinking") {
@@ -1183,7 +1320,8 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
   const separator = inlineToolStyle ? " " : " - ";
   const displayText = preview ? `${heading}${separator}${preview}` : heading;
   const hasChangedFiles = (workEntry.changedFiles?.length ?? 0) > 0;
-  const previewIsChangedFiles = hasChangedFiles && !workEntry.command && !workEntry.detail;
+  const previewIsChangedFiles =
+    hasChangedFiles && !workEntry.command && !workEntry.detail;
   const isRunning = workEntry.status === "running";
   const inlineMutedTextClassName = inlineToolStyle
     ? isRunning
@@ -1289,9 +1427,17 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
         </div>
       </div>
       {hasChangedFiles && !previewIsChangedFiles && (
-        <div className={cn("mt-1 flex flex-wrap gap-1", inlineToolStyle ? "pl-8" : "pl-6")}>
+        <div
+          className={cn(
+            "mt-1 flex flex-wrap gap-1",
+            inlineToolStyle ? "pl-8" : "pl-6",
+          )}
+        >
           {workEntry.changedFiles?.slice(0, 4).map((filePath) => {
-            const displayPath = formatWorkspaceRelativePath(filePath, workspaceRoot);
+            const displayPath = formatWorkspaceRelativePath(
+              filePath,
+              workspaceRoot,
+            );
             return (
               <span
                 key={`${workEntry.id}:${filePath}`}

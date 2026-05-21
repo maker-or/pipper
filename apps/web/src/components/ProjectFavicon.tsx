@@ -119,7 +119,7 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
           "--project-icon-opacity": colors.opacity,
         } as CSSProperties
       }
-      className={`cursor-pointer inline-flex shrink-0 items-center justify-center rounded-[4px] bg-[linear-gradient(180deg,var(--project-icon-primary)_0%,var(--project-icon-secondary)_100%)] leading-none text-[var(--project-icon-text)] tracking-[-0.04em] opacity-[var(--project-icon-opacity)] transition-opacity duration-200 ${input.className ?? ""}`}
+      className={`cursor-pointer inline-flex shrink-0 items-center justify-center rounded-[2px] bg-[linear-gradient(180deg,var(--project-icon-primary)_0%,var(--project-icon-secondary)_100%)] leading-none text-[var(--project-icon-text)] tracking-[-0.04em] opacity-[var(--project-icon-opacity)] transition-opacity duration-200 ${input.className ?? ""}`}
     >
       {initialsForProject(label)}
     </span>

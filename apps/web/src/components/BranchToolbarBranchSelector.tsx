@@ -2,7 +2,7 @@ import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime";
 import type { EnvironmentId, VcsRef, ThreadId } from "@t3tools/contracts";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { LegendList, type LegendListRef } from "@legendapp/list/react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, GitBranchIcon } from "lucide-react";
 import {
   useCallback,
   useDeferredValue,
@@ -57,6 +57,8 @@ interface BranchToolbarBranchSelectorProps {
   onActiveThreadBranchOverrideChange?: (refName: string | null) => void;
   onCheckoutPullRequestRequest?: (reference: string) => void;
   onComposerFocusRequest?: () => void;
+  popupSide?: "top" | "bottom";
+  variant?: "default" | "titlebar";
 }
 
 function toBranchActionErrorMessage(error: unknown): string {
@@ -89,7 +91,10 @@ export function BranchToolbarBranchSelector({
   onActiveThreadBranchOverrideChange,
   onCheckoutPullRequestRequest,
   onComposerFocusRequest,
+  popupSide = "top",
+  variant = "default",
 }: BranchToolbarBranchSelectorProps) {
+  const isTitlebarVariant = variant === "titlebar";
   // ---------------------------------------------------------------------------
   // Thread / project state (pushed down from parent to colocate with mutation)
   // ---------------------------------------------------------------------------
@@ -593,14 +598,18 @@ export function BranchToolbarBranchSelector({
         render={<Button variant="ghost" size="sm" />}
         className={cn(
           "min-w-0 font-medium text-muted-foreground/70 hover:text-foreground/80",
+          isTitlebarVariant && "gap-1 px-0 text-sm hover:bg-transparent hover:text-foreground",
           className,
         )}
         disabled={(isBranchesSearchPending && refs.length === 0) || isBranchActionPending}
       >
+        {isTitlebarVariant ? (
+          <GitBranchIcon className="size-3.5 shrink-0 text-muted-foreground/65" />
+        ) : null}
         <span className="min-w-0 max-w-[240px] truncate">{triggerLabel}</span>
-        <ChevronDownIcon className="shrink-0" />
+        {isTitlebarVariant ? null : <ChevronDownIcon className="shrink-0" />}
       </ComboboxTrigger>
-      <ComboboxPopup align="end" side="top" className="w-80">
+      <ComboboxPopup align="end" side={popupSide} className="w-80">
         <div className="border-b p-1">
           <ComboboxInput
             className="[&_input]:font-sans rounded-md"

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   dedupeRemoteBranchesWithLocalMatches,
   deriveLocalBranchNameFromRemoteRef,
+  formatWorktreeNameForDisplay,
   resolveEnvironmentOptionLabel,
   resolveBranchSelectionTarget,
   resolveCurrentWorkspaceLabel,
@@ -143,28 +144,48 @@ describe("resolveEffectiveEnvMode", () => {
 
 describe("resolveEnvModeLabel", () => {
   it("uses explicit workspace labels", () => {
-    expect(resolveEnvModeLabel("local")).toBe("Current checkout");
-    expect(resolveEnvModeLabel("worktree")).toBe("New worktree");
+    expect(resolveEnvModeLabel("local")).toBe("main");
+    expect(resolveEnvModeLabel("worktree")).toBe("Create worktree");
   });
 });
 
 describe("resolveCurrentWorkspaceLabel", () => {
   it("describes the main repo checkout when no worktree path is active", () => {
-    expect(resolveCurrentWorkspaceLabel(null)).toBe("Current checkout");
+    expect(resolveCurrentWorkspaceLabel(null)).toBe("main");
   });
 
-  it("describes the active checkout as a worktree when one is attached", () => {
-    expect(resolveCurrentWorkspaceLabel("/repo/.t3/worktrees/feature-a")).toBe("Current worktree");
+  it("uses the generated worktree folder name when one is attached", () => {
+    expect(resolveCurrentWorkspaceLabel("/repo/.t3/worktrees/feature-a")).toBe("feature-a");
   });
 });
 
 describe("resolveLockedWorkspaceLabel", () => {
   it("uses a shorter label for the main repo checkout", () => {
-    expect(resolveLockedWorkspaceLabel(null)).toBe("Local checkout");
+    expect(resolveLockedWorkspaceLabel(null)).toBe("main");
   });
 
-  it("uses a shorter label for an attached worktree", () => {
-    expect(resolveLockedWorkspaceLabel("/repo/.t3/worktrees/feature-a")).toBe("Worktree");
+  it("uses the generated worktree folder name for an attached worktree", () => {
+    expect(resolveLockedWorkspaceLabel("/repo/.t3/worktrees/feature-a")).toBe("feature-a");
+  });
+});
+
+describe("formatWorktreeNameForDisplay", () => {
+  it("extracts the final path segment from a generated worktree path", () => {
+    expect(formatWorktreeNameForDisplay("/worktrees/t3code/t3code-a1b2c3d4")).toBe(
+      "t3code-a1b2c3d4",
+    );
+  });
+
+  it("handles trailing separators", () => {
+    expect(formatWorktreeNameForDisplay("/worktrees/t3code/t3code-a1b2c3d4/")).toBe(
+      "t3code-a1b2c3d4",
+    );
+  });
+
+  it("handles Windows-style paths", () => {
+    expect(formatWorktreeNameForDisplay("C:\\worktrees\\t3code\\t3code-a1b2c3d4")).toBe(
+      "t3code-a1b2c3d4",
+    );
   });
 });
 

@@ -43,15 +43,26 @@ export function resolveEnvironmentOptionLabel(input: {
 }
 
 export function resolveEnvModeLabel(mode: EnvMode): string {
-  return mode === "worktree" ? "New worktree" : "Current checkout";
+  return mode === "worktree" ? "Create worktree" : "main";
+}
+
+export function formatWorktreeNameForDisplay(worktreePath: string): string {
+  const trimmedPath = worktreePath.trim().replace(/[\\/]+$/, "");
+  const lastSeparatorIndex = Math.max(trimmedPath.lastIndexOf("/"), trimmedPath.lastIndexOf("\\"));
+  const name = lastSeparatorIndex >= 0 ? trimmedPath.slice(lastSeparatorIndex + 1) : trimmedPath;
+  return name || "Worktree";
 }
 
 export function resolveCurrentWorkspaceLabel(activeWorktreePath: string | null): string {
-  return activeWorktreePath ? "Current worktree" : resolveEnvModeLabel("local");
+  return activeWorktreePath
+    ? formatWorktreeNameForDisplay(activeWorktreePath)
+    : resolveEnvModeLabel("local");
 }
 
 export function resolveLockedWorkspaceLabel(activeWorktreePath: string | null): string {
-  return activeWorktreePath ? "Worktree" : "Local checkout";
+  return activeWorktreePath
+    ? formatWorktreeNameForDisplay(activeWorktreePath)
+    : resolveEnvModeLabel("local");
 }
 
 export function resolveEffectiveEnvMode(input: {

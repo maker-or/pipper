@@ -725,7 +725,7 @@ export function GeneralSettingsPanel() {
             >
               <SelectTrigger className="w-full sm:w-44" aria-label="Default thread mode">
                 <SelectValue>
-                  {settings.defaultThreadEnvMode === "worktree" ? "New worktree" : "Local"}
+                  {settings.defaultThreadEnvMode === "worktree" ? "Create worktree" : "Local"}
                 </SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
@@ -733,7 +733,7 @@ export function GeneralSettingsPanel() {
                   Local
                 </SelectItem>
                 <SelectItem hideIndicator value="worktree">
-                  New worktree
+                  Create worktree
                 </SelectItem>
               </SelectPopup>
             </Select>

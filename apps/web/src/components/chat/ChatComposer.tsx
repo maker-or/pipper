@@ -28,7 +28,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedValue } from "@tanstack/react-pacer";
@@ -405,7 +404,6 @@ export interface ChatComposerProps {
   scheduleComposerFocus: () => void;
   setThreadError: (threadId: ThreadId | null, error: string | null) => void;
   onExpandImage: (preview: ExpandedImagePreview) => void;
-  footerControls?: ReactNode;
 }
 
 // --------------------------------------------------------------------------
@@ -478,7 +476,6 @@ export const ChatComposer = memo(
       scheduleComposerFocus: _scheduleComposerFocus,
       setThreadError,
       onExpandImage,
-      footerControls,
     } = props;
 
     // ------------------------------------------------------------------
@@ -1879,7 +1876,7 @@ export const ChatComposer = memo(
           data-chat-composer-footer="true"
           data-chat-composer-footer-compact={isComposerFooterCompact ? "true" : "false"}
           className={cn(
-            "fixed bottom-[calc(5dvh-18px)] left-[calc(var(--sidebar-width)+0.75rem)] z-40 flex h-10 min-w-0 max-w-[calc(100vw-var(--sidebar-width)-8rem)] items-center gap-2 overflow-visible",
+            "fixed bottom-[var(--chat-bottom-controls-inset)] left-[calc(var(--sidebar-width)+0.75rem)] z-40 flex h-10 min-w-0 max-w-[calc(100vw-var(--sidebar-width)-8rem)] items-center gap-2 overflow-visible",
             isComposerFooterCompact ? "gap-1.5" : "gap-2",
             showMobilePendingAnswerActions && "hidden sm:flex",
           )}
@@ -1928,7 +1925,6 @@ export const ChatComposer = memo(
                 onTogglePlanSidebar={togglePlanSidebar}
               />
             )}
-            {footerControls ? footerControls : null}
           </div>
           {activeContextWindow || isPreparingWorktree ? (
             <div

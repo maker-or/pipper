@@ -79,7 +79,7 @@ export function ChatRightDockPanel(props: { active: boolean; children: ReactNode
 
   return (
     <div
-      className="chat-right-dock-shell flex min-h-0 shrink-0 flex-col self-stretch overflow-hidden rounded-xl"
+      className="chat-right-dock-shell flex min-h-0 shrink-0 flex-col self-stretch overflow-hidden"
       data-open={visualOpen ? "true" : "false"}
       onTransitionEnd={onTransitionEnd}
     >

@@ -51,7 +51,8 @@ interface BranchToolbarProps {
   onComposerFocusRequest?: () => void;
   availableEnvironments?: readonly EnvironmentOption[];
   onEnvironmentChange?: (environmentId: EnvironmentId) => void;
-  variant?: "default" | "composer";
+  variant?: "default" | "composer" | "titlebar";
+  popupSide?: "top" | "bottom";
 }
 
 interface MobileRunContextSelectorProps {
@@ -64,6 +65,7 @@ interface MobileRunContextSelectorProps {
   effectiveEnvMode: EnvMode;
   activeWorktreePath: string | null;
   onEnvModeChange: (mode: EnvMode) => void;
+  menuSide?: "top" | "bottom";
 }
 
 const MobileRunContextSelector = memo(function MobileRunContextSelector({
@@ -76,6 +78,7 @@ const MobileRunContextSelector = memo(function MobileRunContextSelector({
   effectiveEnvMode,
   activeWorktreePath,
   onEnvModeChange,
+  menuSide,
 }: MobileRunContextSelectorProps) {
   const activeEnvironment = useMemo(
     () => availableEnvironments?.find((env) => env.environmentId === environmentId) ?? null,
@@ -130,7 +133,7 @@ const MobileRunContextSelector = memo(function MobileRunContextSelector({
         {triggerContent}
         <ChevronDownIcon className="size-3 shrink-0 opacity-50" />
       </MenuTrigger>
-      <MenuPopup align="start" side="top" className="w-64">
+      <MenuPopup align="start" side={menuSide ?? "top"} className="w-64">
         {showEnvironmentPicker && availableEnvironments && onEnvironmentChange ? (
           <>
             <MenuGroup>
@@ -204,6 +207,7 @@ export const BranchToolbar = memo(function BranchToolbar({
   availableEnvironments,
   onEnvironmentChange,
   variant = "default",
+  popupSide,
 }: BranchToolbarProps) {
   const threadRef = useMemo(
     () => scopeThreadRef(environmentId, threadId),
@@ -242,13 +246,17 @@ export const BranchToolbar = memo(function BranchToolbar({
 
   if (!hasActiveThread || !activeProject) return null;
   const isComposerVariant = variant === "composer";
+  const isTitlebarVariant = variant === "titlebar";
+  const resolvedPopupSide = popupSide ?? (isTitlebarVariant ? "bottom" : undefined);
 
   return (
     <div
       className={
-        isComposerVariant
+        isTitlebarVariant
           ? "flex min-w-0 shrink-0 items-center gap-1"
-          : "mx-auto flex w-full max-w-208 items-center gap-2 px-2.5 pb-3 pt-1 sm:px-3"
+          : isComposerVariant
+            ? "flex min-w-0 shrink-0 items-center gap-1"
+            : "mx-auto flex w-full max-w-208 items-center gap-2 px-2.5 pb-3 pt-1 sm:px-3"
       }
     >
       {isMobile ? (
@@ -262,6 +270,7 @@ export const BranchToolbar = memo(function BranchToolbar({
           effectiveEnvMode={effectiveEnvMode}
           activeWorktreePath={activeWorktreePath}
           onEnvModeChange={onEnvModeChange}
+          {...(resolvedPopupSide ? { menuSide: resolvedPopupSide } : {})}
         />
       ) : (
         <div className="flex min-w-0 shrink-0 items-center gap-1">
@@ -272,6 +281,7 @@ export const BranchToolbar = memo(function BranchToolbar({
                 environmentId={environmentId}
                 availableEnvironments={availableEnvironments}
                 onEnvironmentChange={onEnvironmentChange}
+                {...(resolvedPopupSide ? { popupSide: resolvedPopupSide } : {})}
               />
               <Separator orientation="vertical" className="mx-0.5 h-3.5!" />
             </>
@@ -281,15 +291,20 @@ export const BranchToolbar = memo(function BranchToolbar({
             effectiveEnvMode={effectiveEnvMode}
             activeWorktreePath={activeWorktreePath}
             onEnvModeChange={onEnvModeChange}
+            {...(isTitlebarVariant ? { variant: "titlebar" as const } : {})}
+            {...(resolvedPopupSide ? { popupSide: resolvedPopupSide } : {})}
           />
         </div>
       )}
 
+      {isTitlebarVariant ? <span className="text-muted-foreground/35">/</span> : null}
       <BranchToolbarBranchSelector
         className={
-          isComposerVariant
-            ? "min-w-0 max-w-44 flex-none justify-start"
-            : "min-w-0 flex-1 justify-end md:ml-auto md:flex-none"
+          isTitlebarVariant
+            ? "min-w-0 max-w-40 flex-none justify-start"
+            : isComposerVariant
+              ? "min-w-0 max-w-44 flex-none justify-start"
+              : "min-w-0 flex-1 justify-end md:ml-auto md:flex-none"
         }
         environmentId={environmentId}
         threadId={threadId}
@@ -300,6 +315,8 @@ export const BranchToolbar = memo(function BranchToolbar({
         {...(onActiveThreadBranchOverrideChange ? { onActiveThreadBranchOverrideChange } : {})}
         {...(onCheckoutPullRequestRequest ? { onCheckoutPullRequestRequest } : {})}
         {...(onComposerFocusRequest ? { onComposerFocusRequest } : {})}
+        {...(isTitlebarVariant ? { variant: "titlebar" as const } : {})}
+        {...(resolvedPopupSide ? { popupSide: resolvedPopupSide } : {})}
       />
     </div>
   );
