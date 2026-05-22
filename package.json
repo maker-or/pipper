@@ -95,5 +95,8 @@
   "trustedDependencies": [
     "node-pty",
     "electron"
-  ]
+  ],
+  "dependencies": {
+    "iconoir-react": "^7.11.0"
+  }
 }
