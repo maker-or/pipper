@@ -53,6 +53,7 @@ import {
   type MessagesTimelineRow,
 } from "./MessagesTimeline.logic";
 import { TerminalContextInlineChip } from "./TerminalContextInlineChip";
+import { ThreadContentTransition } from "./ThreadContentTransition";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import {
   deriveDisplayedUserMessageState,
@@ -104,6 +105,8 @@ const TimelineRowCtx = createContext<TimelineRowSharedState>(null!);
 const TimelineRowActivityCtx = createContext<TimelineRowActivityState>(null!);
 const TIMELINE_LIST_HEADER = <div className="h-3 sm:h-4" />;
 const TIMELINE_LIST_FOOTER = <div className="h-3 sm:h-4" />;
+const HIDE_SCROLLBAR_CLASS_NAME =
+  "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0";
 const EMPTY_TIMELINE_SKILLS: ReadonlyArray<Pick<ServerProviderSkill, "name" | "displayName">> = [];
 
 // ---------------------------------------------------------------------------
@@ -267,9 +270,14 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   // from TimelineRowCtx, which propagates through LegendList's memo.
   const renderItem = useCallback(
     ({ item }: { item: MessagesTimelineRow }) => (
-      <div className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden" data-timeline-root="true">
-        <TimelineRowContent row={item} />
-      </div>
+      <ThreadContentTransition className="block w-full min-w-0">
+        <div
+          className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden"
+          data-timeline-root="true"
+        >
+          <TimelineRowContent row={item} />
+        </div>
+      </ThreadContentTransition>
     ),
     [],
   );
@@ -286,7 +294,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
 
   if (rows.length === 0 && !isWorking) {
     return (
-      <div className="h-full overflow-y-auto px-3 [scrollbar-width:none] sm:px-5 [&::-webkit-scrollbar]:hidden">
+      <div className={cn("h-full overflow-y-auto px-3 sm:px-5", HIDE_SCROLLBAR_CLASS_NAME)}>
         <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col pt-4 pb-8">
           {composer}
         </div>
@@ -308,7 +316,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
           maintainScrollAtEndThreshold={0.1}
           maintainVisibleContentPosition
           onScroll={handleScroll}
-          className="h-full overflow-x-hidden overscroll-y-contain px-3 [scrollbar-width:none] sm:px-5 [&::-webkit-scrollbar]:hidden"
+          className={cn(
+            "h-full overflow-x-hidden overscroll-y-contain px-3 sm:px-5",
+            HIDE_SCROLLBAR_CLASS_NAME,
+          )}
           ListHeaderComponent={TIMELINE_LIST_HEADER}
           ListFooterComponent={listFooter}
         />
