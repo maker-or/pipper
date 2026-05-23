@@ -9,7 +9,7 @@ import {
 } from "../shortcutModifierState";
 
 const THREAD_SIDEBAR_WIDTH_STORAGE_KEY = "chat_thread_sidebar_width";
-const THREAD_SIDEBAR_MIN_WIDTH = 4 * 16;
+const THREAD_SIDEBAR_WIDTH = 5 * 16;
 const THREAD_MAIN_CONTENT_MIN_WIDTH = 40 * 16;
 const SETTINGS_SIDEBAR_WIDTH = 13 * 16;
 export function AppSidebarLayout({ children }: { children: ReactNode }) {
@@ -26,9 +26,9 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
       };
     }
     return {
-      sidebarWidth: THREAD_SIDEBAR_MIN_WIDTH,
-      sidebarMaxWidth: THREAD_SIDEBAR_MIN_WIDTH,
-      sidebarMinWidth: THREAD_SIDEBAR_MIN_WIDTH,
+      sidebarWidth: THREAD_SIDEBAR_WIDTH,
+      sidebarMaxWidth: THREAD_SIDEBAR_WIDTH,
+      sidebarMinWidth: THREAD_SIDEBAR_WIDTH,
     };
   }, [isOnSettings]);
 

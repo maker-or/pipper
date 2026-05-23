@@ -1,36 +1,16 @@
-import { DiffsHighlighter, getSharedHighlighter, SupportedLanguages } from "@pierre/diffs";
-import { CheckIcon, CopyIcon } from "lucide-react";
-import { gsap } from "gsap";
-import React, {
-  Children,
-  Suspense,
-  type MouseEvent as ReactMouseEvent,
-  isValidElement,
-  use,
-  useCallback,
-  memo,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Components } from "react-markdown";
-import ReactMarkdown from "react-markdown";
-import { defaultUrlTransform } from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { type ServerProviderSkill } from "@t3tools/contracts";
-// import { VscodeEntryIcon } from "./chat/VscodeEntryIcon";
+import {
+  memo,
+  useCallback,
+  useMemo,
+  type ComponentPropsWithoutRef,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import { Streamdown, defaultUrlTransform, type UrlTransform } from "streamdown";
 import { renderSkillInlineMarkdownChildren } from "./chat/SkillInlineText";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "./ui/tooltip";
 import { stackedThreadToast, toastManager } from "./ui/toast";
 import { openInPreferredEditor } from "../editorPreferences";
-import { resolveDiffThemeName, type DiffThemeName } from "../lib/diffRendering";
-import { fnv1a32 } from "../lib/diffRendering";
-import { LRUCache } from "../lib/lruCache";
-import { useTheme } from "../hooks/useTheme";
-import { useStreamingReveal } from "../hooks/useStreamingReveal";
 import {
   normalizeMarkdownLinkDestination,
   resolveMarkdownFileLinkMeta,
@@ -39,26 +19,10 @@ import {
 import { readLocalApi } from "../localApi";
 import { cn } from "../lib/utils";
 
-class CodeHighlightErrorBoundary extends React.Component<
-  { fallback: ReactNode; children: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { fallback: ReactNode; children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  override render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
+const MARKDOWN_FILE_LINK_CLASS_NAME =
+  "chat-markdown-file-link relative top-[2px] max-w-full no-underline";
+const MARKDOWN_FILE_LINK_LABEL_CLASS_NAME = "chat-markdown-file-link-label truncate";
+const MARKDOWN_LINK_HREF_PATTERN = /\[[^\]]*]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g;
 
 interface ChatMarkdownProps {
   text: string;
@@ -69,231 +33,8 @@ interface ChatMarkdownProps {
 
 const EMPTY_MARKDOWN_SKILLS: ReadonlyArray<Pick<ServerProviderSkill, "name" | "displayName">> = [];
 
-const CODE_FENCE_LANGUAGE_REGEX = /(?:^|\s)language-([^\s]+)/;
-const MAX_HIGHLIGHT_CACHE_ENTRIES = 500;
-const MAX_HIGHLIGHT_CACHE_MEMORY_BYTES = 50 * 1024 * 1024;
-const highlightedCodeCache = new LRUCache<string>(
-  MAX_HIGHLIGHT_CACHE_ENTRIES,
-  MAX_HIGHLIGHT_CACHE_MEMORY_BYTES,
-);
-const highlighterPromiseCache = new Map<string, Promise<DiffsHighlighter>>();
-
-function extractFenceLanguage(className: string | undefined): string {
-  const match = className?.match(CODE_FENCE_LANGUAGE_REGEX);
-  const raw = match?.[1] ?? "text";
-  // Shiki doesn't bundle a gitignore grammar; ini is a close match (#685)
-  return raw === "gitignore" ? "ini" : raw;
-}
-
-function nodeToPlainText(node: ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map((child) => nodeToPlainText(child)).join("");
-  }
-  if (isValidElement<{ children?: ReactNode }>(node)) {
-    return nodeToPlainText(node.props.children);
-  }
-  return "";
-}
-
-function extractCodeBlock(
-  children: ReactNode,
-): { className: string | undefined; code: string } | null {
-  const childNodes = Children.toArray(children);
-  if (childNodes.length !== 1) {
-    return null;
-  }
-
-  const onlyChild = childNodes[0];
-  if (
-    !isValidElement<{ className?: string; children?: ReactNode }>(onlyChild) ||
-    onlyChild.type !== "code"
-  ) {
-    return null;
-  }
-
-  return {
-    className: onlyChild.props.className,
-    code: nodeToPlainText(onlyChild.props.children),
-  };
-}
-
-function createHighlightCacheKey(code: string, language: string, themeName: DiffThemeName): string {
-  return `${fnv1a32(code).toString(36)}:${code.length}:${language}:${themeName}`;
-}
-
-function estimateHighlightedSize(html: string, code: string): number {
-  return Math.max(html.length * 2, code.length * 3);
-}
-
-function getHighlighterPromise(language: string): Promise<DiffsHighlighter> {
-  const cached = highlighterPromiseCache.get(language);
-  if (cached) return cached;
-
-  const promise = getSharedHighlighter({
-    themes: [resolveDiffThemeName("dark"), resolveDiffThemeName("light")],
-    langs: [language as SupportedLanguages],
-    preferredHighlighter: "shiki-js",
-  }).catch((err) => {
-    highlighterPromiseCache.delete(language);
-    if (language === "text") {
-      // "text" itself failed — Shiki cannot initialize at all, surface the error
-      throw err;
-    }
-    // Language not supported by Shiki — fall back to "text"
-    return getHighlighterPromise("text");
-  });
-  highlighterPromiseCache.set(language, promise);
-  return promise;
-}
-
-function MarkdownCodeBlock({ code, children }: { code: string; children: ReactNode }) {
-  const [copied, setCopied] = useState(false);
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleCopy = useCallback(() => {
-    if (typeof navigator === "undefined" || navigator.clipboard == null) {
-      return;
-    }
-    void navigator.clipboard
-      .writeText(code)
-      .then(() => {
-        if (copiedTimerRef.current != null) {
-          clearTimeout(copiedTimerRef.current);
-        }
-        setCopied(true);
-        copiedTimerRef.current = setTimeout(() => {
-          setCopied(false);
-          copiedTimerRef.current = null;
-        }, 1200);
-      })
-      .catch(() => undefined);
-  }, [code]);
-
-  useEffect(
-    () => () => {
-      if (copiedTimerRef.current != null) {
-        clearTimeout(copiedTimerRef.current);
-        copiedTimerRef.current = null;
-      }
-    },
-    [],
-  );
-
-  return (
-    <div className="chat-markdown-codeblock leading-snug">
-      <button
-        type="button"
-        className="chat-markdown-copy-button"
-        onClick={handleCopy}
-        title={copied ? "Copied" : "Copy code"}
-        aria-label={copied ? "Copied" : "Copy code"}
-      >
-        {copied ? <CheckIcon className="size-3" /> : <CopyIcon className="size-3" />}
-      </button>
-      {children}
-    </div>
-  );
-}
-
-interface SuspenseShikiCodeBlockProps {
-  className: string | undefined;
-  code: string;
-  themeName: DiffThemeName;
-  isStreaming: boolean;
-}
-
-function SuspenseShikiCodeBlock({
-  className,
-  code,
-  themeName,
-  isStreaming,
-}: SuspenseShikiCodeBlockProps) {
-  const language = extractFenceLanguage(className);
-  const cacheKey = createHighlightCacheKey(code, language, themeName);
-  const cachedHighlightedHtml = !isStreaming ? highlightedCodeCache.get(cacheKey) : null;
-
-  if (cachedHighlightedHtml != null) {
-    return (
-      <div
-        className="chat-markdown-shiki"
-        dangerouslySetInnerHTML={{ __html: cachedHighlightedHtml }}
-      />
-    );
-  }
-
-  return (
-    <UncachedShikiCodeBlock
-      code={code}
-      language={language}
-      themeName={themeName}
-      cacheKey={cacheKey}
-      isStreaming={isStreaming}
-    />
-  );
-}
-
-interface UncachedShikiCodeBlockProps {
-  code: string;
-  language: string;
-  themeName: DiffThemeName;
-  cacheKey: string;
-  isStreaming: boolean;
-}
-
-function UncachedShikiCodeBlock({
-  code,
-  language,
-  themeName,
-  cacheKey,
-  isStreaming,
-}: UncachedShikiCodeBlockProps) {
-  const highlighter = use(getHighlighterPromise(language));
-  const highlightedHtml = useMemo(() => {
-    try {
-      return highlighter.codeToHtml(code, { lang: language, theme: themeName });
-    } catch (error) {
-      // Log highlighting failures for debugging while falling back to plain text
-      console.warn(
-        `Code highlighting failed for language "${language}", falling back to plain text.`,
-        error instanceof Error ? error.message : error,
-      );
-      // If highlighting fails for this language, render as plain text
-      return highlighter.codeToHtml(code, { lang: "text", theme: themeName });
-    }
-  }, [code, highlighter, language, themeName]);
-
-  useEffect(() => {
-    if (!isStreaming) {
-      highlightedCodeCache.set(
-        cacheKey,
-        highlightedHtml,
-        estimateHighlightedSize(highlightedHtml, code),
-      );
-    }
-  }, [cacheKey, code, highlightedHtml, isStreaming]);
-
-  return (
-    <div className="chat-markdown-shiki" dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
-  );
-}
-
-interface MarkdownFileLinkProps {
-  href: string;
-  targetPath: string;
-  displayPath: string;
-  filePath: string;
-  label: string;
-  theme: "light" | "dark";
-  className?: string | undefined;
-}
-
-const MARKDOWN_LINK_HREF_PATTERN = /\[[^\]]*]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g;
-const MARKDOWN_FILE_LINK_CLASS_NAME =
-  "chat-markdown-file-link relative top-[2px] max-w-full no-underline";
-const MARKDOWN_FILE_LINK_ICON_CLASS_NAME = "chat-markdown-file-link-icon size-3.5 shrink-0";
-const MARKDOWN_FILE_LINK_LABEL_CLASS_NAME = "chat-markdown-file-link-label truncate";
+type Components = ComponentPropsWithoutRef<typeof Streamdown>["components"];
+type MarkdownComponents = NonNullable<Components>;
 
 function pathParentSegments(path: string): string[] {
   const normalized = path.replaceAll("\\", "/");
@@ -370,13 +111,19 @@ function normalizeMarkdownLinkHrefKey(href: string): string {
   return rewriteMarkdownFileUriHref(normalizedHref) ?? normalizedHref;
 }
 
+interface MarkdownFileLinkProps {
+  href: string;
+  targetPath: string;
+  displayPath: string;
+  label: string;
+  className?: string | undefined;
+}
+
 const MarkdownFileLink = memo(function MarkdownFileLink({
   href,
   targetPath,
   displayPath,
-  filePath,
   label,
-  theme,
   className,
 }: MarkdownFileLinkProps) {
   const handleOpen = useCallback(() => {
@@ -478,12 +225,6 @@ const MarkdownFileLink = memo(function MarkdownFileLink({
             }}
             onContextMenu={handleContextMenu}
           >
-            {/* <VscodeEntryIcon
-              pathValue={filePath}
-              kind="file"
-              theme={theme}
-              className={cn(MARKDOWN_FILE_LINK_ICON_CLASS_NAME, "text-current")}
-            /> */}
             <span className={MARKDOWN_FILE_LINK_LABEL_CLASS_NAME}>{label}</span>
           </a>
         }
@@ -508,9 +249,7 @@ function areMarkdownFileLinkPropsEqual(
     previous.href === next.href &&
     previous.targetPath === next.targetPath &&
     previous.displayPath === next.displayPath &&
-    previous.filePath === next.filePath &&
     previous.label === next.label &&
-    previous.theme === next.theme &&
     previous.className === next.className
   );
 }
@@ -521,18 +260,6 @@ function ChatMarkdown({
   isStreaming = false,
   skills = EMPTY_MARKDOWN_SKILLS,
 }: ChatMarkdownProps) {
-  const { resolvedTheme } = useTheme();
-  // Buffer large text chunks so they reveal progressively instead of
-  // dumping everything at once. Normal token-by-token streaming passes
-  // through instantly; only jumps >15 chars get smoothed.
-  const revealedText = useStreamingReveal(text, isStreaming);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const previousTextRef = useRef(text);
-  /** Timestamp (via performance.now) of the last animation start. Used to
-   *  debounce: during rapid token streaming the animation plays through once
-   *  rather than being killed and restarted every ~50ms (which made it invisible). */
-  const lastAnimStartRef = useRef(0);
-  const diffThemeName = resolveDiffThemeName(resolvedTheme);
   const markdownFileLinkMetaByHref = useMemo(() => {
     const metaByHref = new Map<
       string,
@@ -552,71 +279,10 @@ function ChatMarkdown({
     const filePaths = [...markdownFileLinkMetaByHref.values()].map((meta) => meta.filePath);
     return buildFileLinkParentSuffixByPath(filePaths);
   }, [markdownFileLinkMetaByHref]);
-  const markdownUrlTransform = useCallback((href: string) => {
-    return rewriteMarkdownFileUriHref(href) ?? defaultUrlTransform(href);
+  const markdownUrlTransform = useCallback<UrlTransform>((href, key, node) => {
+    return rewriteMarkdownFileUriHref(href) ?? defaultUrlTransform(href, key, node);
   }, []);
-  useLayoutEffect(() => {
-    const content = contentRef.current;
-    if (!content) {
-      previousTextRef.current = text;
-      return;
-    }
-
-    const previousText = previousTextRef.current;
-    previousTextRef.current = text;
-
-    if (!isStreaming || text.length <= previousText.length) {
-      // Reset tracker when streaming ends so the next session starts fresh
-      if (!isStreaming) {
-        lastAnimStartRef.current = 0;
-      }
-      return;
-    }
-
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
-
-    // Debounce: let the current animation play through before starting a new
-    // one. Without this, every token (~30-100ms apart) kills the in-progress
-    // animation and restarts it, so it never visually completes — the content
-    // just flickers at opacity 0.6. A new animation fires only:
-    //   • on the very first streaming chunk (lastAnimStartRef is 0)
-    //   • after a meaningful pause >= 400ms (e.g. post-tool-call text resume)
-    const now = performance.now();
-    const elapsed = now - lastAnimStartRef.current;
-    if (lastAnimStartRef.current > 0 && elapsed < 400) {
-      return;
-    }
-
-    // soft-blur-in spec adapted for streaming body text:
-    // - easing: expo.out (GSAP equivalent of the spec's cubic-bezier(0.22, 1, 0.36, 1))
-    // - blur: 6px (usage_notes recommends reducing from 12 for <24px text)
-    // - y: 8px (scaled down from spec's 16px for streaming cadence)
-    // - duration: 0.55s (balances spec's 0.9s premium feel with streaming speed)
-    lastAnimStartRef.current = now;
-    gsap.killTweensOf(content);
-    gsap.fromTo(
-      content,
-      {
-        opacity: 0.6,
-        y: 8,
-        filter: "blur(6px)",
-      },
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 0.55,
-        ease: "expo.out",
-        overwrite: true,
-      },
-    );
-  }, [isStreaming, text]);
-  const markdownComponents = useMemo<Components>(
+  const markdownComponents = useMemo<MarkdownComponents>(
     () => ({
       h1({ node: _node, children, ...props }) {
         return <h1 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h1>;
@@ -676,58 +342,27 @@ function ChatMarkdown({
             href={fileLinkMeta.targetPath}
             targetPath={fileLinkMeta.targetPath}
             displayPath={fileLinkMeta.displayPath}
-            filePath={fileLinkMeta.filePath}
             label={labelParts.join(" · ")}
-            theme={resolvedTheme}
             className={props.className}
           />
         );
       },
-      pre({ node: _node, children, ...props }) {
-        const codeBlock = extractCodeBlock(children);
-        if (!codeBlock) {
-          return <pre {...props}>{children}</pre>;
-        }
-
-        return (
-          <MarkdownCodeBlock code={codeBlock.code}>
-            <CodeHighlightErrorBoundary fallback={<pre {...props}>{children}</pre>}>
-              <Suspense fallback={<pre {...props}>{children}</pre>}>
-                <SuspenseShikiCodeBlock
-                  className={codeBlock.className}
-                  code={codeBlock.code}
-                  themeName={diffThemeName}
-                  isStreaming={isStreaming}
-                />
-              </Suspense>
-            </CodeHighlightErrorBoundary>
-          </MarkdownCodeBlock>
-        );
-      },
     }),
-    [
-      diffThemeName,
-      fileLinkParentSuffixByPath,
-      isStreaming,
-      markdownFileLinkMetaByHref,
-      resolvedTheme,
-      skills,
-    ],
+    [fileLinkParentSuffixByPath, markdownFileLinkMetaByHref, skills],
   );
 
   return (
-    <div className="chat-markdown w-full min-w-0 text-sm leading-relaxed text-foreground/80">
-      <div ref={contentRef} className="will-change-[transform,filter,opacity]">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-          urlTransform={markdownUrlTransform}
-        >
-          {revealedText}
-        </ReactMarkdown>
-      </div>
+    <div className="chat-markdown w-full min-w-0 text-base leading-relaxed text-foreground/80">
+      <Streamdown
+        animated={{ animation: "blurIn", duration: 200, easing: "ease-out" }}
+        isAnimating={isStreaming}
+        components={markdownComponents}
+        urlTransform={markdownUrlTransform}
+      >
+        {text}
+      </Streamdown>
     </div>
   );
 }
 
-export default memo(ChatMarkdown);
+export default ChatMarkdown;

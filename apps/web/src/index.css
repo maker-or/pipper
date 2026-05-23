@@ -504,9 +504,9 @@ label:has(> select#reasoning-effort) select {
 }
 
 .chat-markdown blockquote {
-  border-left: 2px solid var(--border);
-  padding-left: 0.8rem;
-  color: var(--muted-foreground);
+  border-left: none;
+  padding-left: 0;
+  color: inherit;
 }
 
 .chat-markdown :not(pre) > code {
