@@ -3785,7 +3785,7 @@ export default function ChatView(props: ChatViewProps) {
                 <button
                   type="button"
                   onClick={() => scrollToEnd(true)}
-                  className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card  p-1 text-muted-foreground text-xs shadow-sm transition-colors hover:border-border hover:text-foreground hover:cursor-pointer"
+                  className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card p-1 text-muted-foreground text-xs shadow-sm transition-[color,border-color,transform] duration-150 ease-out hover:border-border hover:text-foreground hover:cursor-pointer active:scale-[0.96]"
                 >
                   <ChevronDownIcon className="size-3.5" />
                 </button>

@@ -1,4 +1,11 @@
-import { ArchiveIcon, ArchiveX, LoaderIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
+import {
+  ArchiveIcon,
+  ArchiveX,
+  CheckIcon,
+  LoaderIcon,
+  PlusIcon,
+  RefreshCwIcon,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -20,6 +27,7 @@ import {
 import { createModelSelection } from "@t3tools/shared/model";
 import { Equal } from "effect";
 import { APP_VERSION } from "../../branding";
+import { APPEARANCE_PALETTES, resolveAppearancePalette } from "../../appearancePalettes";
 import {
   canCheckForUpdate,
   getDesktopUpdateButtonTooltip,
@@ -104,12 +112,6 @@ const TIMESTAMP_FORMAT_LABELS = {
   "12-hour": "12-hour",
   "24-hour": "24-hour",
 } as const;
-
-const APPEARANCE_HUE_MIN = 0;
-const APPEARANCE_HUE_MAX = 360;
-const APPEARANCE_INTENSITY_MIN = 0;
-const APPEARANCE_INTENSITY_MAX = 1;
-const APPEARANCE_INTENSITY_STEP = 0.01;
 
 const DEFAULT_DRIVER_KIND = ProviderDriverKind.make("codex");
 
@@ -361,54 +363,6 @@ function AboutVersionSection() {
         }
       />
     </>
-  );
-}
-
-function AppearanceSlider({
-  value,
-  min,
-  max,
-  step,
-  onChange,
-  ariaLabel,
-  fill,
-}: {
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange: (value: number) => void;
-  ariaLabel: string;
-  fill: string;
-}) {
-  const progress = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
-
-  return (
-    <div className="mt-3 p-3">
-      <div className="relative h-14">
-        <div className="absolute inset-0 rounded-xl bg-[color-mix(in_oklab,var(--surface-elevated)_78%,var(--muted))]" />
-        <div
-          className="absolute inset-y-0 left-0 rounded-l-xl transition-[width] duration-200 ease-out"
-          style={
-            {
-              width: `${progress}%`,
-              background: fill,
-            } as CSSProperties
-          }
-        />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onInput={(event) => onChange(Number(event.currentTarget.value))}
-          onChange={(event) => onChange(Number(event.currentTarget.value))}
-          aria-label={ariaLabel}
-          className="absolute inset-0 z-20 h-full w-full cursor-pointer appearance-none rounded-xl bg-transparent opacity-0"
-        />
-      </div>
-    </div>
   );
 }
 
@@ -919,8 +873,8 @@ export function GeneralSettingsPanel() {
 }
 
 export function AppearanceSettingsPanel() {
-  const { theme, setTheme, accentHue, setAccentHue, accentIntensity, setAccentIntensity } =
-    useTheme();
+  const { theme, setTheme, accentHue, setAccentHue, setAccentIntensity } = useTheme();
+  const selectedPalette = resolveAppearancePalette(accentHue);
 
   return (
     <SettingsPageContainer>
@@ -959,51 +913,57 @@ export function AppearanceSettingsPanel() {
         />
 
         <SettingsRow
-          title="Accent hue"
-          description="Shift the app accent color across the spectrum without retinting neutral surfaces."
-          status={`${Math.round(accentHue)}°`}
+          title="Accent palette"
+          description="Use a tuned OKLCH ramp with distinct dark, active, focus, and quiet surface roles."
+          status={selectedPalette.label}
           resetAction={
             accentHue !== DEFAULT_APPEARANCE_ACCENT_HUE ? (
               <SettingResetButton
-                label="accent hue"
-                onClick={() => setAccentHue(DEFAULT_APPEARANCE_ACCENT_HUE)}
+                label="accent palette"
+                onClick={() => {
+                  setAccentHue(DEFAULT_APPEARANCE_ACCENT_HUE);
+                  setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY);
+                }}
               />
             ) : null
           }
         >
-          <AppearanceSlider
-            min={APPEARANCE_HUE_MIN}
-            max={APPEARANCE_HUE_MAX}
-            step={1}
-            value={accentHue}
-            onChange={setAccentHue}
-            ariaLabel="Accent hue"
-            fill={`linear-gradient(180deg, oklch(0.68 calc(var(--accent-chroma) * 0.92) var(--accent-hue)) 0%, color-mix(in oklab, oklch(0.62 calc(var(--accent-chroma) * 0.98) var(--accent-hue)) 82%, black) 100%)`}
-          />
-        </SettingsRow>
-
-        <SettingsRow
-          title="Accent intensity"
-          description="Control how strongly the accent influences focus, active, and highlighted surfaces."
-          status={`${Math.round(accentIntensity * 100)}%`}
-          resetAction={
-            accentIntensity !== DEFAULT_APPEARANCE_ACCENT_INTENSITY ? (
-              <SettingResetButton
-                label="accent intensity"
-                onClick={() => setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY)}
-              />
-            ) : null
-          }
-        >
-          <AppearanceSlider
-            min={APPEARANCE_INTENSITY_MIN}
-            max={APPEARANCE_INTENSITY_MAX}
-            step={APPEARANCE_INTENSITY_STEP}
-            value={accentIntensity}
-            onChange={setAccentIntensity}
-            ariaLabel="Accent intensity"
-            fill={`linear-gradient(180deg, color-mix(in oklab, var(--primary) 88%, white) 0%, color-mix(in oklab, var(--primary) 76%, black) 100%)`}
-          />
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {APPEARANCE_PALETTES.map((palette) => {
+              const isSelected = palette.id === selectedPalette.id;
+              return (
+                <button
+                  key={palette.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setAccentHue(palette.hue);
+                    setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY);
+                  }}
+                  className="group relative min-h-28 rounded-xl border border-input bg-popover p-3 text-left shadow-xs/5 outline-none transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-ring/48 hover:bg-accent/44 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background active:translate-y-0 data-[selected=true]:border-ring/64 data-[selected=true]:bg-accent/64"
+                  data-selected={isSelected}
+                >
+                  <div className="mb-3 grid h-9 grid-cols-6 overflow-hidden rounded-lg border border-border/72">
+                    {palette.colors.slice(1, 7).map((color) => (
+                      <span
+                        key={`${palette.id}-${color}`}
+                        style={{ backgroundColor: color } as CSSProperties}
+                      />
+                    ))}
+                  </div>
+                  <span className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
+                    {palette.label}
+                    <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-opacity group-data-[selected=true]:opacity-100">
+                      <CheckIcon className="size-3.5" />
+                    </span>
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {palette.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </SettingsRow>
       </SettingsSection>
     </SettingsPageContainer>

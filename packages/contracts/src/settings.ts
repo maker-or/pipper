@@ -32,7 +32,7 @@ export const AppearanceMode = Schema.Literals(["system", "light", "dark"]);
 export type AppearanceMode = typeof AppearanceMode.Type;
 export const DEFAULT_APPEARANCE_MODE: AppearanceMode = "system";
 
-export const DEFAULT_APPEARANCE_ACCENT_HUE = 264;
+export const DEFAULT_APPEARANCE_ACCENT_HUE = 275;
 export const DEFAULT_APPEARANCE_ACCENT_INTENSITY = 0.58;
 
 const AppearanceAccentHue = Schema.Number.check(

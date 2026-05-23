@@ -9,6 +9,7 @@ import {
   readBrowserClientSettings,
   readLegacyBrowserThemePreference,
 } from "../clientPersistenceStorage";
+import { resolveAppearancePalette } from "../appearancePalettes";
 import { useSettings, useUpdateSettings } from "./useSettings";
 
 type ThemeSnapshot = {
@@ -133,10 +134,15 @@ export function applyTheme(
   }
   root.style?.setProperty("--accent-hue", `${clampHue(accentHue)}`);
   root.style?.setProperty("--accent-intensity", clampIntensity(accentIntensity).toFixed(3));
+  const palette = resolveAppearancePalette(clampHue(accentHue));
+  root.dataset.appearancePalette = palette.id;
+  for (const [index, color] of palette.colors.entries()) {
+    root.style?.setProperty(`--color-${index + 1}`, color);
+  }
   syncBrowserChromeTheme();
   syncDesktopTheme(theme);
   if (suppressTransitions) {
-    document.documentElement.offsetHeight;
+    document.documentElement.getBoundingClientRect();
     requestAnimationFrame(() => {
       document.documentElement.classList.remove("no-transitions");
     });

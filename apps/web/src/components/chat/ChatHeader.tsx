@@ -276,7 +276,7 @@ export const ChatHeader = memo(function ChatHeader({
                       environmentId: thread.environmentId,
                       threadId: thread.id,
                     })}
-                    className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.98] ${
+                    className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
                       selected
                         ? "bg-[var(--surface-subtle)] text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -296,7 +296,7 @@ export const ChatHeader = memo(function ChatHeader({
                     <button
                       type="button"
                       aria-label={`Close ${thread.title} tab`}
-                      className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-[background-color,opacity,transform] duration-150 ease-out hover:bg-accent group-hover/tab:opacity-100 active:scale-95"
+                      className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-[background-color,opacity,transform] duration-150 ease-out hover:bg-accent group-hover/tab:opacity-100 active:scale-[0.96]"
                       onClick={(e) => handleDismissThread(thread, e)}
                     >
                       <XIcon size={10} weight="bold" />

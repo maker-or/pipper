@@ -27,10 +27,10 @@ export function ChatRightDockPanel(props: { active: boolean; children: ReactNode
 
     if (active) {
       setMounted(true);
-      const id = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisualOpen(true));
+      const rafId = requestAnimationFrame(() => {
+        setVisualOpen(true);
       });
-      return () => cancelAnimationFrame(id);
+      return () => cancelAnimationFrame(rafId);
     }
 
     setVisualOpen(false);
