@@ -308,7 +308,7 @@ export const ChatHeader = memo(function ChatHeader({
           </div>
         </div>
       </div>
-      <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2">
+      <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2 rounded-full bg-background/60 dark:bg-zinc-900/60 backdrop-blur-md border border-border/40 px-3 shadow-md shadow-black/5 hover:border-border/60 dark:hover:border-border/30 transition-all duration-200">
         <Tooltip>
           <TooltipTrigger
             render={

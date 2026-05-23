@@ -77,17 +77,13 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
       defaultOpen
       style={{ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 bottom-0 h-[10dvh] bg-[var(--surface-canvas)]"
-      />
       <Sidebar
         side="left"
         collapsible="none"
         className={
           isOnSettings
             ? "relative z-10 h-dvh border-r border-border bg-card text-foreground"
-            : "h-[90dvh] border-r border-border bg-card text-foreground"
+            : "h-dvh border-r border-border bg-card text-foreground"
         }
         style={
           {

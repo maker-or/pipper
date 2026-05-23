@@ -1876,7 +1876,7 @@ export const ChatComposer = memo(
           data-chat-composer-footer="true"
           data-chat-composer-footer-compact={isComposerFooterCompact ? "true" : "false"}
           className={cn(
-            "fixed bottom-[var(--chat-bottom-controls-inset)] left-[calc(var(--sidebar-width)+0.75rem)] z-40 flex h-10 min-w-0 max-w-[calc(100vw-var(--sidebar-width)-8rem)] items-center gap-2 overflow-visible",
+            "fixed bottom-[var(--chat-bottom-controls-inset)] left-[calc(var(--sidebar-width)+0.75rem)] z-40 flex h-10 min-w-0 max-w-[calc(100vw-var(--sidebar-width)-8rem)] items-center gap-2 overflow-visible rounded-full bg-background/60 dark:bg-zinc-900/60 backdrop-blur-md border border-border/40 px-3 shadow-md shadow-black/5 hover:border-border/60 dark:hover:border-border/30 transition-all duration-200",
             isComposerFooterCompact ? "gap-1.5" : "gap-2",
             showMobilePendingAnswerActions && "hidden sm:flex",
           )}

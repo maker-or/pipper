@@ -125,7 +125,7 @@ function ChatThreadRouteView() {
   const shouldRenderDiffContent = diffOpen || hasOpenedDiff;
 
   return (
-    <div className="flex h-[90dvh] min-h-0 min-w-0 flex-1 gap-2 overflow-hidden bg-[var(--surface-canvas)]">
+    <div className="flex h-dvh min-h-0 min-w-0 flex-1 gap-2 overflow-hidden bg-[var(--surface-canvas)]">
       <SidebarInset className="h-full min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
         <ChatView
           environmentId={threadRef.environmentId}

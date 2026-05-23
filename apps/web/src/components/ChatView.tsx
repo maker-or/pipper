@@ -3594,7 +3594,7 @@ export default function ChatView(props: ChatViewProps) {
   }
 
   const composerElement = (
-    <div className="flex w-full flex-col items-stretch pt-6 pb-3">
+    <div className="flex w-full flex-col items-stretch pt-6 pb-[calc(var(--chat-bottom-controls-inset)+3.5rem)]">
       <ComposerBannerStack className="relative z-0" items={composerBannerItems} />
       <div className="relative z-10 flex w-full min-w-0 flex-col items-start">
         <ChatComposer
