@@ -54,6 +54,7 @@ import { getRouter } from "../router";
 import { deriveLogicalProjectKeyFromSettings } from "../logicalProject";
 import { selectBootstrapCompleteForActiveEnvironment, useStore } from "../store";
 import { useTerminalStateStore } from "../terminalStateStore";
+import { terminalWorkspaceThreadRef } from "../terminalWorkspace";
 import { useUiStateStore } from "../uiStateStore";
 import { createAuthenticatedSessionHandlers } from "../../test/authHttpHandlers";
 import { BrowserWsRpcHarness, type NormalizedWsRpcRequestBody } from "../../test/wsRpcHarness";
@@ -76,6 +77,11 @@ const LOCAL_ENVIRONMENT_ID = EnvironmentId.make("environment-local");
 const REMOTE_ENVIRONMENT_ID = EnvironmentId.make("environment-remote");
 const THREAD_REF = scopeThreadRef(LOCAL_ENVIRONMENT_ID, THREAD_ID);
 const THREAD_KEY = scopedThreadKey(THREAD_REF);
+const TERMINAL_WORKSPACE_REF = terminalWorkspaceThreadRef({
+  environmentId: LOCAL_ENVIRONMENT_ID,
+  projectId: PROJECT_ID,
+});
+const TERMINAL_WORKSPACE_KEY = scopedThreadKey(TERMINAL_WORKSPACE_REF);
 const UUID_ROUTE_RE = /^\/draft\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const PROJECT_DRAFT_KEY = `${LOCAL_ENVIRONMENT_ID}:${PROJECT_ID}`;
 const PROJECT_LOGICAL_KEY = deriveLogicalProjectKeyFromSettings(
@@ -1902,7 +1908,8 @@ describe("ChatView timeline estimator parity (full app)", () => {
 
     useTerminalStateStore.setState({
       terminalStateByThreadKey: {
-        [THREAD_KEY]: {
+        [TERMINAL_WORKSPACE_KEY]: {
+          terminalTabsVisible: true,
           terminalOpen: true,
           terminalHeight: 280,
           terminalIds: ["default"],
@@ -1914,7 +1921,7 @@ describe("ChatView timeline estimator parity (full app)", () => {
         },
       },
       terminalLaunchContextByThreadKey: {
-        [THREAD_KEY]: {
+        [TERMINAL_WORKSPACE_KEY]: {
           cwd: "/repo/project",
           worktreePath: null,
         },

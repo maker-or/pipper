@@ -73,6 +73,7 @@ describe("terminalStateStore actions", () => {
       THREAD_REF,
     );
     expect(terminalState).toEqual({
+      terminalTabsVisible: false,
       terminalOpen: false,
       terminalHeight: 280,
       terminalIds: ["default"],
@@ -93,6 +94,7 @@ describe("terminalStateStore actions", () => {
       useTerminalStateStore.getState().terminalStateByThreadKey,
       THREAD_REF,
     );
+    expect(terminalState.terminalTabsVisible).toBe(true);
     expect(terminalState.terminalOpen).toBe(true);
     expect(terminalState.terminalIds).toEqual(["default", "terminal-2"]);
     expect(terminalState.activeTerminalId).toBe("terminal-2");
@@ -151,6 +153,7 @@ describe("terminalStateStore actions", () => {
       useTerminalStateStore.getState().terminalStateByThreadKey,
       THREAD_REF,
     );
+    expect(terminalState.terminalTabsVisible).toBe(true);
     expect(terminalState.terminalOpen).toBe(true);
     expect(terminalState.terminalIds).toEqual(["default", "setup-setup"]);
     expect(terminalState.activeTerminalId).toBe("setup-setup");
@@ -219,9 +222,11 @@ describe("terminalStateStore actions", () => {
     expect(migrated).toEqual({
       terminalStateByThreadKey: {
         [scopedThreadKey(THREAD_REF)]: {
+          terminalTabsVisible: true,
           terminalOpen: true,
           terminalHeight: 320,
           terminalIds: ["default"],
+          terminalLabelsById: { default: "Terminal" },
           runningTerminalIds: [],
           activeTerminalId: "default",
           terminalGroups: [{ id: "group-default", terminalIds: ["default"] }],
@@ -334,6 +339,7 @@ describe("terminalStateStore actions", () => {
       "setup-bootstrap",
     );
 
+    expect(terminalState.terminalTabsVisible).toBe(true);
     expect(terminalState.terminalOpen).toBe(true);
     expect(terminalState.activeTerminalId).toBe("setup-bootstrap");
     expect(terminalState.terminalIds).toEqual(["default", "setup-bootstrap"]);
@@ -392,6 +398,29 @@ describe("terminalStateStore actions", () => {
 
     expect(terminalState.runningTerminalIds).toEqual([]);
     expect(entries.map((entry) => entry.event.type)).toEqual(["activity", "exited"]);
+  });
+
+  it("does not prune standalone terminal workspace state as an orphaned thread", () => {
+    const store = useTerminalStateStore.getState();
+    const workspaceRef = scopeThreadRef(
+      "environment-a" as never,
+      ThreadId.make("terminal-workspace:environment-a:project-1"),
+    );
+    store.setTerminalOpen(workspaceRef, true);
+    store.recordTerminalEvent(workspaceRef, makeTerminalEvent("output"));
+
+    store.removeOrphanedTerminalStates(new Set([scopedThreadKey(THREAD_REF)]));
+
+    expect(
+      useTerminalStateStore.getState().terminalStateByThreadKey[scopedThreadKey(workspaceRef)],
+    ).toBeDefined();
+    expect(
+      selectTerminalEventEntries(
+        useTerminalStateStore.getState().terminalEventEntriesByKey,
+        workspaceRef,
+        "default",
+      ),
+    ).toHaveLength(1);
   });
 
   it("clears buffered terminal events when a thread terminal state is removed", () => {

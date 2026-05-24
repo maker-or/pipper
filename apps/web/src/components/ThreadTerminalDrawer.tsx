@@ -434,14 +434,62 @@ export function TerminalViewport({
       }
     };
 
-    const sendTerminalInput = async (data: string, fallbackError: string) => {
-      const activeTerminal = terminalRef.current;
-      if (!activeTerminal) return;
-      try {
-        await api.terminal.write({ threadId, terminalId, data });
-      } catch (error) {
-        writeSystemMessage(activeTerminal, error instanceof Error ? error.message : fallbackError);
+    let inputFlushTimer: number | null = null;
+    let inputFlushInFlight = false;
+    let pendingInput = "";
+
+    const flushBufferedInput = () => {
+      if (inputFlushTimer !== null) {
+        window.clearTimeout(inputFlushTimer);
+        inputFlushTimer = null;
       }
+      if (inputFlushInFlight || pendingInput.length === 0) {
+        return;
+      }
+
+      const data = pendingInput;
+      pendingInput = "";
+      inputFlushInFlight = true;
+      void api.terminal
+        .write({ threadId, terminalId, data })
+        .catch((error) => {
+          const activeTerminal = terminalRef.current;
+          if (!activeTerminal) return;
+          writeSystemMessage(
+            activeTerminal,
+            error instanceof Error ? error.message : "Terminal write failed",
+          );
+        })
+        .finally(() => {
+          inputFlushInFlight = false;
+          if (pendingInput.length > 0) {
+            flushBufferedInput();
+          }
+        });
+    };
+
+    const queueTerminalInput = (data: string, immediate: boolean) => {
+      pendingInput += data;
+      if (immediate) {
+        flushBufferedInput();
+        return;
+      }
+      if (inputFlushTimer !== null) {
+        return;
+      }
+      inputFlushTimer = window.setTimeout(flushBufferedInput, 8);
+    };
+
+    const shouldFlushTerminalInputImmediately = (data: string) => {
+      for (let index = 0; index < data.length; index += 1) {
+        const code = data.charCodeAt(index);
+        if (code < 32 || code === 127) return true;
+      }
+      return false;
+    };
+
+    const sendTerminalInput = (data: string, _fallbackError: string) => {
+      queueTerminalInput(data, true);
     };
 
     terminal.attachCustomKeyEventHandler((event) => {
@@ -543,14 +591,7 @@ export function TerminalViewport({
     });
 
     const inputDisposable = terminal.onData((data) => {
-      void api.terminal
-        .write({ threadId, terminalId, data })
-        .catch((err) =>
-          writeSystemMessage(
-            terminal,
-            err instanceof Error ? err.message : "Terminal write failed",
-          ),
-        );
+      queueTerminalInput(data, shouldFlushTerminalInputImmediately(data));
     });
 
     const selectionDisposable = terminal.onSelectionChange(() => {
@@ -765,6 +806,15 @@ export function TerminalViewport({
       lastAppliedTerminalEventIdRef.current = 0;
       unsubscribeTerminalEvents();
       window.clearTimeout(fitTimer);
+      if (inputFlushTimer !== null) {
+        window.clearTimeout(inputFlushTimer);
+      }
+      if (pendingInput.length > 0) {
+        void api.terminal
+          .write({ threadId, terminalId, data: pendingInput })
+          .catch(() => undefined);
+        pendingInput = "";
+      }
       inputDisposable.dispose();
       selectionDisposable.dispose();
       terminalLinksDisposable.dispose();
@@ -785,15 +835,28 @@ export function TerminalViewport({
 
   useEffect(() => {
     if (!autoFocus) return;
-    const terminal = terminalRef.current;
-    if (!terminal) return;
-    const frame = window.requestAnimationFrame(() => {
-      terminal.focus();
+    let disposed = false;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        if (disposed) return;
+        const terminal = terminalRef.current;
+        const fitAddon = fitAddonRef.current;
+        if (!terminal) return;
+        fitAddon?.fit();
+        terminal.focus();
+      });
     });
     return () => {
-      window.cancelAnimationFrame(frame);
+      disposed = true;
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
     };
   }, [autoFocus, focusRequestId]);
+
+  const focusTerminal = useCallback(() => {
+    terminalRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     const api = readEnvironmentApi(environmentId);
@@ -864,7 +927,9 @@ export function TerminalViewport({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-[4px] bg-[var(--surface-subtle)]"
+      className="relative h-full w-full cursor-text overflow-hidden rounded-[4px] bg-[var(--surface-subtle)]"
+      onPointerDownCapture={focusTerminal}
+      onFocusCapture={focusTerminal}
     />
   );
 }
@@ -1191,9 +1256,7 @@ export default function ThreadTerminalDrawer({
   return (
     <aside
       className={`thread-terminal-drawer relative flex min-h-0 min-w-0 w-full flex-col overflow-hidden bg-[var(--surface-subtle)] ${
-        layout === "panel"
-          ? "min-h-0 flex-1 self-stretch border-l border-border/80"
-          : "border-t border-border/80"
+        layout === "panel" ? "min-h-0 flex-1 self-stretch" : "border-t border-border/80"
       }`}
       style={layout === "drawer" ? { height: `${drawerHeight}px` } : undefined}
     >

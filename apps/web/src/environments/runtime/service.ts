@@ -62,6 +62,7 @@ import {
   selectThreadsAcrossEnvironments,
 } from "~/store";
 import { useTerminalStateStore } from "~/terminalStateStore";
+import { isTerminalWorkspaceThreadId } from "~/terminalWorkspace";
 import { useUiStateStore } from "~/uiStateStore";
 import type { WsProtocolCloseContext } from "../../rpc/protocol";
 import { getServerConfig } from "../../rpc/serverState";
@@ -1109,6 +1110,7 @@ function createEnvironmentConnectionHandlers() {
       const hasDraftThread =
         useComposerDraftStore.getState().getDraftThreadByRef(threadRef) !== null;
       if (
+        !isTerminalWorkspaceThreadId(event.threadId) &&
         !shouldApplyTerminalEvent({
           serverThreadArchivedAt: serverThread?.archivedAt,
           hasDraftThread,

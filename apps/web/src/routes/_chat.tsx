@@ -1,5 +1,6 @@
+import { scopeProjectRef } from "@t3tools/client-runtime";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useCommandPaletteStore } from "../commandPaletteStore";
 import { useHandleNewThread } from "../hooks/useHandleNewThread";
@@ -10,6 +11,7 @@ import {
 import { isTerminalFocused } from "../lib/terminalFocus";
 import { resolveShortcutCommand } from "../keybindings";
 import { selectThreadTerminalState, useTerminalStateStore } from "../terminalStateStore";
+import { terminalWorkspaceThreadRef } from "../terminalWorkspace";
 import { useThreadSelectionStore } from "../threadSelectionStore";
 import { resolveSidebarNewThreadEnvMode } from "~/components/Sidebar.logic";
 import { useSettings } from "~/hooks/useSettings";
@@ -18,12 +20,31 @@ import { useServerKeybindings } from "~/rpc/serverState";
 function ChatRouteGlobalShortcuts() {
   const clearSelection = useThreadSelectionStore((state) => state.clearSelection);
   const selectedThreadKeysSize = useThreadSelectionStore((state) => state.selectedThreadKeys.size);
-  const { activeDraftThread, activeThread, defaultProjectRef, handleNewThread, routeThreadRef } =
+  const { activeDraftThread, activeThread, defaultProjectRef, handleNewThread } =
     useHandleNewThread();
   const keybindings = useServerKeybindings();
+  const activeProjectRef = useMemo(
+    () =>
+      activeThread
+        ? scopeProjectRef(activeThread.environmentId, activeThread.projectId)
+        : activeDraftThread
+          ? scopeProjectRef(activeDraftThread.environmentId, activeDraftThread.projectId)
+          : null,
+    [activeDraftThread, activeThread],
+  );
+  const terminalWorkspaceRef = useMemo(
+    () =>
+      activeProjectRef
+        ? terminalWorkspaceThreadRef({
+            environmentId: activeProjectRef.environmentId,
+            projectId: activeProjectRef.projectId,
+          })
+        : null,
+    [activeProjectRef],
+  );
   const terminalOpen = useTerminalStateStore((state) =>
-    routeThreadRef
-      ? selectThreadTerminalState(state.terminalStateByThreadKey, routeThreadRef).terminalOpen
+    terminalWorkspaceRef
+      ? selectThreadTerminalState(state.terminalStateByThreadKey, terminalWorkspaceRef).terminalOpen
       : false,
   );
   const appSettings = useSettings();

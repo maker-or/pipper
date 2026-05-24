@@ -27,6 +27,7 @@ interface ChatHeaderProps {
   activeProjectId: ProjectId | undefined;
   isGitRepo: boolean;
   terminalAvailable: boolean;
+  terminalTabsVisible: boolean;
   terminalOpen: boolean;
   terminalIds: string[];
   terminalLabelsById: Record<string, string>;
@@ -35,6 +36,9 @@ interface ChatHeaderProps {
   diffToggleShortcutLabel: string | null;
   diffOpen: boolean;
   onToggleTerminal: () => void;
+  onOpenTerminal: () => void;
+  onCreateTerminal: () => void;
+  onSelectThreadTab: () => void;
   onSelectTerminalTab: (terminalId: string) => void;
   onRenameTerminalTab: (terminalId: string, label: string) => void;
   onCloseTerminalTab: (terminalId: string) => void;
@@ -59,6 +63,7 @@ export const ChatHeader = memo(function ChatHeader({
   activeProjectId,
   isGitRepo,
   terminalAvailable,
+  terminalTabsVisible,
   terminalOpen,
   terminalIds,
   terminalLabelsById,
@@ -67,6 +72,9 @@ export const ChatHeader = memo(function ChatHeader({
   diffToggleShortcutLabel,
   diffOpen,
   onToggleTerminal,
+  onOpenTerminal,
+  onCreateTerminal,
+  onSelectThreadTab,
   onSelectTerminalTab,
   onRenameTerminalTab,
   onCloseTerminalTab,
@@ -134,10 +142,14 @@ export const ChatHeader = memo(function ChatHeader({
     }
   }, [activeProjectRef, handleNewThread]);
 
-  const handleToggleTerminal = useCallback(() => {
+  const handleCreateTerminal = useCallback(() => {
     setCreateMenuOpen(false);
-    onToggleTerminal();
-  }, [onToggleTerminal]);
+    if (terminalTabsVisible) {
+      onCreateTerminal();
+      return;
+    }
+    onOpenTerminal();
+  }, [onCreateTerminal, onOpenTerminal, terminalTabsVisible]);
 
   const handleSelectTerminalTab = useCallback(
     (terminalId: string) => {
@@ -299,7 +311,7 @@ export const ChatHeader = memo(function ChatHeader({
               type="button"
               className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
               disabled={!terminalAvailable}
-              onClick={handleToggleTerminal}
+              onClick={handleCreateTerminal}
             >
               <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
                 <TerminalIcon size={12} weight="regular" />
@@ -307,7 +319,7 @@ export const ChatHeader = memo(function ChatHeader({
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">Terminal</span>
                 <span className="block text-xs text-muted-foreground">
-                  {terminalOpen ? "Hide the terminal tab." : "Open the terminal tab."}
+                  {terminalTabsVisible ? "Open another terminal tab." : "Open a terminal tab."}
                 </span>
               </span>
             </button>
@@ -329,7 +341,9 @@ export const ChatHeader = memo(function ChatHeader({
             ) : null}
             {visibleThreadsInDisplayOrder.map((thread, threadIndex) => {
               const selected =
-                thread.environmentId === activeThreadEnvironmentId && thread.id === activeThreadId;
+                !terminalOpen &&
+                thread.environmentId === activeThreadEnvironmentId &&
+                thread.id === activeThreadId;
               const runningTab = isThreadTabRunning(thread);
               const unseenCompletion =
                 !selected &&
@@ -371,6 +385,7 @@ export const ChatHeader = memo(function ChatHeader({
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                     title={thread.title}
+                    onClick={onSelectThreadTab}
                   >
                     {unseenCompletion ? (
                       <span
@@ -394,13 +409,13 @@ export const ChatHeader = memo(function ChatHeader({
                 </div>
               );
             })}
-            {terminalOpen
+            {terminalTabsVisible
               ? terminalIds.map((terminalId, terminalIndex) => {
-                  const selected = terminalId === activeTerminalId;
+                  const selected = terminalOpen && terminalId === activeTerminalId;
                   const label =
                     terminalLabelsById[terminalId]?.trim() || `Terminal ${terminalIndex + 1}`;
                   const railKey = `terminal:${terminalId}`;
-                  const canDismiss = terminalIds.length > 1;
+                  const canDismiss = true;
                   return (
                     <div
                       key={railKey}
