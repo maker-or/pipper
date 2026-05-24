@@ -641,6 +641,7 @@ const PersistentThreadTerminalDrawer = memo(function PersistentThreadTerminalDra
         visible={visible}
         height={terminalState.terminalHeight}
         terminalIds={terminalState.terminalIds}
+        terminalLabelsById={terminalState.terminalLabelsById}
         activeTerminalId={terminalState.activeTerminalId}
         terminalGroups={terminalState.terminalGroups}
         activeTerminalGroupId={terminalState.activeTerminalGroupId}
@@ -805,6 +806,7 @@ export default function ChatView(props: ChatViewProps) {
   const storeSetTerminalOpen = useTerminalStateStore((s) => s.setTerminalOpen);
   const storeSplitTerminal = useTerminalStateStore((s) => s.splitTerminal);
   const storeNewTerminal = useTerminalStateStore((s) => s.newTerminal);
+  const storeRenameTerminal = useTerminalStateStore((s) => s.renameTerminal);
   const storeSetActiveTerminal = useTerminalStateStore((s) => s.setActiveTerminal);
   const storeCloseTerminal = useTerminalStateStore((s) => s.closeTerminal);
   const serverThreadKeys = useStore(
@@ -1947,6 +1949,27 @@ export default function ChatView(props: ChatViewProps) {
       storeCloseTerminal,
       terminalState.terminalIds.length,
     ],
+  );
+  const selectTerminalTab = useCallback(
+    (terminalId: string) => {
+      if (!activeThreadRef) return;
+      setTerminalOpen(true);
+      storeSetActiveTerminal(activeThreadRef, terminalId);
+    },
+    [activeThreadRef, setTerminalOpen, storeSetActiveTerminal],
+  );
+  const renameTerminalTab = useCallback(
+    (terminalId: string, label: string) => {
+      if (!activeThreadRef) return;
+      storeRenameTerminal(activeThreadRef, terminalId, label);
+    },
+    [activeThreadRef, storeRenameTerminal],
+  );
+  const closeTerminalTab = useCallback(
+    (terminalId: string) => {
+      closeTerminal(terminalId);
+    },
+    [closeTerminal],
   );
   const runProjectScript = useCallback(
     async (
@@ -3593,6 +3616,13 @@ export default function ChatView(props: ChatViewProps) {
     return <NoActiveThreadState />;
   }
 
+  const showTerminalWorkspace =
+    !diffOpen &&
+    mountedTerminalThreadRefs.some(
+      ({ key: mountedThreadKey }) =>
+        mountedThreadKey === activeThreadKey && terminalState.terminalOpen,
+    );
+
   const composerElement = (
     <div className="flex w-full flex-col items-stretch pt-6 pb-[calc(var(--chat-bottom-controls-inset)+3.5rem)]">
       <ComposerBannerStack className="relative z-0" items={composerBannerItems} />
@@ -3732,10 +3762,16 @@ export default function ChatView(props: ChatViewProps) {
           isGitRepo={isGitRepo}
           terminalAvailable={activeProject !== undefined}
           terminalOpen={terminalState.terminalOpen}
+          terminalIds={terminalState.terminalIds}
+          terminalLabelsById={terminalState.terminalLabelsById}
+          activeTerminalId={terminalState.activeTerminalId}
           terminalToggleShortcutLabel={terminalToggleShortcutLabel}
           diffToggleShortcutLabel={diffPanelShortcutLabel}
           diffOpen={diffOpen}
           onToggleTerminal={toggleTerminalVisibility}
+          onSelectTerminalTab={selectTerminalTab}
+          onRenameTerminalTab={renameTerminalTab}
+          onCloseTerminalTab={closeTerminalTab}
           onToggleDiff={onToggleDiff}
         />
       </div>
@@ -3748,69 +3784,91 @@ export default function ChatView(props: ChatViewProps) {
       />
       {/* Main content area with optional plan sidebar */}
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-0 bg-[var(--surface-canvas)] px-2">
-        {/* Chat column */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--surface-subtle)]">
-          {/* Messages Wrapper */}
-          <div className="relative flex min-h-0 flex-1 flex-col">
-            {/* Messages — LegendList handles virtualization and scrolling internally */}
-            <MessagesTimeline
-              isWorking={isWorking}
-              activeTurnInProgress={isWorking || !latestTurnSettled}
-              activeTurnId={activeLatestTurn?.turnId ?? null}
-              activeTurnStartedAt={activeWorkStartedAt}
-              listRef={legendListRef}
-              timelineEntries={timelineEntries}
-              completionDividerBeforeEntryId={completionDividerBeforeEntryId}
-              completionSummary={completionSummary}
-              turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
-              activeThreadEnvironmentId={activeThread.environmentId}
-              routeThreadKey={routeThreadKey}
-              onOpenTurnDiff={onOpenTurnDiff}
-              revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
-              onRevertUserMessage={onRevertUserMessage}
-              isRevertingCheckpoint={isRevertingCheckpoint}
-              onImageExpand={onExpandTimelineImage}
-              markdownCwd={gitCwd ?? undefined}
-              resolvedTheme={resolvedTheme}
-              timestampFormat={timestampFormat}
-              workspaceRoot={activeWorkspaceRoot}
-              skills={activeProviderSkills}
-              onIsAtEndChange={onIsAtEndChange}
-              composer={composerElement}
-            />
+          {showTerminalWorkspace ? (
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              {mountedTerminalThreadRefs.map(
+                ({ key: mountedThreadKey, threadRef: mountedThreadRef }) =>
+                  mountedThreadKey === activeThreadKey && terminalState.terminalOpen ? (
+                    <PersistentThreadTerminalDrawer
+                      key={mountedThreadKey}
+                      threadRef={mountedThreadRef}
+                      threadId={mountedThreadRef.threadId}
+                      visible
+                      launchContext={activeTerminalLaunchContext ?? null}
+                      focusRequestId={terminalFocusRequestId}
+                      splitShortcutLabel={splitTerminalShortcutLabel ?? undefined}
+                      newShortcutLabel={newTerminalShortcutLabel ?? undefined}
+                      closeShortcutLabel={closeTerminalShortcutLabel ?? undefined}
+                      keybindings={keybindings}
+                      onAddTerminalContext={addTerminalContextToDraft}
+                      layout="panel"
+                    />
+                  ) : null,
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="relative flex min-h-0 flex-1 flex-col">
+                <MessagesTimeline
+                  isWorking={isWorking}
+                  activeTurnInProgress={isWorking || !latestTurnSettled}
+                  activeTurnId={activeLatestTurn?.turnId ?? null}
+                  activeTurnStartedAt={activeWorkStartedAt}
+                  listRef={legendListRef}
+                  timelineEntries={timelineEntries}
+                  completionDividerBeforeEntryId={completionDividerBeforeEntryId}
+                  completionSummary={completionSummary}
+                  turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
+                  activeThreadEnvironmentId={activeThread.environmentId}
+                  routeThreadKey={routeThreadKey}
+                  onOpenTurnDiff={onOpenTurnDiff}
+                  revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
+                  onRevertUserMessage={onRevertUserMessage}
+                  isRevertingCheckpoint={isRevertingCheckpoint}
+                  onImageExpand={onExpandTimelineImage}
+                  markdownCwd={gitCwd ?? undefined}
+                  resolvedTheme={resolvedTheme}
+                  timestampFormat={timestampFormat}
+                  workspaceRoot={activeWorkspaceRoot}
+                  skills={activeProviderSkills}
+                  onIsAtEndChange={onIsAtEndChange}
+                  composer={composerElement}
+                />
 
-            {/* scroll to bottom pill — shown when user has scrolled away from the bottom */}
-            {showScrollToBottom && (
-              <div className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5">
-                <button
-                  type="button"
-                  onClick={() => scrollToEnd(true)}
-                  className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card p-1 text-muted-foreground text-xs shadow-sm transition-[color,border-color,transform] duration-150 ease-out hover:border-border hover:text-foreground hover:cursor-pointer active:scale-[0.96]"
-                >
-                  <ChevronDownIcon className="size-3.5" />
-                </button>
+                {/* scroll to bottom pill — shown when user has scrolled away from the bottom */}
+                {showScrollToBottom && (
+                  <div className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => scrollToEnd(true)}
+                      className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card p-1 text-muted-foreground text-xs shadow-sm transition-[color,border-color,transform] duration-150 ease-out hover:border-border hover:text-foreground hover:cursor-pointer active:scale-[0.96]"
+                    >
+                      <ChevronDownIcon className="size-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {pullRequestDialogState ? (
-            <PullRequestThreadDialog
-              key={pullRequestDialogState.key}
-              open
-              environmentId={activeThread.environmentId}
-              threadId={activeThread.id}
-              cwd={activeProject?.cwd ?? null}
-              initialReference={pullRequestDialogState.initialReference}
-              onOpenChange={(open) => {
-                if (!open) {
-                  closePullRequestDialog();
-                }
-              }}
-              onPrepared={handlePreparedPullRequestThread}
-            />
-          ) : null}
+              {pullRequestDialogState ? (
+                <PullRequestThreadDialog
+                  key={pullRequestDialogState.key}
+                  open
+                  environmentId={activeThread.environmentId}
+                  threadId={activeThread.id}
+                  cwd={activeProject?.cwd ?? null}
+                  initialReference={pullRequestDialogState.initialReference}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      closePullRequestDialog();
+                    }
+                  }}
+                  onPrepared={handlePreparedPullRequestThread}
+                />
+              ) : null}
+            </>
+          )}
         </div>
-        {/* end chat column */}
 
         {/* Plan sidebar */}
         {planSidebarOpen && !shouldUsePlanSidebarSheet ? (
@@ -3829,34 +3887,6 @@ export default function ChatView(props: ChatViewProps) {
         ) : null}
         <ChatRightDockPanel active={showInlineDiffPanel}>
           <ChatInlineDiffPanel mode="inline" />
-        </ChatRightDockPanel>
-        <ChatRightDockPanel
-          active={
-            !diffOpen &&
-            mountedTerminalThreadRefs.some(
-              ({ key: mountedThreadKey }) =>
-                mountedThreadKey === activeThreadKey && terminalState.terminalOpen,
-            )
-          }
-        >
-          {mountedTerminalThreadRefs.map(({ key: mountedThreadKey, threadRef: mountedThreadRef }) =>
-            mountedThreadKey === activeThreadKey && terminalState.terminalOpen ? (
-              <PersistentThreadTerminalDrawer
-                key={mountedThreadKey}
-                threadRef={mountedThreadRef}
-                threadId={mountedThreadRef.threadId}
-                visible
-                launchContext={activeTerminalLaunchContext ?? null}
-                focusRequestId={terminalFocusRequestId}
-                splitShortcutLabel={splitTerminalShortcutLabel ?? undefined}
-                newShortcutLabel={newTerminalShortcutLabel ?? undefined}
-                closeShortcutLabel={closeTerminalShortcutLabel ?? undefined}
-                keybindings={keybindings}
-                onAddTerminalContext={addTerminalContextToDraft}
-                layout="panel"
-              />
-            ) : null,
-          )}
         </ChatRightDockPanel>
       </div>
       {/* end horizontal flex container */}

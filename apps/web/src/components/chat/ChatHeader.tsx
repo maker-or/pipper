@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PlusMinusIcon, TerminalIcon, XIcon } from "@phosphor-icons/react";
+import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { SidebarTrigger } from "../ui/sidebar";
 import { selectSidebarThreadsForProjectRefs, useStore } from "../../store";
@@ -27,10 +28,16 @@ interface ChatHeaderProps {
   isGitRepo: boolean;
   terminalAvailable: boolean;
   terminalOpen: boolean;
+  terminalIds: string[];
+  terminalLabelsById: Record<string, string>;
+  activeTerminalId: string;
   terminalToggleShortcutLabel: string | null;
   diffToggleShortcutLabel: string | null;
   diffOpen: boolean;
   onToggleTerminal: () => void;
+  onSelectTerminalTab: (terminalId: string) => void;
+  onRenameTerminalTab: (terminalId: string, label: string) => void;
+  onCloseTerminalTab: (terminalId: string) => void;
   onToggleDiff: () => void;
 }
 
@@ -53,10 +60,16 @@ export const ChatHeader = memo(function ChatHeader({
   isGitRepo,
   terminalAvailable,
   terminalOpen,
+  terminalIds,
+  terminalLabelsById,
+  activeTerminalId,
   terminalToggleShortcutLabel,
   diffToggleShortcutLabel,
   diffOpen,
   onToggleTerminal,
+  onSelectTerminalTab,
+  onRenameTerminalTab,
+  onCloseTerminalTab,
   onToggleDiff,
 }: ChatHeaderProps) {
   const { handleNewThread } = useNewThreadHandler();
@@ -78,13 +91,13 @@ export const ChatHeader = memo(function ChatHeader({
   const navigate = useNavigate();
   const tabRailRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef(new Map<string, HTMLDivElement | null>());
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [activeTabIndicator, setActiveTabIndicator] = useState<{
     opacity: number;
     translateX: number;
     width: number;
   } | null>(null);
 
-  // Filter out dismissed threads but always keep the active thread visible.
   const visibleThreads = useMemo(() => {
     return projectThreads.filter((thread) => {
       const key = scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id));
@@ -99,8 +112,10 @@ export const ChatHeader = memo(function ChatHeader({
     () => scopedThreadKey(scopeThreadRef(activeThreadEnvironmentId, activeThreadId)),
     [activeThreadEnvironmentId, activeThreadId],
   );
+  const activeRailTabKey = terminalOpen
+    ? `terminal:${activeTerminalId}`
+    : `thread:${activeThreadKey}`;
 
-  // Recompute visited-at values for the filtered visible threads.
   const visibleThreadLastVisitedAts = useUiStateStore(
     useShallow((state) =>
       visibleThreadsInDisplayOrder.map(
@@ -112,6 +127,44 @@ export const ChatHeader = memo(function ChatHeader({
     ),
   );
 
+  const handleCreateAgentThread = useCallback(() => {
+    setCreateMenuOpen(false);
+    if (activeProjectRef) {
+      void handleNewThread(activeProjectRef);
+    }
+  }, [activeProjectRef, handleNewThread]);
+
+  const handleToggleTerminal = useCallback(() => {
+    setCreateMenuOpen(false);
+    onToggleTerminal();
+  }, [onToggleTerminal]);
+
+  const handleSelectTerminalTab = useCallback(
+    (terminalId: string) => {
+      onSelectTerminalTab(terminalId);
+    },
+    [onSelectTerminalTab],
+  );
+
+  const handleRenameTerminalTab = useCallback(
+    (terminalId: string) => {
+      const currentLabel = terminalLabelsById[terminalId]?.trim() || "Terminal";
+      const nextLabel = window.prompt("Rename terminal", currentLabel);
+      if (nextLabel === null) return;
+      onRenameTerminalTab(terminalId, nextLabel);
+    },
+    [onRenameTerminalTab, terminalLabelsById],
+  );
+
+  const handleCloseTerminalTab = useCallback(
+    (terminalId: string, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onCloseTerminalTab(terminalId);
+    },
+    [onCloseTerminalTab],
+  );
+
   const handleDismissThread = useCallback(
     (thread: SidebarThreadSummary, e: React.MouseEvent) => {
       e.preventDefault();
@@ -121,7 +174,6 @@ export const ChatHeader = memo(function ChatHeader({
         thread.environmentId === activeThreadEnvironmentId && thread.id === activeThreadId;
 
       if (isActive && visibleThreadsInDisplayOrder.length > 1) {
-        // Navigate to the nearest sibling before dismissing.
         const currentIndex = visibleThreadsInDisplayOrder.findIndex(
           (t) => t.environmentId === thread.environmentId && t.id === thread.id,
         );
@@ -152,7 +204,7 @@ export const ChatHeader = memo(function ChatHeader({
 
   useLayoutEffect(() => {
     const rail = tabRailRef.current;
-    const activeTab = tabRefs.current.get(activeThreadKey);
+    const activeTab = tabRefs.current.get(activeRailTabKey);
 
     if (!rail || !activeTab) {
       setActiveTabIndicator((current) =>
@@ -200,30 +252,67 @@ export const ChatHeader = memo(function ChatHeader({
     return () => {
       observer.disconnect();
     };
-  }, [activeThreadKey, visibleThreadsInDisplayOrder]);
+  }, [activeRailTabKey, terminalOpen, visibleThreadsInDisplayOrder]);
 
   return (
     <div className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-center gap-2">
       <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-hidden">
-        <Tooltip>
-          <TooltipTrigger
+        <Popover open={createMenuOpen} onOpenChange={setCreateMenuOpen}>
+          <PopoverTrigger
             render={
               <button
                 type="button"
-                aria-label="New thread"
-                className="inline-flex h-full w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground"
-                onClick={() => {
-                  if (activeProjectRef) {
-                    void handleNewThread(activeProjectRef);
-                  }
-                }}
+                aria-label="Create agent or open terminal tab"
+                className="inline-flex h-full w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                disabled={!activeProjectRef && !terminalAvailable}
               />
             }
           >
             +
-          </TooltipTrigger>
-          <TooltipPopup side="bottom">New thread</TooltipPopup>
-        </Tooltip>
+          </PopoverTrigger>
+          <PopoverPopup
+            side="bottom"
+            align="start"
+            sideOffset={6}
+            className="w-56 overflow-hidden p-1"
+          >
+            <div className="px-2 py-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              Create
+            </div>
+            <button
+              type="button"
+              className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+              disabled={!activeProjectRef}
+              onClick={handleCreateAgentThread}
+            >
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
+                +
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">Agent</span>
+                <span className="block text-xs text-muted-foreground">
+                  Start a new agent thread.
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+              disabled={!terminalAvailable}
+              onClick={handleToggleTerminal}
+            >
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
+                <TerminalIcon size={12} weight="regular" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">Terminal</span>
+                <span className="block text-xs text-muted-foreground">
+                  {terminalOpen ? "Hide the terminal tab." : "Open the terminal tab."}
+                </span>
+              </span>
+            </button>
+          </PopoverPopup>
+        </Popover>
         <SidebarTrigger className="size-7 shrink-0 md:hidden" />
         <div className="flex h-full min-w-0 flex-1 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div ref={tabRailRef} className="relative flex h-full min-w-max items-stretch">
@@ -254,19 +343,19 @@ export const ChatHeader = memo(function ChatHeader({
                   session: thread.session,
                   lastVisitedAt: visibleThreadLastVisitedAts[threadIndex] ?? undefined,
                 });
-              // Only show the dismiss button when there are multiple visible tabs.
               const canDismiss = visibleThreadsInDisplayOrder.length > 1;
               const threadKey = `${thread.environmentId}:${thread.id}`;
+              const railKey = `thread:${threadKey}`;
               return (
                 <div
                   key={threadKey}
                   ref={(node) => {
                     if (node === null) {
-                      tabRefs.current.delete(threadKey);
+                      tabRefs.current.delete(railKey);
                       return;
                     }
 
-                    tabRefs.current.set(threadKey, node);
+                    tabRefs.current.set(railKey, node);
                   }}
                   className="group/tab relative z-10 flex shrink-0 items-center"
                 >
@@ -305,6 +394,58 @@ export const ChatHeader = memo(function ChatHeader({
                 </div>
               );
             })}
+            {terminalOpen
+              ? terminalIds.map((terminalId, terminalIndex) => {
+                  const selected = terminalId === activeTerminalId;
+                  const label =
+                    terminalLabelsById[terminalId]?.trim() || `Terminal ${terminalIndex + 1}`;
+                  const railKey = `terminal:${terminalId}`;
+                  const canDismiss = terminalIds.length > 1;
+                  return (
+                    <div
+                      key={railKey}
+                      ref={(node) => {
+                        if (node === null) {
+                          tabRefs.current.delete(railKey);
+                          return;
+                        }
+
+                        tabRefs.current.set(railKey, node);
+                      }}
+                      className="group/tab relative z-10 flex shrink-0 items-center"
+                    >
+                      <button
+                        type="button"
+                        className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+                          selected
+                            ? "bg-[var(--surface-subtle)] text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                        title={label}
+                        onClick={() => handleSelectTerminalTab(terminalId)}
+                        onDoubleClick={() => handleRenameTerminalTab(terminalId)}
+                      >
+                        <TerminalIcon
+                          aria-hidden="true"
+                          size={14}
+                          weight={selected ? "fill" : "regular"}
+                        />
+                        <span className="truncate">{label}</span>
+                      </button>
+                      {canDismiss ? (
+                        <button
+                          type="button"
+                          aria-label={`Close ${label} tab`}
+                          className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-[background-color,opacity,transform] duration-150 ease-out hover:bg-accent group-hover/tab:opacity-100 active:scale-[0.96]"
+                          onClick={(e) => handleCloseTerminalTab(terminalId, e)}
+                        >
+                          <XIcon size={10} weight="bold" />
+                        </button>
+                      ) : null}
+                    </div>
+                  );
+                })
+              : null}
           </div>
         </div>
       </div>

@@ -82,8 +82,8 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
         collapsible="none"
         className={
           isOnSettings
-            ? "relative z-10 h-dvh border-r border-border bg-card text-foreground"
-            : "h-dvh border-r border-border bg-card text-foreground"
+            ? "relative z-10 h-dvh bg-card text-foreground"
+            : "h-dvh bg-card text-foreground"
         }
         style={
           {

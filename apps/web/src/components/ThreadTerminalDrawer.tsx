@@ -878,6 +878,7 @@ interface ThreadTerminalDrawerProps {
   visible?: boolean;
   height: number;
   terminalIds: string[];
+  terminalLabelsById: Record<string, string>;
   activeTerminalId: string;
   terminalGroups: ThreadTerminalGroup[];
   activeTerminalGroupId: string;
@@ -933,6 +934,7 @@ export default function ThreadTerminalDrawer({
   visible = true,
   height,
   terminalIds,
+  terminalLabelsById,
   activeTerminalId,
   terminalGroups,
   activeTerminalGroupId,
@@ -1048,8 +1050,8 @@ export default function ThreadTerminalDrawer({
   const visibleTerminalIds = resolvedTerminalGroups[resolvedActiveGroupIndex]?.terminalIds ?? [
     resolvedActiveTerminalId,
   ];
-  const hasTerminalSidebar = normalizedTerminalIds.length > 1;
-  const isSplitView = visibleTerminalIds.length > 1;
+  const hasTerminalSidebar = layout === "drawer" && normalizedTerminalIds.length > 1;
+  const isSplitView = layout === "drawer" && visibleTerminalIds.length > 1;
   const showGroupHeaders =
     resolvedTerminalGroups.length > 1 ||
     resolvedTerminalGroups.some((terminalGroup) => terminalGroup.terminalIds.length > 1);
@@ -1057,9 +1059,13 @@ export default function ThreadTerminalDrawer({
   const terminalLabelById = useMemo(
     () =>
       new Map(
-        normalizedTerminalIds.map((terminalId, index) => [terminalId, `Terminal ${index + 1}`]),
+        normalizedTerminalIds.map((terminalId, index) => [
+          terminalId,
+          terminalLabelsById[terminalId]?.trim() ||
+            (index === 0 ? "Terminal" : `Terminal ${index + 1}`),
+        ]),
       ),
-    [normalizedTerminalIds],
+    [normalizedTerminalIds, terminalLabelsById],
   );
   const splitTerminalActionLabel = hasReachedSplitLimit
     ? `Split Terminal (max ${MAX_TERMINALS_PER_GROUP} per group)`
@@ -1201,7 +1207,7 @@ export default function ThreadTerminalDrawer({
         />
       ) : null}
 
-      {!hasTerminalSidebar && (
+      {!hasTerminalSidebar && (layout === "drawer" || layout === "panel") && (
         <div className="pointer-events-none absolute bottom-2 right-2 z-20">
           <div className="pointer-events-auto inline-flex items-center overflow-hidden rounded-md border border-border/80 bg-[color-mix(in_oklab,var(--surface-subtle)_82%,transparent)]">
             <TerminalActionButton

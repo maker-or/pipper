@@ -76,6 +76,7 @@ describe("terminalStateStore actions", () => {
       terminalOpen: false,
       terminalHeight: 280,
       terminalIds: ["default"],
+      terminalLabelsById: { default: "Terminal" },
       runningTerminalIds: [],
       activeTerminalId: "default",
       terminalGroups: [{ id: "group-default", terminalIds: ["default"] }],
@@ -132,6 +133,10 @@ describe("terminalStateStore actions", () => {
     expect(terminalState.terminalIds).toEqual(["default", "terminal-2"]);
     expect(terminalState.activeTerminalId).toBe("terminal-2");
     expect(terminalState.activeTerminalGroupId).toBe("group-terminal-2");
+    expect(terminalState.terminalLabelsById).toEqual({
+      default: "Terminal",
+      "terminal-2": "Terminal 2",
+    });
     expect(terminalState.terminalGroups).toEqual([
       { id: "group-default", terminalIds: ["default"] },
       { id: "group-terminal-2", terminalIds: ["terminal-2"] },
@@ -149,6 +154,10 @@ describe("terminalStateStore actions", () => {
     expect(terminalState.terminalOpen).toBe(true);
     expect(terminalState.terminalIds).toEqual(["default", "setup-setup"]);
     expect(terminalState.activeTerminalId).toBe("setup-setup");
+    expect(terminalState.terminalLabelsById).toEqual({
+      default: "Terminal",
+      "setup-setup": "Terminal 2",
+    });
     expect(terminalState.terminalGroups).toEqual([
       { id: "group-default", terminalIds: ["default"] },
       { id: "group-setup-setup", terminalIds: ["setup-setup"] },
@@ -172,6 +181,12 @@ describe("terminalStateStore actions", () => {
         OTHER_THREAD_REF,
       ).terminalIds,
     ).toEqual(["default", "env-b-terminal"]);
+    expect(
+      selectThreadTerminalState(
+        useTerminalStateStore.getState().terminalStateByThreadKey,
+        OTHER_THREAD_REF,
+      ).terminalLabelsById,
+    ).toEqual({ default: "Terminal", "env-b-terminal": "Terminal 2" });
   });
 
   it("migrates v1 persisted terminal state using the stored version", () => {
@@ -263,6 +278,10 @@ describe("terminalStateStore actions", () => {
     );
     expect(terminalState.activeTerminalId).toBe("terminal-2");
     expect(terminalState.terminalIds).toEqual(["default", "terminal-2"]);
+    expect(terminalState.terminalLabelsById).toEqual({
+      default: "Terminal",
+      "terminal-2": "Terminal 2",
+    });
     expect(terminalState.terminalGroups).toEqual([
       { id: "group-default", terminalIds: ["default", "terminal-2"] },
     ]);
@@ -318,6 +337,10 @@ describe("terminalStateStore actions", () => {
     expect(terminalState.terminalOpen).toBe(true);
     expect(terminalState.activeTerminalId).toBe("setup-bootstrap");
     expect(terminalState.terminalIds).toEqual(["default", "setup-bootstrap"]);
+    expect(terminalState.terminalLabelsById).toEqual({
+      default: "Terminal",
+      "setup-bootstrap": "Terminal 2",
+    });
     expect(
       useTerminalStateStore.getState().terminalLaunchContextByThreadKey[
         scopedThreadKey(THREAD_REF)
