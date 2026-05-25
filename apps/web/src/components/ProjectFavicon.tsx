@@ -54,12 +54,12 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
   active?: boolean;
   className?: string;
 }) {
-  const { theme, accentHue, accentIntensity } = useTheme();
+  const { theme } = useTheme();
   const label =
     input.projectName?.trim() || input.cwd.split(/[\\/]/).filter(Boolean).at(-1) || "PR";
   const colors = useMemo(
     () => projectIconColorSetFromTheme(Boolean(input.active)),
-    [accentHue, accentIntensity, input.active, theme],
+    [input.active, theme],
   );
 
   const spanRef = useRef<HTMLSpanElement>(null);

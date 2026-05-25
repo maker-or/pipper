@@ -1,14 +1,7 @@
-import {
-  ArchiveIcon,
-  ArchiveX,
-  CheckIcon,
-  LoaderIcon,
-  PlusIcon,
-  RefreshCwIcon,
-} from "lucide-react";
+import { ArchiveIcon, ArchiveX, LoaderIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   defaultInstanceIdForDriver,
   type DesktopUpdateChannel,
@@ -19,15 +12,10 @@ import {
   type ScopedThreadRef,
 } from "@t3tools/contracts";
 import { scopeThreadRef } from "@t3tools/client-runtime";
-import {
-  DEFAULT_APPEARANCE_ACCENT_HUE,
-  DEFAULT_APPEARANCE_ACCENT_INTENSITY,
-  DEFAULT_UNIFIED_SETTINGS,
-} from "@t3tools/contracts/settings";
+import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
 import { createModelSelection } from "@t3tools/shared/model";
 import { Equal } from "effect";
 import { APP_VERSION } from "../../branding";
-import { APPEARANCE_PALETTES, resolveAppearancePalette } from "../../appearancePalettes";
 import {
   canCheckForUpdate,
   getDesktopUpdateButtonTooltip,
@@ -367,8 +355,7 @@ function AboutVersionSection() {
 }
 
 export function useSettingsRestore(onRestored?: () => void) {
-  const { theme, setTheme, accentHue, setAccentHue, accentIntensity, setAccentIntensity } =
-    useTheme();
+  const { theme, setTheme } = useTheme();
   const settings = useSettings();
   const { updateSettings } = useUpdateSettings();
 
@@ -380,8 +367,6 @@ export function useSettingsRestore(onRestored?: () => void) {
   const changedSettingLabels = useMemo(
     () => [
       ...(theme !== "system" ? ["Appearance mode"] : []),
-      ...(accentHue !== DEFAULT_APPEARANCE_ACCENT_HUE ? ["Appearance hue"] : []),
-      ...(accentIntensity !== DEFAULT_APPEARANCE_ACCENT_INTENSITY ? ["Appearance intensity"] : []),
       ...(settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat
         ? ["Time format"]
         : []),
@@ -423,8 +408,6 @@ export function useSettingsRestore(onRestored?: () => void) {
       settings.enableAssistantStreaming,
       settings.timestampFormat,
       theme,
-      accentHue,
-      accentIntensity,
     ],
   );
 
@@ -439,8 +422,6 @@ export function useSettingsRestore(onRestored?: () => void) {
     if (!confirmed) return;
 
     setTheme("system");
-    setAccentHue(DEFAULT_APPEARANCE_ACCENT_HUE);
-    setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY);
     updateSettings({
       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
       diffWordWrap: DEFAULT_UNIFIED_SETTINGS.diffWordWrap,
@@ -454,14 +435,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       textGenerationModelSelection: DEFAULT_UNIFIED_SETTINGS.textGenerationModelSelection,
     });
     onRestored?.();
-  }, [
-    changedSettingLabels,
-    onRestored,
-    setAccentHue,
-    setAccentIntensity,
-    setTheme,
-    updateSettings,
-  ]);
+  }, [changedSettingLabels, onRestored, setTheme, updateSettings]);
 
   return {
     changedSettingLabels,
@@ -873,8 +847,7 @@ export function GeneralSettingsPanel() {
 }
 
 export function AppearanceSettingsPanel() {
-  const { theme, setTheme, accentHue, setAccentHue, setAccentIntensity } = useTheme();
-  const selectedPalette = resolveAppearancePalette(accentHue);
+  const { theme, setTheme } = useTheme();
 
   return (
     <SettingsPageContainer>
@@ -911,60 +884,6 @@ export function AppearanceSettingsPanel() {
             </Select>
           }
         />
-
-        <SettingsRow
-          title="Accent palette"
-          description="Use a tuned OKLCH ramp with distinct dark, active, focus, and quiet surface roles."
-          status={selectedPalette.label}
-          resetAction={
-            accentHue !== DEFAULT_APPEARANCE_ACCENT_HUE ? (
-              <SettingResetButton
-                label="accent palette"
-                onClick={() => {
-                  setAccentHue(DEFAULT_APPEARANCE_ACCENT_HUE);
-                  setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY);
-                }}
-              />
-            ) : null
-          }
-        >
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            {APPEARANCE_PALETTES.map((palette) => {
-              const isSelected = palette.id === selectedPalette.id;
-              return (
-                <button
-                  key={palette.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    setAccentHue(palette.hue);
-                    setAccentIntensity(DEFAULT_APPEARANCE_ACCENT_INTENSITY);
-                  }}
-                  className="group relative min-h-28 rounded-xl border border-input bg-popover p-3 text-left shadow-xs/5 outline-none transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-ring/48 hover:bg-accent/44 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background active:translate-y-0 data-[selected=true]:border-ring/64 data-[selected=true]:bg-accent/64"
-                  data-selected={isSelected}
-                >
-                  <div className="mb-3 grid h-9 grid-cols-6 overflow-hidden rounded-lg border border-border/72">
-                    {palette.colors.slice(1, 7).map((color) => (
-                      <span
-                        key={`${palette.id}-${color}`}
-                        style={{ backgroundColor: color } as CSSProperties}
-                      />
-                    ))}
-                  </div>
-                  <span className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
-                    {palette.label}
-                    <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-opacity group-data-[selected=true]:opacity-100">
-                      <CheckIcon className="size-3.5" />
-                    </span>
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {palette.description}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </SettingsRow>
       </SettingsSection>
     </SettingsPageContainer>
   );

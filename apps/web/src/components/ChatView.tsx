@@ -112,7 +112,7 @@ import {
 import { ChatRightDockPanel } from "./ChatRightDockPanel";
 import PlanSidebar from "./PlanSidebar";
 import { cn, newCommandId, newDraftId, newMessageId, newThreadId, randomUUID } from "~/lib/utils";
-import { TerminalWorkspace } from "./TerminalWorkspace";
+// import { TerminalWorkspace } from "./TerminalWorkspace";
 import { stackedThreadToast, toastManager } from "./ui/toast";
 import { projectScriptIdFromCommand } from "~/projectScripts";
 import { getProviderModelCapabilities, resolveSelectableProvider } from "../providerModels";
@@ -537,20 +537,32 @@ export default function ChatView(props: ChatViewProps) {
         ? store.getDraftSession(draftId)
         : null,
   );
-  const activeProjectRef = serverThread
-    ? scopeProjectRef(serverThread.environmentId, serverThread.projectId)
-    : draftThread
-      ? scopeProjectRef(draftThread.environmentId, draftThread.projectId)
-      : null;
+  const activeProjectRef = useMemo(() => {
+    if (serverThread) {
+      return scopeProjectRef(serverThread.environmentId, serverThread.projectId);
+    }
+    if (draftThread) {
+      return scopeProjectRef(draftThread.environmentId, draftThread.projectId);
+    }
+    return null;
+  }, [
+    serverThread?.environmentId,
+    serverThread?.projectId,
+    draftThread?.environmentId,
+    draftThread?.projectId,
+  ]);
   const activeProject = useStore(
     useMemo(() => createProjectSelectorByRef(activeProjectRef), [activeProjectRef]),
   );
-  const activeTerminalWorkspaceRef = activeProjectRef
-    ? terminalWorkspaceThreadRef({
+  const activeTerminalWorkspaceRef = useMemo(() => {
+    if (activeProjectRef) {
+      return terminalWorkspaceThreadRef({
         environmentId: activeProjectRef.environmentId,
         projectId: activeProjectRef.projectId,
-      })
-    : null;
+      });
+    }
+    return null;
+  }, [activeProjectRef?.environmentId, activeProjectRef?.projectId]);
   const promptRef = useRef("");
   const composerImagesRef = useRef<ComposerImageAttachment[]>([]);
   const composerTerminalContextsRef = useRef<TerminalContextDraft[]>([]);
@@ -1689,13 +1701,20 @@ export default function ChatView(props: ChatViewProps) {
       const isFinalTerminal = terminalState.terminalIds.length <= 1;
       const fallbackExitWrite = () =>
         api.terminal
-          .write({ threadId: activeTerminalWorkspaceRef.threadId, terminalId, data: "exit\n" })
+          .write({
+            threadId: activeTerminalWorkspaceRef.threadId,
+            terminalId,
+            data: "exit\n",
+          })
           .catch(() => undefined);
       if ("close" in api.terminal && typeof api.terminal.close === "function") {
         void (async () => {
           if (isFinalTerminal) {
             await api.terminal
-              .clear({ threadId: activeTerminalWorkspaceRef.threadId, terminalId })
+              .clear({
+                threadId: activeTerminalWorkspaceRef.threadId,
+                terminalId,
+              })
               .catch(() => undefined);
           }
           await api.terminal.close({
@@ -3415,7 +3434,7 @@ export default function ChatView(props: ChatViewProps) {
       {/* Main content area with optional plan sidebar */}
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-0 bg-[var(--surface-canvas)] px-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--surface-subtle)]">
-          {showTerminalWorkspace && activeTerminalWorkspaceRef ? (
+          {/* showTerminalWorkspace && activeTerminalWorkspaceRef ? (
             <TerminalWorkspace
               workspaceRef={activeTerminalWorkspaceRef}
               projectRef={activeProjectRef}
@@ -3428,48 +3447,48 @@ export default function ChatView(props: ChatViewProps) {
               keybindings={keybindings}
               onAddTerminalContext={addTerminalContextToDraft}
             />
-          ) : (
-            <div className="relative flex min-h-0 flex-1 flex-col">
-              <MessagesTimeline
-                isWorking={isWorking}
-                activeTurnInProgress={isWorking || !latestTurnSettled}
-                activeTurnId={activeLatestTurn?.turnId ?? null}
-                activeTurnStartedAt={activeWorkStartedAt}
-                listRef={legendListRef}
-                timelineEntries={timelineEntries}
-                completionDividerBeforeEntryId={completionDividerBeforeEntryId}
-                completionSummary={completionSummary}
-                turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
-                activeThreadEnvironmentId={activeThread.environmentId}
-                routeThreadKey={routeThreadKey}
-                onOpenTurnDiff={onOpenTurnDiff}
-                revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
-                onRevertUserMessage={onRevertUserMessage}
-                isRevertingCheckpoint={isRevertingCheckpoint}
-                onImageExpand={onExpandTimelineImage}
-                markdownCwd={gitCwd ?? undefined}
-                resolvedTheme={resolvedTheme}
-                timestampFormat={timestampFormat}
-                workspaceRoot={activeWorkspaceRoot}
-                skills={activeProviderSkills}
-                onIsAtEndChange={onIsAtEndChange}
-                composer={composerElement}
-              />
+          ) : ( */}
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <MessagesTimeline
+              isWorking={isWorking}
+              activeTurnInProgress={isWorking || !latestTurnSettled}
+              activeTurnId={activeLatestTurn?.turnId ?? null}
+              activeTurnStartedAt={activeWorkStartedAt}
+              listRef={legendListRef}
+              timelineEntries={timelineEntries}
+              completionDividerBeforeEntryId={completionDividerBeforeEntryId}
+              completionSummary={completionSummary}
+              turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
+              activeThreadEnvironmentId={activeThread.environmentId}
+              routeThreadKey={routeThreadKey}
+              onOpenTurnDiff={onOpenTurnDiff}
+              revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
+              onRevertUserMessage={onRevertUserMessage}
+              isRevertingCheckpoint={isRevertingCheckpoint}
+              onImageExpand={onExpandTimelineImage}
+              markdownCwd={gitCwd ?? undefined}
+              resolvedTheme={resolvedTheme}
+              timestampFormat={timestampFormat}
+              workspaceRoot={activeWorkspaceRoot}
+              skills={activeProviderSkills}
+              onIsAtEndChange={onIsAtEndChange}
+              composer={composerElement}
+            />
 
-              {/* scroll to bottom pill — shown when user has scrolled away from the bottom */}
-              {showScrollToBottom && (
-                <div className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5">
-                  <button
-                    type="button"
-                    onClick={() => scrollToEnd(true)}
-                    className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card p-1 text-muted-foreground text-xs shadow-sm transition-[color,border-color,transform] duration-150 ease-out hover:border-border hover:text-foreground hover:cursor-pointer active:scale-[0.96]"
-                  >
-                    <ChevronDownIcon className="size-3.5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+            {/* scroll to bottom pill — shown when user has scrolled away from the bottom */}
+            {showScrollToBottom && (
+              <div className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5">
+                <button
+                  type="button"
+                  onClick={() => scrollToEnd(true)}
+                  className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-border/60 bg-card p-1 text-muted-foreground text-xs shadow-sm transition-[color,border-color,transform] duration-150 ease-out hover:border-border hover:text-foreground hover:cursor-pointer active:scale-[0.96]"
+                >
+                  <ChevronDownIcon className="size-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+          {/* )} */}
 
           {pullRequestDialogState ? (
             <PullRequestThreadDialog

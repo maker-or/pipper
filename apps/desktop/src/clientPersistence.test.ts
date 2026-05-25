@@ -49,8 +49,6 @@ function makeSecretStorage(available: boolean): DesktopSecretStorage {
 }
 
 const clientSettings: ClientSettings = {
-  appearanceAccentHue: 210,
-  appearanceAccentIntensity: 0.4,
   appearanceMode: "dark",
   autoOpenPlanSidebar: false,
   confirmThreadArchive: true,

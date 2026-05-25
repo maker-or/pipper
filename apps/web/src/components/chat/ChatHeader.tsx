@@ -3,9 +3,9 @@ import { scopeProjectRef, scopeThreadRef, scopedThreadKey } from "@t3tools/clien
 import { Link, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { PlusMinusIcon, TerminalIcon, XIcon } from "@phosphor-icons/react";
+import { /* PlusMinusIcon, */ TerminalIcon, XIcon } from "@phosphor-icons/react";
 import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
+// import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { SidebarTrigger } from "../ui/sidebar";
 import { selectSidebarThreadsForProjectRefs, useStore } from "../../store";
 import { buildThreadRouteParams } from "../../threadRoutes";
@@ -81,6 +81,14 @@ export const ChatHeader = memo(function ChatHeader({
   onToggleDiff,
 }: ChatHeaderProps) {
   const { handleNewThread } = useNewThreadHandler();
+  // Keep props and constants referenced to avoid unused variable warnings
+  void onToggleTerminal;
+  void onToggleDiff;
+  void isGitRepo;
+  void terminalToggleShortcutLabel;
+  void diffToggleShortcutLabel;
+  void diffOpen;
+  void DOCK_ICON_BUTTON_CLASS_NAME;
   const activeProjectRef = useMemo(
     () => (activeProjectId ? scopeProjectRef(activeThreadEnvironmentId, activeProjectId) : null),
     [activeProjectId, activeThreadEnvironmentId],
@@ -464,7 +472,7 @@ export const ChatHeader = memo(function ChatHeader({
           </div>
         </div>
       </div>
-      <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2 rounded-full bg-background/60 dark:bg-zinc-900/60 backdrop-blur-md border border-border/40 px-3 shadow-md shadow-black/5 hover:border-border/60 dark:hover:border-border/30 transition-all duration-200">
+      {/* <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2 rounded-full bg-background/60 dark:bg-zinc-900/60 backdrop-blur-md border border-border/40 px-3 shadow-md shadow-black/5 hover:border-border/60 dark:hover:border-border/30 transition-all duration-200">
         <Tooltip>
           <TooltipTrigger
             render={
@@ -478,7 +486,11 @@ export const ChatHeader = memo(function ChatHeader({
               />
             }
           >
-            <TerminalIcon aria-hidden="true" size={22} weight={terminalOpen ? "fill" : "regular"} />
+            <TerminalIcon
+              aria-hidden="true"
+              size={22}
+              weight={terminalOpen ? "fill" : "regular"}
+            />
           </TooltipTrigger>
           <TooltipPopup side="top">
             {!terminalAvailable
@@ -511,7 +523,7 @@ export const ChatHeader = memo(function ChatHeader({
                 : "Toggle diff panel"}
           </TooltipPopup>
         </Tooltip>
-      </div>
+      </div> */}
     </div>
   );
 });

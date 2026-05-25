@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import {
-  DEFAULT_APPEARANCE_ACCENT_HUE,
-  DEFAULT_APPEARANCE_ACCENT_INTENSITY,
-  DEFAULT_APPEARANCE_MODE,
-  type AppearanceMode,
-} from "@t3tools/contracts/settings";
+import { DEFAULT_APPEARANCE_MODE, type AppearanceMode } from "@t3tools/contracts/settings";
 import {
   readBrowserClientSettings,
   readLegacyBrowserThemePreference,
 } from "../clientPersistenceStorage";
-import { resolveAppearancePalette } from "../appearancePalettes";
+import { THEMES } from "../themes";
 import { useSettings, useUpdateSettings } from "./useSettings";
 
 type ThemeSnapshot = {
@@ -33,23 +28,6 @@ function emitChange() {
 
 function getSystemDark() {
   return typeof window !== "undefined" && window.matchMedia(MEDIA_QUERY).matches;
-}
-
-function clampHue(value: number): number {
-  if (!Number.isFinite(value)) {
-    return DEFAULT_APPEARANCE_ACCENT_HUE;
-  }
-
-  const normalizedValue = value % 360;
-  return normalizedValue < 0 ? normalizedValue + 360 : normalizedValue;
-}
-
-function clampIntensity(value: number): number {
-  if (!Number.isFinite(value)) {
-    return DEFAULT_APPEARANCE_ACCENT_INTENSITY;
-  }
-
-  return Math.min(1, Math.max(0, value));
 }
 
 function ensureThemeColorMetaTag(): HTMLMetaElement {
@@ -116,12 +94,7 @@ function syncDesktopTheme(theme: AppearanceMode) {
   });
 }
 
-export function applyTheme(
-  theme: AppearanceMode,
-  accentHue: number,
-  accentIntensity: number,
-  suppressTransitions = false,
-) {
+export function applyTheme(theme: AppearanceMode, suppressTransitions = false) {
   if (typeof document === "undefined" || typeof window === "undefined") return;
   if (suppressTransitions) {
     document.documentElement.classList.add("no-transitions");
@@ -132,15 +105,19 @@ export function applyTheme(
   if (root.dataset) {
     root.dataset.appearanceMode = theme;
   }
-  root.style?.setProperty("--accent-hue", `${clampHue(accentHue)}`);
-  root.style?.setProperty("--accent-intensity", clampIntensity(accentIntensity).toFixed(3));
-  const palette = resolveAppearancePalette(clampHue(accentHue));
-  root.dataset.appearancePalette = palette.id;
-  for (const [index, color] of palette.colors.entries()) {
-    root.style?.setProperty(`--color-${index + 1}`, color);
+
+  const themeObj = isDark ? THEMES.dark : THEMES.light;
+
+  if (themeObj) {
+    // Set all tokens
+    for (const [key, value] of Object.entries(themeObj.tokens)) {
+      root.style?.setProperty(key, value);
+    }
   }
+
   syncBrowserChromeTheme();
   syncDesktopTheme(theme);
+
   if (suppressTransitions) {
     document.documentElement.getBoundingClientRect();
     requestAnimationFrame(() => {
@@ -155,20 +132,13 @@ function readInitialAppearance() {
   return {
     appearanceMode:
       persistedSettings?.appearanceMode ?? legacyThemePreference ?? DEFAULT_APPEARANCE_MODE,
-    appearanceAccentHue: persistedSettings?.appearanceAccentHue ?? DEFAULT_APPEARANCE_ACCENT_HUE,
-    appearanceAccentIntensity:
-      persistedSettings?.appearanceAccentIntensity ?? DEFAULT_APPEARANCE_ACCENT_INTENSITY,
   };
 }
 
 const initialAppearance = readInitialAppearance();
 
 if (typeof document !== "undefined") {
-  applyTheme(
-    initialAppearance.appearanceMode,
-    initialAppearance.appearanceAccentHue,
-    initialAppearance.appearanceAccentIntensity,
-  );
+  applyTheme(initialAppearance.appearanceMode);
 }
 
 function getSnapshot(): ThemeSnapshot {
@@ -206,8 +176,6 @@ export function useTheme() {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const { updateSettings } = useUpdateSettings();
   const theme = useSettings((settings) => settings.appearanceMode);
-  const accentHue = useSettings((settings) => settings.appearanceAccentHue);
-  const accentIntensity = useSettings((settings) => settings.appearanceAccentIntensity);
 
   const resolvedTheme: "light" | "dark" =
     theme === "system" ? (snapshot.systemDark ? "dark" : "light") : theme;
@@ -215,41 +183,19 @@ export function useTheme() {
   const setTheme = useCallback(
     (next: AppearanceMode) => {
       updateSettings({ appearanceMode: next });
-      applyTheme(next, accentHue, accentIntensity, true);
+      applyTheme(next, true);
       emitChange();
     },
-    [accentHue, accentIntensity, updateSettings],
-  );
-
-  const setAccentHue = useCallback(
-    (next: number) => {
-      const clampedValue = clampHue(next);
-      updateSettings({ appearanceAccentHue: clampedValue });
-      applyTheme(theme, clampedValue, accentIntensity, true);
-    },
-    [accentIntensity, theme, updateSettings],
-  );
-
-  const setAccentIntensity = useCallback(
-    (next: number) => {
-      const clampedValue = clampIntensity(next);
-      updateSettings({ appearanceAccentIntensity: clampedValue });
-      applyTheme(theme, accentHue, clampedValue, true);
-    },
-    [accentHue, theme, updateSettings],
+    [updateSettings],
   );
 
   useEffect(() => {
-    applyTheme(theme, accentHue, accentIntensity);
-  }, [accentHue, accentIntensity, theme]);
+    applyTheme(theme);
+  }, [theme]);
 
   return {
     theme,
     setTheme,
     resolvedTheme,
-    accentHue,
-    setAccentHue,
-    accentIntensity,
-    setAccentIntensity,
   } as const;
 }

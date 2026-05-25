@@ -1,127 +1,3 @@
-@import "tailwindcss";
-@plugin "tailwindcss-animate";
-
-@theme inline {
-  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --font-mono: "SF Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-
-  /* Surfaces */
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-
-  /* Text */
-  --color-text: var(--text);
-  --color-text-muted: var(--text-muted);
-  --color-text-placeholder: var(--text-placeholder);
-  --color-text-disabled: var(--text-disabled);
-  --color-text-accent: var(--text-accent);
-
-  /* Icons */
-  --color-icon: var(--icon);
-  --color-icon-muted: var(--icon-muted);
-  --color-icon-disabled: var(--icon-disabled);
-  --color-icon-accent: var(--icon-accent);
-
-  /* Borders */
-  --color-border: var(--border);
-  --color-border-variant: var(--border-variant);
-  --color-border-focused: var(--border-focused);
-  --color-border-selected: var(--border-selected);
-
-  /* Elements */
-  --color-element: var(--element-background);
-  --color-element-hover: var(--element-hover);
-  --color-element-active: var(--element-active);
-  --color-element-selected: var(--element-selected);
-
-  /* Ghost Elements */
-  --color-ghost: var(--ghost-element-background);
-  --color-ghost-hover: var(--ghost-element-hover);
-  --color-ghost-active: var(--ghost-element-active);
-  --color-ghost-selected: var(--ghost-element-selected);
-
-  /* Signals */
-  --color-error: var(--error);
-  --color-error-background: var(--error-background);
-  --color-warning: var(--warning);
-  --color-warning-background: var(--warning-background);
-  --color-success: var(--success);
-  --color-success-background: var(--success-background);
-  --color-info: var(--info);
-  --color-info-background: var(--info-background);
-
-  /* Git/Diff */
-  --color-created: var(--created);
-  --color-modified: var(--modified);
-  --color-deleted: var(--deleted);
-  --color-conflict: var(--conflict);
-
-  /* Shadcn compat */
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
-}
-
-@layer base {
-  :root {
-    --radius: 0.625rem;
-    --chat-bottom-controls-inset: max(0.5rem, env(safe-area-inset-bottom));
-
-    /* Animation tokens */
-    --resize-dur: 200ms;
-    --resize-ease: cubic-bezier(0.2, 1, 0.3, 1);
-
-    /* We don't define colors here anymore, they are injected by useTheme.ts! */
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
 body {
   font-family:
     "Geist",
@@ -197,12 +73,20 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .turn-chip-strip {
@@ -559,12 +443,20 @@ label:has(> select#reasoning-effort) select {
 }
 
 .model-picker-list::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 2px;
 }
 
 .model-picker-list::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark .model-picker-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dark .model-picker-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Model Picker Animations */
@@ -655,7 +547,12 @@ label:has(> select#reasoning-effort) select {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-md);
-  background: var(--ghost-element-hover);
+  background: linear-gradient(
+    135deg,
+    oklch(0.95 0.02 250) 0%,
+    var(--accent) 50%,
+    oklch(0.92 0.02 250) 100%
+  );
   opacity: 0;
   transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
@@ -679,7 +576,12 @@ label:has(> select#reasoning-effort) select {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-sm);
-  background: var(--ghost-element-hover);
+  background: linear-gradient(
+    135deg,
+    oklch(0.96 0.01 250) 0%,
+    var(--accent) 50%,
+    oklch(0.93 0.01 250) 100%
+  );
   opacity: 0;
   transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
