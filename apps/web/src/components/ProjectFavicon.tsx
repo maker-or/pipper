@@ -33,15 +33,11 @@ function projectIconColorSetFromTheme(active: boolean): {
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const primary = styles
-    .getPropertyValue(active ? "--foreground" : "--surface-elevated")
-    .trim();
+  const primary = styles.getPropertyValue(active ? "--foreground" : "--surface-elevated").trim();
   const secondary = styles
     .getPropertyValue(active ? "--surface-strong" : "--surface-canvas")
     .trim();
-  const text = styles
-    .getPropertyValue(active ? "--background" : "--muted-foreground")
-    .trim();
+  const text = styles.getPropertyValue(active ? "--background" : "--muted-foreground").trim();
 
   return {
     primary: primary || (active ? "rgb(28, 33, 41)" : "rgb(34, 37, 35)"),
@@ -60,9 +56,7 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
 }) {
   const { theme } = useTheme();
   const label =
-    input.projectName?.trim() ||
-    input.cwd.split(/[\\/]/).filter(Boolean).at(-1) ||
-    "PR";
+    input.projectName?.trim() || input.cwd.split(/[\\/]/).filter(Boolean).at(-1) || "PR";
   const colors = useMemo(
     () => projectIconColorSetFromTheme(Boolean(input.active)),
     [input.active, theme],
@@ -75,9 +69,7 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
     const span = spanRef.current;
     if (!span) return;
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
       gsap.killTweensOf(span);
       span.style.setProperty("--project-icon-primary", colors.primary);

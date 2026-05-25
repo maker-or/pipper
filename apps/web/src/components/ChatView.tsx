@@ -2227,6 +2227,15 @@ export default function ChatView(props: ChatViewProps) {
       ) {
         return;
       }
+      if (
+        terminalFocus &&
+        event.key === "Enter" &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
+        return;
+      }
 
       const shortcutContext = {
         terminalFocus,
