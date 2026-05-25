@@ -6,6 +6,7 @@ import {
   type ReactNode,
   type TransitionEvent,
 } from "react";
+import { cn } from "~/lib/utils";
 
 const DOCK_CLOSE_FALLBACK_MS = 380;
 
@@ -13,8 +14,12 @@ const DOCK_CLOSE_FALLBACK_MS = 380;
  * Right column shell for inline diff / terminal: animates width + slide + fade so the main chat
  * column eases smoothly. Uses delayed unmount so close transitions can finish.
  */
-export function ChatRightDockPanel(props: { active: boolean; children: ReactNode }) {
-  const { active, children } = props;
+export function ChatRightDockPanel(props: {
+  active: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  const { active, children, className } = props;
   const [mounted, setMounted] = useState(active);
   const [visualOpen, setVisualOpen] = useState(false);
   const closeFallbackRef = useRef<number | null>(null);
@@ -79,7 +84,10 @@ export function ChatRightDockPanel(props: { active: boolean; children: ReactNode
 
   return (
     <div
-      className="chat-right-dock-shell flex min-h-0 shrink-0 flex-col self-stretch overflow-hidden"
+      className={cn(
+        "chat-right-dock-shell flex min-h-0 shrink-0 flex-col self-stretch overflow-hidden",
+        className,
+      )}
       data-open={visualOpen ? "true" : "false"}
       onTransitionEnd={onTransitionEnd}
     >

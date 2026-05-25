@@ -3394,7 +3394,7 @@ export default function ChatView(props: ChatViewProps) {
       </header>
       <div
         className={cn(
-          "flex h-10 shrink-0 items-center border-t border-border/60 bg-[var(--surface-canvas)] px-3",
+          "flex h-10 shrink-0 items-center  border-t border-border/60 bg-[var(--surface-canvas)] px-3",
           isElectron &&
             reserveTitleBarControlInset &&
             "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",
@@ -3433,7 +3433,12 @@ export default function ChatView(props: ChatViewProps) {
       />
       {/* Main content area with optional plan sidebar */}
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-0 bg-[var(--surface-canvas)] px-2">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--surface-subtle)]">
+        <div
+          className={cn(
+            "flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--surface-subtle)]",
+            showInlineDiffPanel ? "rounded-tl-md" : "rounded-t-md",
+          )}
+        >
           {showTerminalWorkspace && activeTerminalWorkspaceRef ? (
             <TerminalWorkspace
               workspaceRef={activeTerminalWorkspaceRef}
@@ -3523,7 +3528,10 @@ export default function ChatView(props: ChatViewProps) {
             onClose={closePlanSidebar}
           />
         ) : null}
-        <ChatRightDockPanel active={showInlineDiffPanel}>
+        <ChatRightDockPanel
+          active={showInlineDiffPanel}
+          {...(showInlineDiffPanel ? { className: "rounded-tr-md" } : {})}
+        >
           <ChatInlineDiffPanel mode="inline" />
         </ChatRightDockPanel>
       </div>

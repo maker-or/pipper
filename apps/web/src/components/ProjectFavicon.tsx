@@ -33,11 +33,15 @@ function projectIconColorSetFromTheme(active: boolean): {
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const primary = styles.getPropertyValue(active ? "--foreground" : "--surface-elevated").trim();
+  const primary = styles
+    .getPropertyValue(active ? "--foreground" : "--surface-elevated")
+    .trim();
   const secondary = styles
     .getPropertyValue(active ? "--surface-strong" : "--surface-canvas")
     .trim();
-  const text = styles.getPropertyValue(active ? "--background" : "--muted-foreground").trim();
+  const text = styles
+    .getPropertyValue(active ? "--background" : "--muted-foreground")
+    .trim();
 
   return {
     primary: primary || (active ? "rgb(28, 33, 41)" : "rgb(34, 37, 35)"),
@@ -56,7 +60,9 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
 }) {
   const { theme } = useTheme();
   const label =
-    input.projectName?.trim() || input.cwd.split(/[\\/]/).filter(Boolean).at(-1) || "PR";
+    input.projectName?.trim() ||
+    input.cwd.split(/[\\/]/).filter(Boolean).at(-1) ||
+    "PR";
   const colors = useMemo(
     () => projectIconColorSetFromTheme(Boolean(input.active)),
     [input.active, theme],
@@ -69,7 +75,9 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
     const span = spanRef.current;
     if (!span) return;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReducedMotion) {
       gsap.killTweensOf(span);
       span.style.setProperty("--project-icon-primary", colors.primary);
@@ -119,7 +127,7 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
           "--project-icon-opacity": colors.opacity,
         } as CSSProperties
       }
-      className={`cursor-pointer inline-flex shrink-0 items-center justify-center rounded-[2px] bg-[linear-gradient(180deg,var(--project-icon-primary)_0%,var(--project-icon-secondary)_100%)] leading-none text-[var(--project-icon-text)] tracking-[-0.04em] opacity-[var(--project-icon-opacity)] transition-opacity duration-200 ${input.className ?? ""}`}
+      className={`cursor-pointer inline-flex shrink-0 items-center justify-center rounded-md bg-[linear-gradient(180deg,var(--project-icon-primary)_0%,var(--project-icon-secondary)_100%)] leading-none text-[var(--project-icon-text)] tracking-[-0.04em] opacity-[var(--project-icon-opacity)] transition-opacity duration-200 ${input.className ?? ""}`}
     >
       {initialsForProject(label)}
     </span>

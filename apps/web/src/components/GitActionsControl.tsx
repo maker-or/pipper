@@ -15,7 +15,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { Option } from "effect";
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { GitDiffIcon } from "@phosphor-icons/react";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -26,6 +25,7 @@ import {
   LockIcon,
   GlobeIcon,
 } from "lucide-react";
+import { CloudArrowUpIcon } from "@phosphor-icons/react";
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { AzureDevOpsIcon, BitbucketIcon, GitHubIcon, GitLabIcon } from "~/components/Icons";
 import { RadioGroup } from "~/components/ui/radio-group";
@@ -1633,7 +1633,7 @@ export default function GitActionsControl({
             disabled={initMutation.isPending}
             onClick={() => initMutation.mutate()}
           >
-            <GitDiffIcon aria-hidden="true" size={22} />
+            <CloudArrowUpIcon aria-hidden="true" size={22} />
           </button>
         ) : (
           <Menu
@@ -1656,7 +1656,7 @@ export default function GitActionsControl({
               }
               disabled={isGitActionRunning}
             >
-              <GitDiffIcon aria-hidden="true" size={22} />
+              <CloudArrowUpIcon aria-hidden="true" size={22} />
             </MenuTrigger>
             <MenuPopup align="end" className="w-full">
               <MenuItem

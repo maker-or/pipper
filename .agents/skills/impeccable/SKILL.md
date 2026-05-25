@@ -8,7 +8,7 @@ allowed-tools:
 license: Apache 2.0. Based on Anthropic's frontend-design skill. See NOTICE.md for attribution.
 ---
 
-Designs and iterates production-grade frontend interfaces. Real working code, committed design choices, exceptional craft.
+Designs and iterates production-grade frontend interfaces. Real working code,ted design choices, exceptional craft.
 
 ## Setup
 
