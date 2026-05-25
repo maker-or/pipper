@@ -585,20 +585,243 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                 })}
               </Virtualizer>
             ) : (
-              <div className="h-full overflow-auto p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <div className="space-y-2">
-                  <p className="text-[11px] text-muted-foreground/75">{renderablePatch.reason}</p>
-                  <pre
-                    className={cn(
-                      "max-h-[72vh] rounded-md border border-border/70 bg-[var(--surface-subtle)] p-3 font-mono text-[11px] leading-relaxed text-muted-foreground/90 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-                      diffWordWrap
-                        ? "overflow-auto whitespace-pre-wrap wrap-break-word"
-                        : "overflow-auto",
-                    )}
-                  >
-                    {renderablePatch.text}
-                  </pre>
+              <div
+                data-impeccable-variants="8e9cfefe"
+                data-impeccable-variant-count="3"
+                style={{ display: "contents" }}
+              >
+                {/* impeccable-variants-start 8e9cfefe */}
+                {/* Original */}
+                <div data-impeccable-variant="original">
+                  <div className="h-full overflow-auto p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="space-y-2">
+                      <p className="text-[11px] text-muted-foreground/75">
+                        {renderablePatch.reason}
+                      </p>
+                      <pre
+                        className={cn(
+                          "max-h-[72vh] rounded-md border border-border/70 bg-[var(--surface-subtle)] p-3 font-mono text-[11px] leading-relaxed text-muted-foreground/90 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+                          diffWordWrap
+                            ? "overflow-auto whitespace-pre-wrap wrap-break-word"
+                            : "overflow-auto",
+                        )}
+                      >
+                        {renderablePatch.text}
+                      </pre>
+                    </div>
+                  </div>
                 </div>
+                {/* Variants: insert below this line */}
+                <style data-impeccable-css="8e9cfefe">{`
+                  @scope ([data-impeccable-variant="1"]) {
+                    :scope > .impeccable-diff-scroll-v1 {
+                      --radius-top: var(--p-top-radius, 16px);
+                      height: 100%;
+                      overflow: auto;
+                      padding: 0 10px 10px;
+                      scrollbar-width: none;
+                      border-top-left-radius: var(--radius-top);
+                      border-top-right-radius: var(--radius-top);
+                      background: color-mix(in oklch, var(--surface-subtle) 72%, transparent);
+                      border: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
+                      border-bottom-color: color-mix(in oklch, var(--border) 44%, transparent);
+                      clip-path: inset(0 round var(--radius-top) var(--radius-top) 8px 8px);
+                    }
+
+                    :scope > .impeccable-diff-scroll-v1::-webkit-scrollbar {
+                      display: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v1 .impeccable-diff-scroll-v1__cap {
+                      margin: 0 -10px 8px;
+                      padding: 9px 12px 8px;
+                      border-bottom: 1px solid color-mix(in oklch, var(--border) 58%, transparent);
+                      background: color-mix(in oklch, var(--background) 64%, var(--surface-subtle));
+                    }
+
+                    :scope > .impeccable-diff-scroll-v1 .impeccable-diff-scroll-v1__reason {
+                      margin: 0;
+                      color: color-mix(in oklch, var(--muted-foreground) 86%, var(--foreground));
+                      font-size: 11px;
+                      line-height: 1.45;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v1 .impeccable-diff-scroll-v1__pre {
+                      max-height: 72vh;
+                      margin: 0;
+                      border-radius: 10px;
+                      border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+                      background: color-mix(in oklch, var(--surface-subtle) 88%, var(--background));
+                      padding: calc(10px + (var(--p-density, 0.5) * 6px));
+                      color: color-mix(in oklch, var(--muted-foreground) 88%, var(--foreground));
+                      font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+                      font-size: 11px;
+                      line-height: 1.62;
+                      scrollbar-width: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v1 .impeccable-diff-scroll-v1__pre::-webkit-scrollbar {
+                      display: none;
+                    }
+                  }
+
+                  @scope ([data-impeccable-variant="2"]) {
+                    :scope > .impeccable-diff-scroll-v2 {
+                      --radius-top: var(--p-top-radius, 20px);
+                      height: 100%;
+                      overflow: auto;
+                      padding: 8px;
+                      scrollbar-width: none;
+                      border-top-left-radius: var(--radius-top);
+                      border-top-right-radius: var(--radius-top);
+                      background: linear-gradient(
+                        to bottom,
+                        color-mix(in oklch, var(--foreground) 6%, transparent),
+                        color-mix(in oklch, var(--surface-subtle) 76%, transparent) 42px,
+                        transparent 100%
+                      );
+                      border-top: 1px solid color-mix(in oklch, var(--foreground) 13%, transparent);
+                      clip-path: inset(0 round var(--radius-top) var(--radius-top) 9px 9px);
+                    }
+
+                    :scope > .impeccable-diff-scroll-v2::-webkit-scrollbar {
+                      display: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v2 .impeccable-diff-scroll-v2__reason {
+                      margin: 0 2px 7px;
+                      color: color-mix(in oklch, var(--muted-foreground) 80%, var(--foreground));
+                      font-size: 11px;
+                      line-height: 1.4;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v2 .impeccable-diff-scroll-v2__pre {
+                      max-height: 72vh;
+                      margin: 0;
+                      border-radius: calc(var(--radius-top) - 6px) calc(var(--radius-top) - 6px) 8px 8px;
+                      border: 1px solid color-mix(in oklch, var(--border) 76%, transparent);
+                      background: color-mix(in oklch, var(--surface-subtle) 92%, var(--background));
+                      padding: calc(11px + (var(--p-padding, 0.45) * 8px));
+                      color: color-mix(in oklch, var(--muted-foreground) 90%, var(--foreground));
+                      font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+                      font-size: 11px;
+                      line-height: 1.62;
+                      box-shadow: inset 0 1px 0 color-mix(in oklch, var(--foreground) 5%, transparent);
+                      scrollbar-width: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v2 .impeccable-diff-scroll-v2__pre::-webkit-scrollbar {
+                      display: none;
+                    }
+                  }
+
+                  @scope ([data-impeccable-variant="3"]) {
+                    :scope > .impeccable-diff-scroll-v3 {
+                      --radius-top: var(--p-top-radius, 14px);
+                      height: 100%;
+                      overflow: auto;
+                      padding: 0 8px 8px;
+                      scrollbar-width: none;
+                      border-top-left-radius: var(--radius-top);
+                      border-top-right-radius: var(--radius-top);
+                      clip-path: inset(0 round var(--radius-top) var(--radius-top) 6px 6px);
+                    }
+
+                    :scope > .impeccable-diff-scroll-v3::-webkit-scrollbar {
+                      display: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v3 .impeccable-diff-scroll-v3__reason {
+                      margin: 0;
+                      padding: 8px 10px;
+                      border: 1px solid color-mix(in oklch, var(--border) 64%, transparent);
+                      border-bottom: 0;
+                      border-top-left-radius: var(--radius-top);
+                      border-top-right-radius: var(--radius-top);
+                      background: color-mix(in oklch, var(--surface-subtle) 84%, transparent);
+                      color: color-mix(in oklch, var(--muted-foreground) 78%, var(--foreground));
+                      font-size: 11px;
+                      line-height: 1.4;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v3 .impeccable-diff-scroll-v3__pre {
+                      max-height: 72vh;
+                      margin: 0;
+                      border: 1px solid color-mix(in oklch, var(--border) 64%, transparent);
+                      border-radius: 0 0 8px 8px;
+                      background: color-mix(in oklch, var(--surface-subtle) 86%, var(--background));
+                      padding: calc(10px + (var(--p-density, 0.45) * 7px));
+                      color: color-mix(in oklch, var(--muted-foreground) 90%, var(--foreground));
+                      font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+                      font-size: 11px;
+                      line-height: 1.62;
+                      scrollbar-width: none;
+                    }
+
+                    :scope > .impeccable-diff-scroll-v3 .impeccable-diff-scroll-v3__pre::-webkit-scrollbar {
+                      display: none;
+                    }
+                  }
+                `}</style>
+                <div
+                  data-impeccable-variant="1"
+                  data-impeccable-params='[{"id":"top-radius","kind":"range","min":10,"max":26,"step":1,"default":16,"label":"Top radius"},{"id":"density","kind":"range","min":0,"max":1,"step":0.05,"default":0.5,"label":"Padding"}]'
+                >
+                  <div className="impeccable-diff-scroll-v1">
+                    <div className="impeccable-diff-scroll-v1__cap">
+                      <p className="impeccable-diff-scroll-v1__reason">{renderablePatch.reason}</p>
+                    </div>
+                    <pre
+                      className={cn(
+                        "impeccable-diff-scroll-v1__pre",
+                        diffWordWrap
+                          ? "overflow-auto whitespace-pre-wrap wrap-break-word"
+                          : "overflow-auto",
+                      )}
+                    >
+                      {renderablePatch.text}
+                    </pre>
+                  </div>
+                </div>
+                <div
+                  data-impeccable-variant="2"
+                  data-impeccable-params='[{"id":"top-radius","kind":"range","min":12,"max":30,"step":1,"default":20,"label":"Top radius"},{"id":"padding","kind":"range","min":0,"max":1,"step":0.05,"default":0.45,"label":"Inset"}]'
+                  style={{ display: "none" }}
+                >
+                  <div className="impeccable-diff-scroll-v2">
+                    <p className="impeccable-diff-scroll-v2__reason">{renderablePatch.reason}</p>
+                    <pre
+                      className={cn(
+                        "impeccable-diff-scroll-v2__pre",
+                        diffWordWrap
+                          ? "overflow-auto whitespace-pre-wrap wrap-break-word"
+                          : "overflow-auto",
+                      )}
+                    >
+                      {renderablePatch.text}
+                    </pre>
+                  </div>
+                </div>
+                <div
+                  data-impeccable-variant="3"
+                  data-impeccable-params='[{"id":"top-radius","kind":"range","min":8,"max":24,"step":1,"default":14,"label":"Top radius"},{"id":"density","kind":"range","min":0,"max":1,"step":0.05,"default":0.45,"label":"Padding"}]'
+                  style={{ display: "none" }}
+                >
+                  <div className="impeccable-diff-scroll-v3">
+                    <p className="impeccable-diff-scroll-v3__reason">{renderablePatch.reason}</p>
+                    <pre
+                      className={cn(
+                        "impeccable-diff-scroll-v3__pre",
+                        diffWordWrap
+                          ? "overflow-auto whitespace-pre-wrap wrap-break-word"
+                          : "overflow-auto",
+                      )}
+                    >
+                      {renderablePatch.text}
+                    </pre>
+                  </div>
+                </div>
+                {/* impeccable-variants-end 8e9cfefe */}
               </div>
             )}
           </div>

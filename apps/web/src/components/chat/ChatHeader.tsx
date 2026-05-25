@@ -297,23 +297,14 @@ export const ChatHeader = memo(function ChatHeader({
             sideOffset={6}
             className="w-56 overflow-hidden p-1"
           >
-            <div className="px-2 py-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
-              Create
-            </div>
             <button
               type="button"
               className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
               disabled={!activeProjectRef}
               onClick={handleCreateAgentThread}
             >
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
-                +
-              </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">Agent</span>
-                <span className="block text-xs text-muted-foreground">
-                  Start a new agent thread.
-                </span>
               </span>
             </button>
             <button
@@ -322,14 +313,8 @@ export const ChatHeader = memo(function ChatHeader({
               disabled={!terminalAvailable}
               onClick={handleCreateTerminal}
             >
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/70 text-muted-foreground">
-                <TerminalIcon size={12} weight="regular" />
-              </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-medium">Terminal</span>
-                <span className="block text-xs text-muted-foreground">
-                  {terminalTabsVisible ? "Open another terminal tab." : "Open a terminal tab."}
-                </span>
               </span>
             </button>
           </PopoverPopup>

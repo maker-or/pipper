@@ -63,6 +63,7 @@ runVcsDriverContractSuite<GitVcsDriver.GitVcsDriver, GitContractError>({
 
 it.effect("GitVcsDriver forwards execute env to the VCS process", () => {
   let observedEnv: NodeJS.ProcessEnv | undefined;
+  let observedAppendTruncationMarker: boolean | undefined;
 
   return Effect.gen(function* () {
     const driver = yield* GitVcsDriver.makeVcsDriverShape();
@@ -74,26 +75,32 @@ it.effect("GitVcsDriver forwards execute env to the VCS process", () => {
       env: {
         GIT_INDEX_FILE: "/tmp/t3-index",
       },
+      appendTruncationMarker: true,
     });
 
     assert.deepStrictEqual(observedEnv, {
       GIT_INDEX_FILE: "/tmp/t3-index",
     });
+    assert.strictEqual(observedAppendTruncationMarker, true);
   }).pipe(
     Effect.provide(
-      Layer.mock(VcsProcess.VcsProcess)({
-        run: (input) =>
-          Effect.sync(() => {
-            observedEnv = input.env;
-            return {
-              exitCode: ChildProcessSpawner.ExitCode(0),
-              stdout: "",
-              stderr: "",
-              stdoutTruncated: false,
-              stderrTruncated: false,
-            };
-          }),
-      }),
+      Layer.mergeAll(
+        NodeServices.layer,
+        Layer.mock(VcsProcess.VcsProcess)({
+          run: (input) =>
+            Effect.sync(() => {
+              observedEnv = input.env;
+              observedAppendTruncationMarker = input.appendTruncationMarker;
+              return {
+                exitCode: ChildProcessSpawner.ExitCode(0),
+                stdout: "",
+                stderr: "",
+                stdoutTruncated: false,
+                stderrTruncated: false,
+              };
+            }),
+        }),
+      ),
     ),
   );
 });
