@@ -91,11 +91,8 @@ interface TimelineRowSharedState {
 }
 
 interface TimelineRowActivityState {
-  activeTurnInProgress: boolean;
-  activeTurnId: TurnId | null;
   isWorking: boolean;
   isRevertingCheckpoint: boolean;
-  completionSummary: string | null;
   /** When true, newly mounted rows play a soft-blur-in enter animation.
    *  False during the initial render batch so historical rows don't animate. */
   allowRowEnterAnimation: boolean;
@@ -180,7 +177,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
       deriveMessagesTimelineRows({
         timelineEntries,
         completionDividerBeforeEntryId,
+        completionSummary,
         isWorking,
+        activeTurnInProgress,
+        activeTurnId: activeTurnId ?? null,
         activeTurnStartedAt,
         turnDiffSummaryByAssistantMessageId,
         revertTurnCountByUserMessageId,
@@ -188,7 +188,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     [
       timelineEntries,
       completionDividerBeforeEntryId,
+      completionSummary,
       isWorking,
+      activeTurnInProgress,
+      activeTurnId,
       activeTurnStartedAt,
       turnDiffSummaryByAssistantMessageId,
       revertTurnCountByUserMessageId,
@@ -249,21 +252,11 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   );
   const activityState = useMemo<TimelineRowActivityState>(
     () => ({
-      activeTurnInProgress,
-      activeTurnId: activeTurnId ?? null,
       isWorking,
       isRevertingCheckpoint,
-      completionSummary,
       allowRowEnterAnimation,
     }),
-    [
-      activeTurnInProgress,
-      activeTurnId,
-      completionSummary,
-      isRevertingCheckpoint,
-      isWorking,
-      allowRowEnterAnimation,
-    ],
+    [isRevertingCheckpoint, isWorking, allowRowEnterAnimation],
   );
 
   // Stable renderItem — no closure deps. Row components read shared state
@@ -502,7 +495,12 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
 
   return (
     <>
-      {row.showCompletionDivider && <CompletionAccordion turnRows={row.completionTurnRows} />}
+      {row.showCompletionDivider && (
+        <CompletionAccordion
+          turnRows={row.completionTurnRows}
+          completionSummary={row.completionSummary}
+        />
+      )}
       <div className="min-w-0 px-1 py-0.5">
         <ChatMarkdown
           text={messageText}
@@ -524,13 +522,14 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
  *  proposed plans) that preceded the final response. Defaults to collapsed. */
 function CompletionAccordion({
   turnRows,
+  completionSummary,
 }: {
   turnRows: Extract<TimelineRow, { kind: "message" }>["completionTurnRows"];
+  completionSummary: string | null;
 }) {
-  const activity = use(TimelineRowActivityCtx);
   const [isExpanded, setIsExpanded] = useState(false);
   const hasTurnRows = turnRows != null && turnRows.length > 0;
-  const summaryText = activity.completionSummary ?? "Completed";
+  const summaryText = completionSummary ?? "Completed";
 
   if (!hasTurnRows) {
     return <div className="my-2 px-1 py-1 text-xs text-muted-foreground/50">{summaryText}</div>;
@@ -606,15 +605,10 @@ function CompletionAccordionRow({ row }: { row: MessagesTimelineRow }) {
 }
 
 function AssistantCopyButton({ row }: { row: Extract<TimelineRow, { kind: "message" }> }) {
-  const activity = use(TimelineRowActivityCtx);
-  const assistantTurnStillInProgress =
-    activity.activeTurnInProgress &&
-    activity.activeTurnId !== null &&
-    row.message.turnId === activity.activeTurnId;
   const assistantCopyState = resolveAssistantMessageCopyState({
     text: row.message.text ?? null,
     showCopyButton: row.showAssistantCopyButton,
-    streaming: row.message.streaming || assistantTurnStillInProgress,
+    streaming: row.assistantCopyStreaming,
   });
 
   if (!assistantCopyState.visible) {

@@ -108,6 +108,8 @@ export const ChatHeader = memo(function ChatHeader({
   const tabRailRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef(new Map<string, HTMLDivElement | null>());
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [renamingTerminalId, setRenamingTerminalId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const [activeTabIndicator, setActiveTabIndicator] = useState<{
     opacity: number;
     translateX: number;
@@ -169,11 +171,10 @@ export const ChatHeader = memo(function ChatHeader({
   const handleRenameTerminalTab = useCallback(
     (terminalId: string) => {
       const currentLabel = terminalLabelsById[terminalId]?.trim() || "Terminal";
-      const nextLabel = window.prompt("Rename terminal", currentLabel);
-      if (nextLabel === null) return;
-      onRenameTerminalTab(terminalId, nextLabel);
+      setRenamingTerminalId(terminalId);
+      setRenameValue(currentLabel);
     },
-    [onRenameTerminalTab, terminalLabelsById],
+    [terminalLabelsById],
   );
 
   const handleCloseTerminalTab = useCallback(
@@ -453,7 +454,41 @@ export const ChatHeader = memo(function ChatHeader({
                           size={14}
                           weight={selected ? "fill" : "regular"}
                         />
-                        <span className="truncate">{label}</span>
+                        {renamingTerminalId === terminalId ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            className="bg-transparent outline-none border-b border-foreground/30 px-0.5 text-sm w-24 text-current"
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => {
+                              if (renameValue.trim()) {
+                                onRenameTerminalTab(terminalId, renameValue.trim());
+                              }
+                              setRenamingTerminalId(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                if (renameValue.trim()) {
+                                  onRenameTerminalTab(terminalId, renameValue.trim());
+                                }
+                                setRenamingTerminalId(null);
+                              } else if (e.key === "Escape") {
+                                setRenamingTerminalId(null);
+                              }
+                            }}
+                            autoFocus
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                          />
+                        ) : (
+                          <span className="truncate">{label}</span>
+                        )}
                       </button>
                       {canDismiss ? (
                         <button

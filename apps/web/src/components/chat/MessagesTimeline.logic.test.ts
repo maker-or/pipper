@@ -271,6 +271,63 @@ describe("deriveMessagesTimelineRows", () => {
     expect(assistantRows[0]?.completionTurnRows?.[0]?.kind).toBe("message");
   });
 
+  it("marks only the active assistant turn as streaming for copy controls", () => {
+    const rows = deriveMessagesTimelineRows({
+      timelineEntries: [
+        {
+          id: "assistant-one-entry",
+          kind: "message",
+          createdAt: "2026-01-01T00:00:10Z",
+          message: {
+            id: "assistant-one" as never,
+            role: "assistant",
+            text: "Earlier response.",
+            turnId: "turn-1" as never,
+            createdAt: "2026-01-01T00:00:10Z",
+            completedAt: "2026-01-01T00:00:11Z",
+            streaming: false,
+          },
+        },
+        {
+          id: "assistant-two-entry",
+          kind: "message",
+          createdAt: "2026-01-01T00:00:20Z",
+          message: {
+            id: "assistant-two" as never,
+            role: "assistant",
+            text: "Active response.",
+            turnId: "turn-2" as never,
+            createdAt: "2026-01-01T00:00:20Z",
+            completedAt: "2026-01-01T00:00:30Z",
+            streaming: false,
+          },
+        },
+      ],
+      completionDividerBeforeEntryId: "assistant-two-entry",
+      completionSummary: "done",
+      isWorking: false,
+      activeTurnInProgress: true,
+      activeTurnId: "turn-2" as never,
+      activeTurnStartedAt: null,
+      turnDiffSummaryByAssistantMessageId: new Map(),
+      revertTurnCountByUserMessageId: new Map(),
+    });
+
+    const finalAssistantRow = rows.find(
+      (row): row is Extract<(typeof rows)[number], { kind: "message" }> =>
+        row.kind === "message" && row.message.role === "assistant",
+    );
+    const absorbedAssistantRow = finalAssistantRow?.completionTurnRows?.find(
+      (row): row is Extract<(typeof rows)[number], { kind: "message" }> =>
+        row.kind === "message" && row.message.role === "assistant",
+    );
+
+    expect(absorbedAssistantRow?.assistantCopyStreaming).toBe(false);
+    expect(absorbedAssistantRow?.completionSummary).toBeNull();
+    expect(finalAssistantRow?.assistantCopyStreaming).toBe(true);
+    expect(finalAssistantRow?.completionSummary).toBe("done");
+  });
+
   it("projects assistant diff summaries and user revert counts onto the affected rows", () => {
     const assistantTurnDiffSummary = {
       turnId: "turn-1" as never,
