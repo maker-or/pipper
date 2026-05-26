@@ -1,5 +1,8 @@
+import { onCLS, onINP, onLCP, type MetricType } from "web-vitals";
+
 const DEFAULT_POSTHOG_HOST = "https://us.i.posthog.com";
-const STORAGE_KEY = "t3-marketing-posthog-distinct-id";
+const DEFAULT_POSTHOG_PROXY_HOST = "/_ph";
+const POSTHOG_STORAGE_KEY = "t3-posthog-distinct-id";
 
 interface PosthogEventProperties extends Record<string, unknown> {
   readonly page?: string;
@@ -7,12 +10,18 @@ interface PosthogEventProperties extends Record<string, unknown> {
   readonly pageTitle?: string;
 }
 
+const reportedWebVitalIds = new Set<string>();
+let didInitializeWebVitals = false;
+
 function resolvePosthogKey(): string | undefined {
   return import.meta.env.PUBLIC_POSTHOG_KEY?.trim() || undefined;
 }
 
 function resolvePosthogHost(): string {
-  return import.meta.env.PUBLIC_POSTHOG_HOST?.trim() || DEFAULT_POSTHOG_HOST;
+  return (
+    import.meta.env.PUBLIC_POSTHOG_HOST?.trim() ||
+    (import.meta.env.PROD ? DEFAULT_POSTHOG_PROXY_HOST : DEFAULT_POSTHOG_HOST)
+  );
 }
 
 function getDistinctId(): string | null {
@@ -21,14 +30,14 @@ function getDistinctId(): string | null {
   }
 
   try {
-    const existing = window.localStorage.getItem(STORAGE_KEY);
+    const existing = window.localStorage.getItem(POSTHOG_STORAGE_KEY);
     if (existing) {
       return existing;
     }
 
     const next =
       window.crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    window.localStorage.setItem(STORAGE_KEY, next);
+    window.localStorage.setItem(POSTHOG_STORAGE_KEY, next);
     return next;
   } catch {
     return null;
@@ -36,20 +45,30 @@ function getDistinctId(): string | null {
 }
 
 function buildBaseProperties(): Readonly<Record<string, unknown>> {
-  const url = new URL(window.location.href);
-
   return {
-    $current_url: url.href,
-    $host: url.host,
-    $pathname: url.pathname,
     $process_person_profile: false,
-    $referrer: document.referrer || undefined,
-    $title: document.title,
     appVersion: import.meta.env.PUBLIC_APP_VERSION,
     clientType: "marketing-site",
     path: window.location.pathname,
     referrer: document.referrer || undefined,
     userAgent: window.navigator.userAgent,
+  };
+}
+
+function buildPageProperties(): Readonly<Record<string, unknown>> {
+  return {
+    page: document.body.dataset.page || undefined,
+    pagePath: window.location.pathname,
+    pageTitle: document.title,
+  };
+}
+
+function buildPosthogProperties(
+  properties?: PosthogEventProperties,
+): Readonly<Record<string, unknown>> {
+  return {
+    ...buildBaseProperties(),
+    ...properties,
   };
 }
 
@@ -66,10 +85,7 @@ function trackPosthogBatch(event: string, properties?: PosthogEventProperties): 
       {
         event,
         distinct_id: distinctId,
-        properties: {
-          ...buildBaseProperties(),
-          ...properties,
-        },
+        properties: buildPosthogProperties(properties),
         timestamp: new Date().toISOString(),
       },
     ],
@@ -86,6 +102,41 @@ function trackPosthogBatch(event: string, properties?: PosthogEventProperties): 
   }).catch(() => undefined);
 }
 
+function trackPosthogWebVital(metric: MetricType): void {
+  if (reportedWebVitalIds.has(metric.id)) {
+    return;
+  }
+
+  reportedWebVitalIds.add(metric.id);
+
+  trackPosthogBatch("$web_vitals", {
+    ...buildPageProperties(),
+    delta: metric.delta,
+    id: metric.id,
+    metric_delta: metric.delta,
+    metric_id: metric.id,
+    metric_name: metric.name,
+    metric_rating: metric.rating,
+    metric_value: metric.value,
+    navigationType: metric.navigationType,
+    name: metric.name,
+    rating: metric.rating,
+    value: metric.value,
+  });
+}
+
+function initializeWebVitals(): void {
+  if (didInitializeWebVitals) {
+    return;
+  }
+
+  didInitializeWebVitals = true;
+
+  onLCP(trackPosthogWebVital);
+  onCLS(trackPosthogWebVital);
+  onINP(trackPosthogWebVital);
+}
+
 export function trackPosthogEvent(event: string, properties?: PosthogEventProperties): void {
   if (typeof window === "undefined") {
     return;
@@ -100,9 +151,7 @@ export function trackPosthogPageView(properties?: Omit<PosthogEventProperties, "
   }
 
   trackPosthogBatch("$pageview", {
-    page: document.body.dataset.page || undefined,
-    pagePath: window.location.pathname,
-    pageTitle: document.title,
+    ...buildPageProperties(),
     ...properties,
   });
 }
@@ -113,9 +162,7 @@ export function trackPosthogPageLeave(properties?: Omit<PosthogEventProperties, 
   }
 
   trackPosthogBatch("$pageleave", {
-    page: document.body.dataset.page || undefined,
-    pagePath: window.location.pathname,
-    pageTitle: document.title,
+    ...buildPageProperties(),
     ...properties,
   });
 }
@@ -124,6 +171,8 @@ export function initializePosthogPageLifecycle(): void {
   if (typeof window === "undefined") {
     return;
   }
+
+  initializeWebVitals();
 
   const startedAt = Date.now();
   let didTrackLeave = false;
