@@ -2,14 +2,11 @@ import { useEffect, useSyncExternalStore } from "react";
 import * as Schema from "effect/Schema";
 
 import type { ScopedThreadRef, UpdateManifest } from "@t3tools/contracts";
-import {
-  UpdateManifestSchema,
-  UpdateRegistryLatestSchema,
-} from "@t3tools/contracts";
+import { UpdateManifestSchema, UpdateRegistryLatestSchema } from "@t3tools/contracts";
 
 import { APP_VERSION } from "../branding";
 
-const DEFAULT_UPDATE_REGISTRY_BASE_URL = "https://pipper.dev";
+const DEFAULT_UPDATE_REGISTRY_BASE_URL = "https://www.pipper.dev";
 const UPDATE_POLL_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 type AppUpdateStatus =
@@ -56,8 +53,7 @@ function normalizeVersion(version: string | null | undefined): string | null {
 }
 
 function resolveUpdateRegistryBaseUrl(): string | null {
-  const configured =
-    import.meta.env.VITE_UPDATE_REGISTRY_URL?.trim() || "https://pipper.dev";
+  const configured = import.meta.env.VITE_UPDATE_REGISTRY_URL?.trim();
   if (configured) {
     return configured;
   }
@@ -116,9 +112,7 @@ async function readLatestRegistryEntry(): Promise<{ version: string }> {
 }
 
 async function readUpdateManifest(version: string): Promise<UpdateManifest> {
-  const url = resolveRegistryUrl(
-    `/updates/${encodeURIComponent(version)}.json`,
-  );
+  const url = resolveRegistryUrl(`/updates/${encodeURIComponent(version)}.json`);
   if (!url) {
     throw new Error("Update registry is disabled.");
   }
@@ -167,10 +161,7 @@ async function runUpdateCheck(): Promise<AppUpdateState | null> {
     } catch (error) {
       const nextState = buildUpdateState({
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Could not check for updates.",
+        message: error instanceof Error ? error.message : "Could not check for updates.",
       });
       setAppUpdateState(nextState);
       return nextState;
@@ -191,11 +182,7 @@ async function runUpdateWorkflow(): Promise<AppUpdateState | null> {
     const currentState = appUpdateState;
     const latestVersion = currentState?.latestVersion;
 
-    if (
-      !currentState ||
-      currentState.status !== "available" ||
-      !latestVersion
-    ) {
+    if (!currentState || currentState.status !== "available" || !latestVersion) {
       return currentState;
     }
 
@@ -222,10 +209,7 @@ async function runUpdateWorkflow(): Promise<AppUpdateState | null> {
         latestVersion,
         latestManifestUrl: currentState.latestManifestUrl,
         status: "available",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Could not download the update manifest.",
+        message: error instanceof Error ? error.message : "Could not download the update manifest.",
       });
       setAppUpdateState(nextState);
       return nextState;
@@ -286,9 +270,7 @@ export async function startAppUpdateWorkflow(): Promise<AppUpdateState | null> {
   return runUpdateWorkflow();
 }
 
-export function setAppUpdateWorkflowThreadRef(
-  threadRef: ScopedThreadRef | null,
-): void {
+export function setAppUpdateWorkflowThreadRef(threadRef: ScopedThreadRef | null): void {
   const currentState = appUpdateState;
   if (!currentState) {
     return;
@@ -337,9 +319,7 @@ export function markAppUpdatePorted(): void {
   });
 }
 
-export function shouldShowUpdateAvailableState(
-  state: AppUpdateState | null,
-): boolean {
+export function shouldShowUpdateAvailableState(state: AppUpdateState | null): boolean {
   return (
     state?.status === "available" ||
     state?.status === "downloading-manifest" ||
@@ -349,9 +329,7 @@ export function shouldShowUpdateAvailableState(
   );
 }
 
-export function resolveCheckForUpdatesButtonLabel(
-  state: AppUpdateState | null,
-): string {
+export function resolveCheckForUpdatesButtonLabel(state: AppUpdateState | null): string {
   if (!state) {
     return "Check For Updates";
   }
@@ -383,9 +361,7 @@ export function resolveUpdateActionLabel(state: AppUpdateState | null): string {
   return "Update";
 }
 
-export function resolveUpdateSectionDescription(
-  state: AppUpdateState | null,
-): string {
+export function resolveUpdateSectionDescription(state: AppUpdateState | null): string {
   if (!state) {
     return "Check the current app version against the upstream registry.";
   }
