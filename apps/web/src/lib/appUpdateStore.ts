@@ -56,7 +56,8 @@ function normalizeVersion(version: string | null | undefined): string | null {
 }
 
 function resolveUpdateRegistryBaseUrl(): string | null {
-  const configured = import.meta.env.VITE_UPDATE_REGISTRY_URL?.trim();
+  const configured =
+    import.meta.env.VITE_UPDATE_REGISTRY_URL?.trim() || "https://pipper.dev";
   if (configured) {
     return configured;
   }
