@@ -61,6 +61,9 @@ function resolveUpdateRegistryBaseUrl(): string | null {
     return null;
   }
   if (typeof window !== "undefined") {
+    if (window.desktopBridge) {
+      return DEFAULT_UPDATE_REGISTRY_BASE_URL;
+    }
     const host = window.location.hostname;
     if (host === "localhost" || host === "127.0.0.1") {
       return null;
