@@ -2,13 +2,19 @@
 set -euo pipefail
 
 SUPPORTED_NODE_VERSION="24.13.1"
+SUPPORTED_BUN_VERSION="1.3.11"
 NODE_VERSION="${SUPPORTED_NODE_VERSION}"
+BUN_VERSION="${BUN_VERSION:-${SUPPORTED_BUN_VERSION}}"
 NVM_VERSION="${NVM_VERSION:-v0.40.3}"
 EVOLUTION_WORKSPACE_ROOT="${EVOLUTION_WORKSPACE_ROOT:-${HOME}/Library/evolve/pipper}"
 PIPPER_REPO_URL="${PIPPER_REPO_URL:-https://github.com/maker-or/pipper}"
 
 if [ "${NODE_VERSION}" != "${SUPPORTED_NODE_VERSION}" ]; then
   printf '[setup-dev-env] ERROR: This script only installs Node %s. Requested: %s\n' "${SUPPORTED_NODE_VERSION}" "${NODE_VERSION}" >&2
+  exit 1
+fi
+if [ "${BUN_VERSION}" != "${SUPPORTED_BUN_VERSION}" ]; then
+  printf '[setup-dev-env] ERROR: This script only installs Bun %s. Requested: %s\n' "${SUPPORTED_BUN_VERSION}" "${BUN_VERSION}" >&2
   exit 1
 fi
 
@@ -177,22 +183,30 @@ check_node_managers() {
 }
 
 ensure_bun_available() {
-  if check_command bun; then
+  if check_command mise; then
+    printf '[setup-dev-env] Ensuring Bun %s is installed with mise...\n' "${BUN_VERSION}"
+    mise install "bun@${BUN_VERSION}"
+    local bun_dir
+    bun_dir="$(mise where "bun@${BUN_VERSION}")/bin"
+    export PATH="${bun_dir}:${PATH}"
+  fi
+
+  if check_command bun && [ "$(bun --version)" = "${BUN_VERSION}" ]; then
     printf '[setup-dev-env] bun is installed: %s\n' "$(bun --version)"
     return 0
   fi
 
   if check_command npm; then
-    printf '[setup-dev-env] bun is not installed. Installing via npm: npm install -g bun\n'
-    npm install -g bun || true
+    printf '[setup-dev-env] Bun %s is not installed. Installing via npm: npm install -g bun@%s\n' "${BUN_VERSION}" "${BUN_VERSION}"
+    npm install -g "bun@${BUN_VERSION}" || true
   fi
 
-  if check_command bun; then
+  if check_command bun && [ "$(bun --version)" = "${BUN_VERSION}" ]; then
     printf '[setup-dev-env] bun installed successfully: %s\n' "$(bun --version)"
     return 0
   fi
 
-  printf '[setup-dev-env] ERROR: bun is required but still unavailable after npm install -g bun\n' >&2
+  printf '[setup-dev-env] ERROR: Bun %s is required but unavailable. Found: %s\n' "${BUN_VERSION}" "$(bun --version 2>/dev/null || printf 'none')" >&2
   exit 1
 }
 
@@ -248,6 +262,31 @@ install_pipper_dependencies() {
   exit 1
 }
 
+repair_electron_install() {
+  local target_dir="${EVOLUTION_WORKSPACE_ROOT}"
+
+  if [ ! -f "$target_dir/apps/desktop/package.json" ]; then
+    return 0
+  fi
+
+  if (cd "$target_dir/apps/desktop" && bun -e "import electron from 'electron'; if (typeof electron !== 'string' || electron.length === 0) process.exit(1);"); then
+    printf '[setup-dev-env] Electron binary is installed\n'
+    return 0
+  fi
+
+  printf '[setup-dev-env] Electron binary is missing. Running electron install script...\n'
+  rm -rf "$target_dir/apps/desktop/node_modules/electron/dist"
+  (cd "$target_dir/apps/desktop/node_modules/electron" && node install.js)
+
+  if (cd "$target_dir/apps/desktop" && bun -e "import electron from 'electron'; if (typeof electron !== 'string' || electron.length === 0) process.exit(1);"); then
+    printf '[setup-dev-env] Electron binary repaired successfully\n'
+    return 0
+  fi
+
+  printf '[setup-dev-env] ERROR: Electron binary is still unavailable after repair\n' >&2
+  exit 1
+}
+
 main() {
   if check_command node; then
     printf '[setup-dev-env] Preflight node version: %s\n' "$(node --version)"
@@ -265,6 +304,7 @@ main() {
 
   clone_pipper_repo
   install_pipper_dependencies
+  repair_electron_install
 
   if check_command bun; then
     printf '[setup-dev-env] Final Bun version: %s\n' "$(bun --version)"
