@@ -450,6 +450,10 @@ export function runDevRunnerWithInput(input: DevRunnerCliInput) {
     );
 
     const exitCode = yield* child.exitCode;
+    if (exitCode === 130 || exitCode === 143) {
+      yield* Effect.logInfo("[dev-runner] turbo exited after stop signal with code " + exitCode);
+      return;
+    }
     if (exitCode !== 0) {
       return yield* new DevRunnerError({
         message: `turbo exited with code ${exitCode}`,
