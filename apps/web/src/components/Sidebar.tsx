@@ -1,8 +1,8 @@
 import {
   ArrowDownToLineIcon,
   ArrowUpDownIcon,
+  AtomIcon,
   Loader2Icon,
-  MicIcon,
   PackageIcon,
   PauseIcon,
   SquarePenIcon,
@@ -2954,7 +2954,7 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
               <span className="improve-hold-fill" aria-hidden="true" />
               <span className="improve-hold-glow" aria-hidden="true" />
               <span className="improve-hold-shine" aria-hidden="true" />
-              <MicIcon
+              <AtomIcon
                 className="improve-hold-icon improve-hold-icon--mic size-5"
                 aria-hidden="true"
               />

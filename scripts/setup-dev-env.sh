@@ -236,6 +236,30 @@ clone_pipper_repo() {
   (cd "$target_dir" && git remote remove origin)
 }
 
+patch_dev_runner_signal_exits() {
+  local target_dir="${EVOLUTION_WORKSPACE_ROOT}"
+  local dev_runner="$target_dir/scripts/dev-runner.ts"
+
+  if [ ! -f "$dev_runner" ]; then
+    printf '[setup-dev-env] dev-runner.ts not found; skipping signal-exit patch\n'
+    return 0
+  fi
+
+  if grep -q 'turbo exited after stop signal with code " + exitCode' "$dev_runner"; then
+    printf '[setup-dev-env] dev-runner signal-exit patch already present\n'
+    return 0
+  fi
+
+  printf '[setup-dev-env] Patching dev-runner to treat SIGINT/SIGTERM exits as clean stops\n'
+  perl -0pi -e 's/      yield\* Effect\.logInfo\(`\[dev-runner\] turbo exited after stop signal with code `\);\n/      yield* Effect.logInfo("[dev-runner] turbo exited after stop signal with code " + exitCode);\n/' "$dev_runner"
+  perl -0pi -e 's/    const exitCode = yield\* child\.exitCode;\n    if \(exitCode !== 0\) \{\n/    const exitCode = yield* child.exitCode;\n    if (exitCode === 130 || exitCode === 143) {\n      yield* Effect.logInfo("[dev-runner] turbo exited after stop signal with code " + exitCode);\n      return;\n    }\n    if (exitCode !== 0) {\n/' "$dev_runner"
+
+  if ! grep -q 'turbo exited after stop signal with code " + exitCode' "$dev_runner"; then
+    printf '[setup-dev-env] ERROR: failed to patch dev-runner signal exits\n' >&2
+    exit 1
+  fi
+}
+
 install_pipper_dependencies() {
   local target_dir="${EVOLUTION_WORKSPACE_ROOT}"
 
@@ -277,6 +301,7 @@ repair_electron_install() {
   fi
 
   printf '[setup-dev-env] Electron binary is missing. Running electron install script...\n'
+  chmod -R u+w "$target_dir/apps/desktop/node_modules/electron/dist" 2>/dev/null || true
   rm -rf "$target_dir/apps/desktop/node_modules/electron/dist"
   (cd "$target_dir/apps/desktop/node_modules/electron" && node install.js)
 
@@ -305,6 +330,7 @@ main() {
   ensure_bun_available
 
   clone_pipper_repo
+  patch_dev_runner_signal_exits
   install_pipper_dependencies
   repair_electron_install
 

@@ -2,6 +2,7 @@ import { scopeThreadRef } from "@t3tools/client-runtime";
 import { ProviderInstanceId } from "@t3tools/contracts";
 import { createModelSelection } from "@t3tools/shared/model";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { readEnvironmentApi } from "../environmentApi";
 import { usePrimaryEnvironmentId } from "../environments/primary";
@@ -40,7 +41,7 @@ export function useAppUpdateWorkflow() {
   const updateState = useAppUpdateState();
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const providers = useServerProviders();
-  const projects = useStore(selectProjectsAcrossEnvironments);
+  const projects = useStore(useShallow(selectProjectsAcrossEnvironments));
   const workflowThreadRef = updateState?.workflowThreadRef ?? null;
   const workflowThread = useStore((state) => selectThreadByRef(state, workflowThreadRef));
   const [isStartingUpdateWorkflow, setIsStartingUpdateWorkflow] = useState(false);
