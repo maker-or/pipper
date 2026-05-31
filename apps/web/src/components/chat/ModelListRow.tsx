@@ -46,7 +46,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
       value={`${props.instanceId}:${props.model.slug}`}
       contentClassName="flex w-full items-start gap-2"
       className={cn(
-        "model-picker-row w-full cursor-pointer rounded px-3 py-2 transition-colors group",
+        "model-picker-row w-full cursor-pointer rounded-none px-3 py-2 transition-colors group",
         "data-highlighted:bg-muted data-selected:bg-accent data-selected:text-foreground",
       )}
     >
@@ -89,7 +89,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
             </span>
             {props.showNewBadge ? (
               <span
-                className="model-picker-badge shrink-0 rounded border border-amber-500/35 bg-amber-500/15 px-0.5 py-px text-[10px] font-bold uppercase leading-none tracking-wide text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/12 dark:text-amber-200"
+                className="model-picker-badge shrink-0 rounded-none border border-amber-500/35 bg-amber-500/15 px-0.5 py-px text-[10px] font-bold uppercase leading-none tracking-wide text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/12 dark:text-amber-200"
                 aria-label="New model"
               >
                 New
@@ -97,7 +97,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
             ) : null}
           </div>
           {props.jumpLabel ? (
-            <Kbd className="h-4 min-w-0 shrink-0 rounded-sm px-1.5 text-[10px]">
+            <Kbd className="h-4 min-w-0 shrink-0 rounded-none px-1.5 text-[10px]">
               {props.jumpLabel}
             </Kbd>
           ) : null}
@@ -107,7 +107,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
             {ProviderIcon ? <ProviderIcon className="size-3 shrink-0" /> : null}
             {props.providerAccentColor ? (
               <span
-                className="size-1.5 shrink-0 rounded-full"
+                className="size-1.5 shrink-0 rounded-none"
                 style={{ backgroundColor: props.providerAccentColor }}
                 aria-hidden
               />

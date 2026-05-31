@@ -701,7 +701,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
     <TooltipProvider delay={0}>
       <div
         className={cn(
-          "relative flex h-screen max-h-96 w-screen max-w-100 overflow-hidden rounded-lg border bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+          "relative flex h-screen max-h-96 w-screen max-w-100 overflow-hidden rounded-none border bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-none before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
           isLocked && !showLockedInstanceSidebar ? "flex-col" : "flex-row",
         )}
       >
@@ -754,7 +754,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
             <div className="model-picker-search-container border-b px-3 py-2">
               <ComboboxInput
                 ref={searchInputRef}
-                className="[&_input]:font-sans rounded-md"
+                className="[&_input]:font-sans rounded-none"
                 inputClassName="border-0 shadow-none ring-0 focus-visible:ring-0"
                 placeholder="Search models..."
                 showTrigger={false}
@@ -837,7 +837,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
               <div className="flex items-center gap-2 border-b px-4 py-3 bg-muted/20">
                 <button
                   onClick={() => setSelectedModelForThinking(null)}
-                  className="p-1 -ml-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="p-1 -ml-1 rounded-none text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   aria-label="Back to models list"
                 >
                   <ChevronLeftIcon className="size-4" />
@@ -881,7 +881,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
                                   );
                                 }}
                                 className={cn(
-                                  "flex items-center justify-between px-3 py-2.5 rounded-lg border text-left text-sm font-medium transition-all duration-200",
+                                  "flex items-center justify-between px-3 py-2.5 rounded-none border text-left text-sm font-medium transition-all duration-200",
                                   isSelected
                                     ? "bg-primary/10 border-primary text-primary shadow-sm"
                                     : "bg-transparent border-border/60 hover:bg-muted hover:border-border text-foreground/80 hover:text-foreground",
@@ -890,7 +890,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
                                 <span>{option.label}</span>
                                 <div className="flex items-center gap-1.5">
                                   {option.isDefault && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase font-semibold tracking-wider">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-none bg-muted text-muted-foreground uppercase font-semibold tracking-wider">
                                       Default
                                     </span>
                                   )}
@@ -909,7 +909,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
                     return (
                       <div
                         key={descriptor.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-transparent"
+                        className="flex items-center justify-between p-3 rounded-none border border-border/60 bg-transparent"
                       >
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">{descriptor.label}</span>

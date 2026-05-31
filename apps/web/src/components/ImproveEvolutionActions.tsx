@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { CheckIcon, PackageIcon, PlayIcon, SquareIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  CheckIcon,
+  Loader2Icon,
+  PackageIcon,
+  PlayIcon,
+  SquareIcon,
+} from "lucide-react";
 
 import { useDevDesktopProcess } from "../hooks/useDevDesktopProcess";
 import { IMPROVE_WORKSPACE_ROOT } from "../hooks/useOpenImproveSpace";
@@ -110,6 +117,16 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
           : portStatus === "done"
             ? "DMG opened"
             : "Port";
+  const isPortBusy =
+    portStatus === "building" || portStatus === "copying" || portStatus === "opening";
+  const portIcon =
+    portStatus === "done" ? (
+      <CheckCircleIcon aria-hidden="true" className="size-4" />
+    ) : isPortBusy ? (
+      <Loader2Icon aria-hidden="true" className="size-4 animate-spin" />
+    ) : (
+      <PackageIcon aria-hidden="true" className="size-4" />
+    );
 
   return (
     <div className={cn("no-drag flex min-w-0 items-center gap-2", className)}>
@@ -169,18 +186,24 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
       ) : null}
       {hasPortApi ? (
         <Button
-          className="rounded-full border border-violet-300/35 bg-violet-500/14 px-3 font-medium text-violet-50 shadow-xs/5 hover:bg-violet-500/20 disabled:opacity-45"
-          disabled={!approvedCommit || portStatus === "building" || isApproving}
+          aria-busy={isPortBusy}
+          className={cn(
+            "rounded-full border px-3 font-medium shadow-xs/5 disabled:opacity-45",
+            portStatus === "done"
+              ? "border-emerald-300/35 bg-emerald-500/15 text-emerald-50 hover:bg-emerald-500/20"
+              : "border-violet-300/35 bg-violet-500/14 text-violet-50 hover:bg-violet-500/20",
+          )}
+          disabled={isPortBusy || isApproving}
           size="sm"
           title={
             approvedCommit
               ? `Build a DMG from ${approvedCommit.slice(0, 12)} and open it`
-              : "Approve changes before porting"
+              : "Build a DMG from the current Improve workspace and open it"
           }
           variant="outline"
           onClick={() => void portRelease()}
         >
-          <PackageIcon aria-hidden="true" className="size-4" />
+          {portIcon}
           <span className="min-w-0 truncate">{portLabel}</span>
         </Button>
       ) : null}
