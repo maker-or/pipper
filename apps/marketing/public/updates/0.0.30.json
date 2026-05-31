@@ -1,0 +1,5 @@
+{
+  "version": "0.0.30",
+  "pr_url": "https://github.com/maker-or/pipper/commit/67d8e0b2218b18dfa236ed4462206b1befdeefa8",
+  "files_changed": ["apps/web/src/components/Sidebar.tsx"]
+}
