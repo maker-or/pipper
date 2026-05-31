@@ -1,8 +1,6 @@
 import { ArchiveIcon, ArchiveX, LoaderIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { readEnvironmentApi } from "../../environmentApi";
-import { newCommandId, newThreadId, newMessageId } from "../../lib/utils";
 import {
   defaultInstanceIdForDriver,
   PROVIDER_DISPLAY_NAMES,
@@ -23,9 +21,9 @@ import {
   resolveUpdateActionLabel,
   resolveUpdateSectionDescription,
   shouldShowUpdateAvailableState,
-  startAppUpdateWorkflow,
   useAppUpdateState,
 } from "../../lib/appUpdateStore";
+import { useAppUpdateWorkflow } from "../../hooks/useAppUpdateWorkflow";
 import { ProviderModelPicker } from "../chat/ProviderModelPicker";
 import { TraitsPicker } from "../chat/TraitsPicker";
 import { useTheme } from "../../hooks/useTheme";
@@ -158,36 +156,8 @@ function AboutVersionTitle() {
 function AboutVersionSection() {
   const updateState = useAppUpdateState();
   const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
-  const [isStartingUpdateWorkflow, setIsStartingUpdateWorkflow] = useState(false);
-
-  const navigate = useNavigate();
-  const providers = useServerProviders();
-  const activeEnvironmentId = useStore((state) => state.activeEnvironmentId);
-  const projects = useStore(selectProjectsAcrossEnvironments);
-
-  const activeProject = useMemo(() => {
-    if (!activeEnvironmentId) return projects[0];
-    return projects.find((p) => p.environmentId === activeEnvironmentId) ?? projects[0];
-  }, [projects, activeEnvironmentId]);
-
-  const defaultProvider = useMemo(() => {
-    return (
-      providers.find((p) => p.enabled && p.driver === "codex") ??
-      providers.find((p) => p.enabled) ??
-      providers[0]
-    );
-  }, [providers]);
-
-  const modelSelection = useMemo(() => {
-    if (activeProject?.defaultModelSelection) {
-      return activeProject.defaultModelSelection;
-    }
-    const firstModel = defaultProvider?.models?.[0]?.name;
-    if (defaultProvider && firstModel) {
-      return createModelSelection(defaultProvider.instanceId, firstModel);
-    }
-    return undefined;
-  }, [activeProject, defaultProvider]);
+  const { isStartingUpdateWorkflow, isPortingUpdate, startUpdateAgent, portUpdate } =
+    useAppUpdateWorkflow();
 
   const hasUpdateRegistry = hasAppUpdateRegistry();
   const checkButtonLabel = resolveCheckForUpdatesButtonLabel(updateState);
@@ -220,119 +190,22 @@ function AboutVersionSection() {
   }, [isCheckingForUpdates]);
 
   const handleStartUpdateWorkflow = useCallback(() => {
-    if (isCheckingForUpdates || isStartingUpdateWorkflow) {
+    if (isCheckingForUpdates || isStartingUpdateWorkflow || isPortingUpdate) {
       return;
     }
-
-    if (!activeProject) {
-      toastManager.add(
-        stackedThreadToast({
-          type: "error",
-          title: "Cannot start update",
-          description: "No active project found.",
-        }),
-      );
+    if (updateState?.status === "ready-to-port") {
+      void portUpdate();
       return;
     }
-
-    const api = readEnvironmentApi(activeProject.environmentId);
-    if (!api) {
-      toastManager.add(
-        stackedThreadToast({
-          type: "error",
-          title: "Cannot start update",
-          description: "Environment API not available.",
-        }),
-      );
-      return;
-    }
-
-    if (!modelSelection) {
-      toastManager.add(
-        stackedThreadToast({
-          type: "error",
-          title: "Cannot start update",
-          description: "No model or provider configured.",
-        }),
-      );
-      return;
-    }
-
-    setIsStartingUpdateWorkflow(true);
-    void startAppUpdateWorkflow()
-      .then(async (nextState) => {
-        if (!nextState || !nextState.latestManifest) {
-          throw new Error("Failed to load latest update manifest.");
-        }
-        const manifest = nextState.latestManifest;
-        const threadId = newThreadId();
-
-        // 1. Create the thread
-        await api.orchestration.dispatchCommand({
-          type: "thread.create",
-          commandId: newCommandId(),
-          threadId,
-          projectId: activeProject.id,
-          title: `Update to ${manifest.version}`,
-          modelSelection,
-          runtimeMode: "full-access",
-          interactionMode: "default",
-          branch: null,
-          worktreePath: null,
-          createdAt: new Date().toISOString(),
-        });
-
-        // 2. Start the turn with the YOLO configuration
-        const actualPrompt = `port the changes from the upstream provider to the current codebase, use the information from the metadata to get more git information and read the files and its changes using the commands.
-
-Update Metadata:
-${JSON.stringify(manifest, null, 2)}
-
-Please read the local "patch.md" file from the workspace to understand previous customizations and ensure they are merged correctly.`;
-
-        await api.orchestration.dispatchCommand({
-          type: "thread.turn.start",
-          commandId: newCommandId(),
-          threadId,
-          message: {
-            messageId: newMessageId(),
-            role: "user",
-            text: actualPrompt,
-            attachments: [],
-          },
-          modelSelection,
-          runtimeMode: "full-access",
-          interactionMode: "default",
-          createdAt: new Date().toISOString(),
-        });
-
-        toastManager.add({
-          type: "success",
-          title: "Update Agent Triggered",
-          description: `Started update thread for version ${manifest.version} in the background.`,
-        });
-
-        void navigate({
-          to: "/$environmentId/$threadId",
-          params: {
-            environmentId: activeProject.environmentId,
-            threadId,
-          },
-        });
-      })
-      .catch((error: unknown) => {
-        toastManager.add(
-          stackedThreadToast({
-            type: "error",
-            title: "Could not start update workflow",
-            description: error instanceof Error ? error.message : "Workflow start failed.",
-          }),
-        );
-      })
-      .finally(() => {
-        setIsStartingUpdateWorkflow(false);
-      });
-  }, [isCheckingForUpdates, isStartingUpdateWorkflow, activeProject, modelSelection, navigate]);
+    void startUpdateAgent();
+  }, [
+    isCheckingForUpdates,
+    isPortingUpdate,
+    isStartingUpdateWorkflow,
+    portUpdate,
+    startUpdateAgent,
+    updateState?.status,
+  ]);
 
   return (
     <>
@@ -350,8 +223,10 @@ Please read the local "patch.md" file from the workspace to understand previous 
                     !hasUpdateRegistry ||
                     isCheckingForUpdates ||
                     isStartingUpdateWorkflow ||
+                    isPortingUpdate ||
                     updateState?.status === "downloading-manifest" ||
-                    updateState?.status === "updating"
+                    updateState?.status === "updating" ||
+                    updateState?.status === "porting"
                   }
                   onClick={handleCheckForUpdates}
                 >
@@ -384,8 +259,10 @@ Please read the local "patch.md" file from the workspace to understand previous 
                 !hasUpdateRegistry ||
                 isCheckingForUpdates ||
                 isStartingUpdateWorkflow ||
+                isPortingUpdate ||
                 updateState?.status === "downloading-manifest" ||
-                updateState?.status === "updating"
+                updateState?.status === "updating" ||
+                updateState?.status === "porting"
               }
               onClick={handleStartUpdateWorkflow}
             >

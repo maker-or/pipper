@@ -1,4 +1,12 @@
-import { ArrowUpDownIcon, MicIcon, PauseIcon, SquarePenIcon } from "lucide-react";
+import {
+  ArrowDownToLineIcon,
+  ArrowUpDownIcon,
+  Loader2Icon,
+  MicIcon,
+  PackageIcon,
+  PauseIcon,
+  SquarePenIcon,
+} from "lucide-react";
 import {
   ArchiveIcon,
   CaretRightIcon,
@@ -168,6 +176,12 @@ import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { CommandDialogTrigger } from "./ui/command";
 import { useAppSpaceStore } from "../appSpaceStore";
 import { useOpenImproveSpace } from "../hooks/useOpenImproveSpace";
+import { useAppUpdateWorkflow } from "../hooks/useAppUpdateWorkflow";
+import {
+  resolveUpdateActionLabel,
+  shouldShowUpdateAvailableState,
+  useAppUpdateState,
+} from "../lib/appUpdateStore";
 import { useSettings, useUpdateSettings } from "~/hooks/useSettings";
 import { useServerKeybindings } from "../rpc/serverState";
 import {
@@ -2685,6 +2699,9 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
   const isImproveSpace = activeSpace === "improve";
   const setActiveSpace = useAppSpaceStore((store) => store.setActiveSpace);
   const { isOpeningImprove, openImproveSpace } = useOpenImproveSpace();
+  const updateState = useAppUpdateState();
+  const { isStartingUpdateWorkflow, isPortingUpdate, startUpdateAgent, portUpdate } =
+    useAppUpdateWorkflow();
   const [improveLaunchState, setImproveLaunchState] = useState<"idle" | "holding" | "entering">(
     "idle",
   );
@@ -2705,6 +2722,25 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
     setActiveSpace("main");
     openAddProject();
   }, [openAddProject, setActiveSpace]);
+
+  const showAppUpdateButton = shouldShowUpdateAvailableState(updateState);
+  const updateButtonLabel = resolveUpdateActionLabel(updateState);
+  const isUpdateBusy =
+    isStartingUpdateWorkflow ||
+    isPortingUpdate ||
+    updateState?.status === "downloading-manifest" ||
+    updateState?.status === "updating" ||
+    updateState?.status === "porting";
+  const handleAppUpdateClick = useCallback(() => {
+    if (isUpdateBusy) {
+      return;
+    }
+    if (updateState?.status === "ready-to-port") {
+      void portUpdate();
+      return;
+    }
+    void startUpdateAgent();
+  }, [isUpdateBusy, portUpdate, startUpdateAgent, updateState?.status]);
 
   const createThreadForProjectMember = useCallback(
     (member: SidebarProjectGroupMember) => {
@@ -2968,6 +3004,39 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
             })}
         </SidebarContent>
         <SidebarFooter className="w-full items-center p-2">
+          {showAppUpdateButton ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={updateButtonLabel}
+                    data-testid="sidebar-app-update-trigger"
+                    className={`inline-flex size-10 items-center justify-center rounded-md transition-colors ${
+                      updateState?.status === "ready-to-port"
+                        ? "border border-violet-300/35 bg-violet-500/14 text-violet-50 hover:bg-violet-500/20"
+                        : "border border-orange-300/30 bg-orange-500/12 text-orange-50 hover:bg-orange-500/18"
+                    } disabled:cursor-not-allowed disabled:opacity-60`}
+                    disabled={isUpdateBusy}
+                    onClick={handleAppUpdateClick}
+                  />
+                }
+              >
+                {isUpdateBusy ? (
+                  <Loader2Icon className="size-5 animate-spin" />
+                ) : updateState?.status === "ready-to-port" ? (
+                  <PackageIcon className="size-5" />
+                ) : (
+                  <ArrowDownToLineIcon className="size-5" />
+                )}
+              </TooltipTrigger>
+              <TooltipPopup side="right">
+                {updateState?.latestVersion
+                  ? `${updateButtonLabel} ${updateState.latestVersion}`
+                  : updateButtonLabel}
+              </TooltipPopup>
+            </Tooltip>
+          ) : null}
           {!isImproveSpace ? (
             <Tooltip>
               <TooltipTrigger

@@ -232,6 +232,8 @@ clone_pipper_repo() {
   mkdir -p "$(dirname "$target_dir")"
   printf '[setup-dev-env] Cloning %s into %s\n' "$repo_url" "$target_dir"
   git clone "$repo_url" "$target_dir"
+  printf '[setup-dev-env] Removing origin remote from Improve workspace clone\n'
+  (cd "$target_dir" && git remote remove origin)
 }
 
 install_pipper_dependencies() {

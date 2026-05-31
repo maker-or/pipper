@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import * as Schema from "effect/Schema";
 
-import type { UpdateManifest } from "@t3tools/contracts";
+import type { ScopedThreadRef, UpdateManifest } from "@t3tools/contracts";
 import { UpdateManifestSchema, UpdateRegistryLatestSchema } from "@t3tools/contracts";
 
 import { APP_VERSION } from "../branding";
@@ -15,6 +15,8 @@ type AppUpdateStatus =
   | "available"
   | "downloading-manifest"
   | "updating"
+  | "ready-to-port"
+  | "porting"
   | "error";
 
 export interface AppUpdateState {
@@ -25,6 +27,7 @@ export interface AppUpdateState {
   readonly checkedAt: string | null;
   readonly status: AppUpdateStatus;
   readonly message: string | null;
+  readonly workflowThreadRef: ScopedThreadRef | null;
 }
 
 const listeners = new Set<() => void>();
@@ -94,6 +97,7 @@ function buildUpdateState(
     latestManifest: null,
     checkedAt: new Date().toISOString(),
     message: null,
+    workflowThreadRef: null,
     ...next,
   };
 }
@@ -196,6 +200,7 @@ async function runUpdateWorkflow(): Promise<AppUpdateState | null> {
         latestManifest: manifest,
         status: "updating",
         message: "Update workflow started in the background.",
+        workflowThreadRef: currentState.workflowThreadRef,
       });
       setAppUpdateState(nextState);
       return nextState;
@@ -265,11 +270,62 @@ export async function startAppUpdateWorkflow(): Promise<AppUpdateState | null> {
   return runUpdateWorkflow();
 }
 
+export function setAppUpdateWorkflowThreadRef(threadRef: ScopedThreadRef | null): void {
+  const currentState = appUpdateState;
+  if (!currentState) {
+    return;
+  }
+  setAppUpdateState({
+    ...currentState,
+    workflowThreadRef: threadRef,
+  });
+}
+
+export function markAppUpdateReadyToPort(): void {
+  const currentState = appUpdateState;
+  if (!currentState || currentState.status !== "updating") {
+    return;
+  }
+  setAppUpdateState({
+    ...currentState,
+    status: "ready-to-port",
+    message: "Update agent finished. Port the build to create the installer.",
+  });
+}
+
+export function markAppUpdatePorting(): void {
+  const currentState = appUpdateState;
+  if (!currentState || currentState.status !== "ready-to-port") {
+    return;
+  }
+  setAppUpdateState({
+    ...currentState,
+    status: "porting",
+    message: "Building the macOS installer.",
+  });
+}
+
+export function markAppUpdatePorted(): void {
+  const currentState = appUpdateState;
+  if (!currentState || currentState.status !== "porting") {
+    return;
+  }
+  setAppUpdateState({
+    ...currentState,
+    status: "up-to-date",
+    latestVersion: currentState.latestVersion,
+    message: "Installer opened.",
+    workflowThreadRef: null,
+  });
+}
+
 export function shouldShowUpdateAvailableState(state: AppUpdateState | null): boolean {
   return (
     state?.status === "available" ||
     state?.status === "downloading-manifest" ||
-    state?.status === "updating"
+    state?.status === "updating" ||
+    state?.status === "ready-to-port" ||
+    state?.status === "porting"
   );
 }
 
@@ -296,6 +352,12 @@ export function resolveUpdateActionLabel(state: AppUpdateState | null): string {
   if (state.status === "updating") {
     return "Updating…";
   }
+  if (state.status === "ready-to-port") {
+    return "Port";
+  }
+  if (state.status === "porting") {
+    return "Porting…";
+  }
   return "Update";
 }
 
@@ -308,6 +370,12 @@ export function resolveUpdateSectionDescription(state: AppUpdateState | null): s
   }
   if (state.status === "updating") {
     return "The latest manifest has been downloaded and the background workflow is running.";
+  }
+  if (state.status === "ready-to-port") {
+    return "The update agent is done. Build and open the installer.";
+  }
+  if (state.status === "porting") {
+    return "The macOS installer is being built.";
   }
   if (state.status === "error") {
     return state.message ?? "Could not check for updates.";

@@ -20,9 +20,8 @@ function readDesktopBridge() {
 
 export function useDevDesktopProcess(): UseDevDesktopProcessResult {
   const bridge = readDesktopBridge();
-  const isDevShell = bridge?.getAppBranding?.()?.stageLabel === "Dev";
   const hasApi = Boolean(
-    isDevShell && bridge?.getDevDesktopState && bridge?.startDevDesktop && bridge?.stopDevDesktop,
+    bridge?.getDevDesktopState && bridge?.startDevDesktop && bridge?.stopDevDesktop,
   );
   const [state, setState] = useState<DesktopDevDesktopState | null>(null);
   const [isBusy, setIsBusy] = useState(false);
