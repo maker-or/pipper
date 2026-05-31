@@ -314,6 +314,38 @@ repair_electron_install() {
   exit 1
 }
 
+link_package_bin() {
+  local package_dir="$1"
+  local bin_name="$2"
+  local bin_target="$3"
+  local bin_dir="$package_dir/../.bin"
+
+  if [ ! -d "$package_dir" ]; then
+    printf '[setup-dev-env] ERROR: package directory missing for bin %s: %s\n' "$bin_name" "$package_dir" >&2
+    exit 1
+  fi
+
+  mkdir -p "$bin_dir"
+  ln -sf "../$(basename "$package_dir")/$bin_target" "$bin_dir/$bin_name"
+  chmod +x "$bin_dir/$bin_name" 2>/dev/null || true
+}
+
+repair_desktop_package_bins() {
+  local target_dir="${EVOLUTION_WORKSPACE_ROOT}"
+  local desktop_node_modules="$target_dir/apps/desktop/node_modules"
+
+  if [ ! -d "$desktop_node_modules" ]; then
+    printf '[setup-dev-env] Desktop node_modules missing; skipping bin repair\n'
+    return 0
+  fi
+
+  printf '[setup-dev-env] Ensuring desktop package binaries are linked\n'
+  link_package_bin "$desktop_node_modules/tsdown" "tsdown" "dist/run.mjs"
+  link_package_bin "$desktop_node_modules/typescript" "tsc" "bin/tsc"
+  link_package_bin "$desktop_node_modules/typescript" "tsserver" "bin/tsserver"
+  link_package_bin "$desktop_node_modules/vitest" "vitest" "vitest.mjs"
+}
+
 main() {
   if check_command node; then
     printf '[setup-dev-env] Preflight node version: %s\n' "$(node --version)"
@@ -332,6 +364,7 @@ main() {
   clone_pipper_repo
   patch_dev_runner_signal_exits
   install_pipper_dependencies
+  repair_desktop_package_bins
   repair_electron_install
 
   if check_command bun; then
