@@ -46,7 +46,7 @@ The system is designed around:
                          ▼
 
       ~/Library/evolve/pipper (macOS)
-      AppData/Local/evolve/pipper (Windows)
+      %LOCALAPPDATA%/evolve/pipper (Windows)
 
                          │
                          ▼

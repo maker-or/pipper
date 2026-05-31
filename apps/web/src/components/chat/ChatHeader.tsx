@@ -324,7 +324,7 @@ export const ChatHeader = memo(function ChatHeader({
             </button>
           </PopoverPopup>
         </Popover>
-        {isImproveSpace ? null : <SidebarTrigger className="size-7 shrink-0 md:hidden" />}
+        <SidebarTrigger className="size-7 shrink-0 md:hidden" />
         <div className="flex h-full min-w-0 flex-1 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div ref={tabRailRef} className="relative flex h-full min-w-max items-stretch">
             {activeTabIndicator ? (

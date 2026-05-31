@@ -34,12 +34,13 @@
    - Add an explicit **Approve Changes** button in Improve Space.
    - On click:
      - verify working tree has changes
-     - run required checks if time allows:
+     - run required checks as mandatory gates before the commit/patch update step:
        ```bash
        bun fmt
        bun lint
        bun typecheck
        ```
+       These commands must all pass; any non-zero exit code blocks approval.
      - create local commit
      - update `patch.md` with:
        - commit hash

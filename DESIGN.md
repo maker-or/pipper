@@ -2,7 +2,7 @@
 
 **Project ID:** local-repo
 
-## 1. Visual Theme & Atmosphere
+## Visual Theme & Atmosphere
 
 T3 Code feels quiet, technical, and disciplined: a workspace built for sustained focus rather than browsing. The default experience is neutral-first and slightly austere, with dark surfaces that read like a polished terminal shell and light surfaces that stay soft and uncluttered. The visual language favors clarity, speed, and predictability over decoration.
 
@@ -10,7 +10,7 @@ The system leans into restrained depth: thin borders, muted fills, and whisper-s
 
 A special Improve space introduces a more theatrical mood: warm sepia-dark foundations, amber highlights, and cinematic motion. It is intentionally richer and more expressive than the core app, but still obeys the same structural discipline.
 
-## 2. Color Palette & Roles
+## Color Palette & Roles
 
 - **Carbon Graphite (#171717)** — the main dark-mode background for the app shell, sidebars, and primary surfaces.
 - **Deep Ink (#0a0a0a)** — the deepest dark surface, used for editor cavities and high-contrast content planes.
@@ -31,7 +31,7 @@ A special Improve space introduces a more theatrical mood: warm sepia-dark found
 
 Light mode follows the same semantic structure with softer tones: **Warm White (#f5f5f5)**, **Editor White (#ffffff)**, **Ink Text (#0a0a0a)**, **Muted Gray (#737373)**, and the same **Primary Signal Blue (#009fff)** as the unifying accent.
 
-## 3. Typography Rules
+## Typography Rules
 
 The typography is modern, compact, and highly legible. The sans-serif voice is **Geist**, which keeps the UI feeling contemporary without becoming overly styled. Monospace content uses **SF Mono** first, then a conservative fallback stack, reinforcing the code-native character of the product.
 
@@ -39,7 +39,7 @@ Headings are semibold or bold, with tight tracking and minimal ornament. They ar
 
 Long-form content is encouraged to balance and wrap elegantly, especially in onboarding, markdown, and error states. Code, diffs, file paths, and terminal-like surfaces always keep the monospace voice to preserve the product’s technical identity.
 
-## 4. Component Stylings
+## Component Stylings
 
 - **Buttons:** Crisp rounded rectangles with **subtly rounded corners** rather than pill shapes, usually `rounded-lg` with a thin border and medium weight text. Primary buttons are filled with the signal blue and read as the strongest call to action. Secondary and outline buttons stay neutral and slightly translucent. Ghost buttons are minimal and blend into the surface until hover or press. Motion is restrained: a small press scale, a soft hover fill, and a quick focus ring.
 - **Cards/Containers:** Cards use **generously rounded corners** on larger surfaces and smaller rounded corners on compact surfaces. They are bordered, lightly elevated, and visually quiet. The dominant treatment is a faint shadow plus a subtle inset highlight, which gives the illusion of material thickness without harsh contrast. Popovers, dialogs, sheets, and command panels follow the same logic, with slightly stronger elevation and optional backdrop blur.
@@ -47,7 +47,7 @@ Long-form content is encouraged to balance and wrap elegantly, especially in onb
 - **Sidebars and Navigation:** The sidebar is dense, structured, and efficient. On desktop it occupies a fixed column width, with an icon-collapsed mode for tighter layouts. Active items use the blue selection wash, while hover states use gentle tinted fills. Floating sidebar variants gain rounded corners and a border to feel like a surfaced panel rather than a hard partition.
 - **Empty States and Onboarding Panels:** Empty states are centered, bounded by rounded containers, and kept visually calm. They often use a softer card fill, a modest icon frame, and a single strong action button. The goal is reassurance and clarity, not persuasion through decoration.
 
-## 5. Layout Principles
+## Layout Principles
 
 The layout strategy is pane-based, full-height, and controlled. The app prefers locked viewport shells, `min-h-0` containment, and no accidental page scrolling. Content is arranged in predictable columns and split panes, with the sidebar anchoring the left edge and the main workspace filling the remainder of the screen.
 

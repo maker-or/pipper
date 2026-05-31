@@ -2,12 +2,11 @@ import { scopeProjectRef } from "@t3tools/client-runtime";
 import { DEFAULT_MODEL, ProviderInstanceId } from "@t3tools/contracts";
 import { PIPPER_EVOLUTION_WORKSPACE_ROOT } from "@t3tools/shared/evolution";
 import { useCallback, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { readEnvironmentApi } from "../environmentApi";
 import { usePrimaryEnvironmentId } from "../environments/primary";
 import { newCommandId, newProjectId } from "../lib/utils";
 import { findProjectByPath, inferProjectTitleFromPath } from "../lib/projectPaths";
-import { selectProjectsAcrossEnvironments, useStore } from "../store";
+import { selectEnvironmentState, selectProjectsAcrossEnvironments, useStore } from "../store";
 import { useAppSpaceStore } from "../appSpaceStore";
 import { stackedThreadToast, toastManager } from "../components/ui/toast";
 import { useSettings } from "./useSettings";
@@ -17,11 +16,29 @@ export const IMPROVE_WORKSPACE_ROOT = PIPPER_EVOLUTION_WORKSPACE_ROOT;
 
 export function useOpenImproveSpace() {
   const { handleNewThread } = useNewThreadHandler();
-  const projects = useStore(useShallow(selectProjectsAcrossEnvironments));
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const defaultThreadEnvMode = useSettings((settings) => settings.defaultThreadEnvMode);
   const setActiveSpace = useAppSpaceStore((store) => store.setActiveSpace);
   const [isOpeningImprove, setIsOpeningImprove] = useState(false);
+
+  const waitForBootstrapComplete = useCallback(async () => {
+    if (!primaryEnvironmentId) {
+      return;
+    }
+
+    if (selectEnvironmentState(useStore.getState(), primaryEnvironmentId).bootstrapComplete) {
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      const unsubscribe = useStore.subscribe((state) => {
+        if (selectEnvironmentState(state, primaryEnvironmentId).bootstrapComplete) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
+  }, [primaryEnvironmentId]);
 
   const openImproveSpace = useCallback(() => {
     if (!primaryEnvironmentId || isOpeningImprove) {
@@ -43,8 +60,12 @@ export function useOpenImproveSpace() {
       try {
         await window.desktopBridge?.ensureEvolutionWorkspace?.();
 
+        await waitForBootstrapComplete();
+
         const existing = findProjectByPath(
-          projects.filter((project) => project.environmentId === primaryEnvironmentId),
+          selectProjectsAcrossEnvironments(useStore.getState()).filter(
+            (project) => project.environmentId === primaryEnvironmentId,
+          ),
           IMPROVE_WORKSPACE_ROOT,
         );
         if (existing) {
@@ -94,8 +115,8 @@ export function useOpenImproveSpace() {
     handleNewThread,
     isOpeningImprove,
     primaryEnvironmentId,
-    projects,
     setActiveSpace,
+    waitForBootstrapComplete,
   ]);
 
   return { isOpeningImprove, openImproveSpace };

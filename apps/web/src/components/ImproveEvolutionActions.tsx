@@ -49,6 +49,7 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
 
   const approveChanges = async () => {
     if (!bridge?.approveEvolutionChanges) return;
+    setApprovedCommit(null);
     setIsApproving(true);
     try {
       const result = await bridge.approveEvolutionChanges({ summary: "Approve Improve changes" });
@@ -61,6 +62,7 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
         }),
       );
     } catch (error) {
+      setApprovedCommit(null);
       toastManager.add(
         stackedThreadToast({
           type: "error",

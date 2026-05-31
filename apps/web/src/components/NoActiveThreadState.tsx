@@ -21,7 +21,7 @@ export function NoActiveThreadState() {
           )}
         >
           {isElectron ? (
-            <div className="flex w-full items-center justify-between gap-3">
+            <div className="flex w-full items-center justify-between gap-3 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
               <span className="text-xs text-muted-foreground/50 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
                 No active thread
               </span>

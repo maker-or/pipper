@@ -192,7 +192,8 @@ ensure_bun_available() {
     return 0
   fi
 
-  printf '[setup-dev-env] bun is unavailable; dependency install will fall back to npm if possible\n'
+  printf '[setup-dev-env] ERROR: bun is required but still unavailable after npm install -g bun\n' >&2
+  exit 1
 }
 
 clone_pipper_repo() {
@@ -234,12 +235,16 @@ install_pipper_dependencies() {
   fi
 
   if check_command npm; then
-    printf '[setup-dev-env] bun unavailable; running npm install instead\n'
-    (cd "$target_dir" && npm install)
+    printf '[setup-dev-env] bun unavailable; attempting npm install -g bun before dependency install\n'
+    npm install -g bun || true
+  fi
+
+  if check_command bun; then
+    (cd "$target_dir" && bun install)
     return 0
   fi
 
-  printf '[setup-dev-env] ERROR: neither bun nor npm is available for dependency install\n' >&2
+  printf '[setup-dev-env] ERROR: bun is required for dependency install but is still unavailable\n' >&2
   exit 1
 }
 

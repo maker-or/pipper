@@ -1114,66 +1114,102 @@
     <script>
       const HOLD_MS = 900;
       const RESET_MS = 1550;
+      const conceptStateByElement = new WeakMap();
+      const replayTimerIds = new Set();
+
+      function getConceptState(concept) {
+        let state = conceptStateByElement.get(concept);
+        if (state === undefined) {
+          state = {
+            button: concept.querySelector(".improve-button"),
+            holdTimer: null,
+            enterTimer: null,
+            isEntering: false,
+          };
+          conceptStateByElement.set(concept, state);
+        }
+        return state;
+      }
+
+      function clearReplayTimers() {
+        for (const timerId of replayTimerIds) {
+          window.clearTimeout(timerId);
+        }
+        replayTimerIds.clear();
+      }
 
       function resetConcept(concept) {
+        const state = getConceptState(concept);
+        if (state.holdTimer !== null) {
+          window.clearTimeout(state.holdTimer);
+          state.holdTimer = null;
+        }
+        if (state.enterTimer !== null) {
+          window.clearTimeout(state.enterTimer);
+          state.enterTimer = null;
+        }
+        state.isEntering = false;
+        clearReplayTimers();
         concept.dataset.state = "idle";
-        const button = concept.querySelector(".improve-button");
-        button.dataset.holdState = "idle";
+        state.button.dataset.holdState = "idle";
       }
 
       function enterConcept(concept) {
-        const button = concept.querySelector(".improve-button");
-        button.dataset.holdState = "entering";
+        const state = getConceptState(concept);
+        state.button.dataset.holdState = "entering";
         concept.dataset.state = "entering";
-        window.setTimeout(() => resetConcept(concept), RESET_MS);
+        if (state.enterTimer !== null) {
+          window.clearTimeout(state.enterTimer);
+        }
+        state.enterTimer = window.setTimeout(() => {
+          state.enterTimer = null;
+          resetConcept(concept);
+        }, RESET_MS);
       }
 
       for (const concept of document.querySelectorAll(".concept")) {
-        const button = concept.querySelector(".improve-button");
-        let holdTimer = null;
-        let isEntering = false;
+        const state = getConceptState(concept);
 
         const beginHold = () => {
-          if (isEntering) return;
-          window.clearTimeout(holdTimer);
-          button.dataset.holdState = "holding";
-          holdTimer = window.setTimeout(() => {
-            holdTimer = null;
-            isEntering = true;
+          if (state.isEntering) return;
+          if (state.holdTimer !== null) {
+            window.clearTimeout(state.holdTimer);
+          }
+          state.button.dataset.holdState = "holding";
+          state.holdTimer = window.setTimeout(() => {
+            state.holdTimer = null;
+            state.isEntering = true;
             enterConcept(concept);
-            window.setTimeout(() => {
-              isEntering = false;
-            }, RESET_MS);
           }, HOLD_MS);
         };
 
         const cancelHold = () => {
-          if (isEntering) return;
-          if (holdTimer !== null) {
-            window.clearTimeout(holdTimer);
-            holdTimer = null;
-            button.dataset.holdState = "idle";
+          if (state.isEntering) return;
+          if (state.holdTimer !== null) {
+            window.clearTimeout(state.holdTimer);
+            state.holdTimer = null;
+            state.button.dataset.holdState = "idle";
           }
         };
 
-        button.dataset.holdState = "idle";
-        button.addEventListener("pointerdown", (event) => {
+        state.button.dataset.holdState = "idle";
+        state.button.addEventListener("pointerdown", (event) => {
           if (event.button !== 0) return;
-          button.setPointerCapture(event.pointerId);
+          state.button.setPointerCapture(event.pointerId);
           beginHold();
         });
-        button.addEventListener("pointerup", cancelHold);
-        button.addEventListener("pointercancel", cancelHold);
-        button.addEventListener("pointerleave", cancelHold);
-        button.addEventListener("blur", cancelHold);
-        button.addEventListener("click", (event) => event.preventDefault());
-        button.addEventListener("keydown", (event) => {
+        state.button.addEventListener("pointerup", cancelHold);
+        state.button.addEventListener("pointercancel", cancelHold);
+        state.button.addEventListener("pointerleave", cancelHold);
+        state.button.addEventListener("blur", cancelHold);
+        state.button.addEventListener("click", (event) => event.preventDefault());
+        state.button.addEventListener("keydown", (event) => {
           if (event.repeat) return;
           if (event.key !== " " && event.key !== "Enter") return;
           event.preventDefault();
           beginHold();
         });
-        button.addEventListener("keyup", (event) => {
+        state.button.addEventListener("keyup", (event) => {
           if (event.key !== " " && event.key !== "Enter") return;
           event.preventDefault();
           cancelHold();
@@ -1181,12 +1217,18 @@
       }
 
       document.querySelector("[data-replay-all]").addEventListener("click", () => {
+        clearReplayTimers();
         document.querySelectorAll(".concept").forEach((concept, index) => {
-          window.setTimeout(() => enterConcept(concept), index * 120);
+          const timerId = window.setTimeout(() => {
+            replayTimerIds.delete(timerId);
+            enterConcept(concept);
+          }, index * 120);
+          replayTimerIds.add(timerId);
         });
       });
 
       document.querySelector("[data-reset-all]").addEventListener("click", () => {
+        clearReplayTimers();
         document.querySelectorAll(".concept").forEach(resetConcept);
       });
     </script>

@@ -31,6 +31,7 @@ import {
 import { resolveAndPersistPreferredEditor } from "../editorPreferences";
 import { readLocalApi } from "../localApi";
 import { useOpenImproveSpace } from "../hooks/useOpenImproveSpace";
+import { usePrimaryEnvironmentId } from "../environments/primary";
 import { useSettings } from "../hooks/useSettings";
 import {
   deriveLogicalProjectKeyFromSettings,
@@ -157,10 +158,11 @@ function RootRouteView() {
 
 function ImproveSpaceWindowBootstrap() {
   const consumedInitialSpaceRef = useRef(false);
+  const primaryEnvironmentId = usePrimaryEnvironmentId();
   const { openImproveSpace } = useOpenImproveSpace();
 
   useEffect(() => {
-    if (consumedInitialSpaceRef.current) {
+    if (consumedInitialSpaceRef.current || !primaryEnvironmentId) {
       return;
     }
 
@@ -171,7 +173,7 @@ function ImproveSpaceWindowBootstrap() {
 
     consumedInitialSpaceRef.current = true;
     openImproveSpace();
-  }, [openImproveSpace]);
+  }, [openImproveSpace, primaryEnvironmentId]);
 
   return null;
 }

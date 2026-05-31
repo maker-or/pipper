@@ -189,7 +189,6 @@ import {
 import { ImproveLaunchTransition, type ImproveLaunchOrigin } from "./ImproveLaunchTransition";
 const THREAD_PREVIEW_LIMIT = 6;
 const IMPROVE_HOLD_DURATION_MS = 900;
-const IMPROVE_ENTER_DELAY_MS = 680;
 const IMPROVE_TRANSITION_RESET_MS = 1280;
 const SIDEBAR_SORT_LABELS: Record<SidebarProjectSortOrder, string> = {
   updated_at: "Last user message",
@@ -2746,12 +2745,12 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
 
       improveEnterTimerRef.current = window.setTimeout(() => {
         openImproveSpace();
-      }, IMPROVE_ENTER_DELAY_MS);
+      }, IMPROVE_TRANSITION_RESET_MS + 80);
       improveResetTimerRef.current = window.setTimeout(() => {
         improveLaunchingRef.current = false;
         setImproveLaunchState("idle");
         setImproveLaunchOrigin(null);
-      }, IMPROVE_TRANSITION_RESET_MS);
+      }, IMPROVE_TRANSITION_RESET_MS + 160);
     },
     [clearImproveLaunchTimers, isMobile, openImproveSpace, setOpenMobile],
   );

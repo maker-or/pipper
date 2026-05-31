@@ -192,6 +192,7 @@ const EVOLUTION_PORT_RUNNER_ARGS = ["run", "dist:desktop:dmg"] as const;
 const EVOLUTION_APPROVAL_CHECK_COMMANDS = [
   ["bun", ["fmt"]],
   ["bun", ["lint"]],
+  ["bun", ["run", "test"]],
   ["bun", ["typecheck"]],
 ] as const;
 
@@ -745,14 +746,8 @@ async function ensureEvolutionWorkspace(): Promise<DesktopEvolutionWorkspaceStat
       throw new Error(`${workspaceRoot} exists but is not a Pipper workspace.`);
     }
     FS.mkdirSync(Path.dirname(workspaceRoot), { recursive: true });
-    if (FS.existsSync(Path.join(ROOT_DIR, ".git"))) {
-      await runEvolutionCommand("git", ["clone", ROOT_DIR, workspaceRoot], {
-        cwd: Path.dirname(workspaceRoot),
-      });
-      copyEvolutionSourceFallback(ROOT_DIR, workspaceRoot);
-    } else {
-      copyEvolutionSourceFallback(ROOT_DIR, workspaceRoot);
-    }
+    FS.rmSync(workspaceRoot, { recursive: true, force: true });
+    copyEvolutionSourceFallback(ROOT_DIR, workspaceRoot);
   }
 
   const hasNodeModules = FS.existsSync(Path.join(workspaceRoot, "node_modules"));
@@ -812,11 +807,17 @@ async function approveEvolutionChanges(
     ],
     { cwd },
   );
-  const commit = (await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })).stdout.trim();
+  const initialCommit = (
+    await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })
+  ).stdout.trim();
   const filesChanged = (
-    await runEvolutionCommand("git", ["diff-tree", "--no-commit-id", "--name-only", "-r", commit], {
-      cwd,
-    })
+    await runEvolutionCommand(
+      "git",
+      ["diff-tree", "--no-commit-id", "--name-only", "-r", initialCommit],
+      {
+        cwd,
+      },
+    )
   ).stdout
     .split("\n")
     .map((entry) => entry.trim())
@@ -826,9 +827,12 @@ async function approveEvolutionChanges(
   const summary = input?.summary?.trim() || "Approved Improve changes.";
   FS.appendFileSync(
     patchPath,
-    `\n\n## Approved Improve Change (${createdAt})\n\n- Commit: ${commit}\n- Summary: ${summary}\n- Files changed:\n${filesChanged.map((file) => `  - ${file}`).join("\n")}\n`,
+    `\n\n## Approved Improve Change (${createdAt})\n\n- Commit: ${initialCommit}\n- Summary: ${summary}\n- Files changed:\n${filesChanged.map((file) => `  - ${file}`).join("\n")}\n`,
     "utf8",
   );
+  await runEvolutionCommand("git", ["add", "patch.md"], { cwd });
+  await runEvolutionCommand("git", ["commit", "--amend", "--no-edit"], { cwd });
+  const commit = (await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })).stdout.trim();
 
   return { commit, filesChanged, patchPath };
 }

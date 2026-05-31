@@ -1,5 +1,5 @@
 import type { DesktopDevDesktopState } from "@t3tools/contracts";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const DEV_DESKTOP_POLL_INTERVAL_MS = 2_000;
 
@@ -26,25 +26,36 @@ export function useDevDesktopProcess(): UseDevDesktopProcessResult {
   );
   const [state, setState] = useState<DesktopDevDesktopState | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const latestRefreshIdRef = useRef(0);
 
   const refresh = useCallback(async () => {
+    const refreshId = latestRefreshIdRef.current + 1;
+    latestRefreshIdRef.current = refreshId;
     if (!hasApi || !bridge?.getDevDesktopState) {
-      setState(null);
+      if (refreshId === latestRefreshIdRef.current) {
+        setState(null);
+      }
       return null;
     }
 
     try {
       const next = await bridge.getDevDesktopState();
-      setState(next);
-      return next;
+      if (refreshId === latestRefreshIdRef.current) {
+        setState(next);
+        return next;
+      }
+      return null;
     } catch {
-      setState(null);
+      if (refreshId === latestRefreshIdRef.current) {
+        setState(null);
+      }
       return null;
     }
   }, [bridge, hasApi]);
 
   useEffect(() => {
     if (!hasApi || !bridge) {
+      latestRefreshIdRef.current += 1;
       setState(null);
       return;
     }
@@ -63,6 +74,7 @@ export function useDevDesktopProcess(): UseDevDesktopProcessResult {
 
     return () => {
       cancelled = true;
+      latestRefreshIdRef.current += 1;
       window.clearInterval(interval);
       unsubscribe?.();
     };

@@ -106,25 +106,25 @@ Explain how the UI handles layers. Describe the presence and quality of shadows 
 
 **Project ID:** [Insert Project ID Here]
 
-## 1. Visual Theme & Atmosphere
+## Visual Theme & Atmosphere
 
 (Description of the mood, density, and aesthetic philosophy.)
 
-## 2. Color Palette & Roles
+## Color Palette & Roles
 
 (List colors by Descriptive Name + Hex Code + Functional Role.)
 
-## 3. Typography Rules
+## Typography Rules
 
 (Description of font family, weight usage for headers vs. body, and letter-spacing character.)
 
-## 4. Component Stylings
+## Component Stylings
 
 - **Buttons:** (Shape description, color assignment, behavior).
 - **Cards/Containers:** (Corner roundness description, background color, shadow depth).
 - **Inputs/Forms:** (Stroke style, background).
 
-## 5. Layout Principles
+## Layout Principles
 
 (Description of whitespace strategy, margins, and grid alignment.)
 ```
@@ -135,19 +135,19 @@ To use this skill for the Furniture Collection project:
 
 1. **Retrieve project information:**
 
-   ```
+   ```text
    Use the Stitch MCP Server to get the Furniture Collection project
    ```
 
 2. **Get the Home page screen details:**
 
-   ```
+   ```text
    Retrieve the Home page screen's code, image, and screen object information
    ```
 
 3. **Reference best practices:**
 
-   ```
+   ```text
    Review the Stitch Effective Prompting Guide at:
    https://stitch.withgoogle.com/docs/learn/prompting/
    ```
