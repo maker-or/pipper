@@ -3,6 +3,7 @@ import { scopeProjectRef, scopeThreadRef, scopedThreadKey } from "@t3tools/clien
 import { Link, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { ShoppingBagIcon } from "lucide-react";
 import { /* PlusMinusIcon, */ TerminalIcon, XIcon } from "@phosphor-icons/react";
 import { useAppSpaceStore } from "../../appSpaceStore";
 import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
@@ -294,7 +295,7 @@ export const ChatHeader = memo(function ChatHeader({
               />
             }
           >
-            +
+            <ShoppingBagIcon className="size-4" />
           </PopoverTrigger>
           <PopoverPopup
             side="bottom"
