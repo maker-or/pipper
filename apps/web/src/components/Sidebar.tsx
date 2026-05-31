@@ -2,6 +2,7 @@ import {
   ArrowDownToLineIcon,
   ArrowUpDownIcon,
   AtomIcon,
+  AsteriskIcon,
   Loader2Icon,
   PackageIcon,
   PauseIcon,
@@ -2022,6 +2023,7 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
               }`}
             />
           )}
+          <AsteriskIcon aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground/60" />
           <ProjectFavicon
             environmentId={project.environmentId}
             cwd={project.cwd}
