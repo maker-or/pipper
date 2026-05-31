@@ -1,0 +1,10 @@
+{
+  "version": "0.0.29",
+  "pr_url": "https://github.com/maker-or/pipper/pull/182",
+  "files_changed": [
+    "apps/web/src/lib/appUpdateStore.ts",
+    "apps/web/src/components/settings/SettingsPanels.tsx",
+    "apps/web/src/router.ts",
+    "packages/contracts/src/update.ts"
+  ]
+}

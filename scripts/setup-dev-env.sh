@@ -205,14 +205,14 @@ clone_pipper_repo() {
     exit 1
   fi
 
-  if [ -d "$target_dir/.git" ]; then
+  if [ -d "$target_dir/.git" ] && [ -f "$target_dir/package.json" ]; then
     printf '[setup-dev-env] Reusing existing Pipper checkout at %s\n' "$target_dir"
     return 0
   fi
 
-  if [ -d "$target_dir" ] && [ -n "$(find "$target_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-    printf '[setup-dev-env] ERROR: %s already exists and is not empty, but is not a git checkout\n' "$target_dir" >&2
-    exit 1
+  if [ -e "$target_dir" ]; then
+    printf '[setup-dev-env] Existing workspace at %s is missing git metadata or package.json; recreating it\n' "$target_dir"
+    rm -rf "$target_dir"
   fi
 
   mkdir -p "$(dirname "$target_dir")"
@@ -266,12 +266,12 @@ main() {
   clone_pipper_repo
   install_pipper_dependencies
 
-  if check_command node; then
-    printf '[setup-dev-env] Final Node version: %s\n' "$(node --version)"
+  if check_command bun; then
+    printf '[setup-dev-env] Final Bun version: %s\n' "$(bun --version)"
     return 0
   fi
 
-  printf '[setup-dev-env] ERROR: Node is still not available on PATH after setup\n' >&2
+  printf '[setup-dev-env] ERROR: Bun is still not available on PATH after setup\n' >&2
   exit 1
 }
 

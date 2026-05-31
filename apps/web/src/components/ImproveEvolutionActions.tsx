@@ -57,7 +57,7 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
       toastManager.add(
         stackedThreadToast({
           type: "success",
-          title: "Improve changes approved",
+          title: "Evolution changes approved",
           description: `${result.commit.slice(0, 12)} · ${result.filesChanged.length} files changed`,
         }),
       );

@@ -1,0 +1,8 @@
+{
+  "version": "0.0.27",
+  "pr_url": "https://github.com/maker-or/pipper/pull/170",
+  "files_changed": [
+    "apps/web/src/components/chat/ChatComposer.tsx",
+    "apps/web/src/components/sidebar/Sidebar.tsx"
+  ]
+}

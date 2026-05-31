@@ -66,6 +66,7 @@ import type {
 } from "./auth.ts";
 import type { AdvertisedEndpoint } from "./remoteAccess.ts";
 import { EditorId } from "./editor.ts";
+import type { EvolutionUpdateCheckResult, EvolutionWorkspaceStatus } from "./evolutionContracts.ts";
 import type { ExecutionEnvironmentDescriptor } from "./environment.ts";
 import type { ClientSettings, ServerSettings, ServerSettingsPatch } from "./settings.ts";
 import type {
@@ -300,6 +301,9 @@ export interface DesktopBridge {
     input?: DesktopEvolutionApproveInput,
   ) => Promise<DesktopEvolutionApproveResult>;
   portEvolutionRelease?: () => Promise<DesktopEvolutionPortResult>;
+  getEvolutionWorkspaceStatus?: () => Promise<EvolutionWorkspaceStatus>;
+  checkForEvolutionUpdate?: () => Promise<EvolutionUpdateCheckResult>;
+  applyEvolutionUpdate?: () => Promise<void>;
   getDevDesktopState?: () => Promise<DesktopDevDesktopState>;
   startDevDesktop?: (input?: DesktopDevDesktopLaunchInput) => Promise<DesktopDevDesktopState>;
   stopDevDesktop?: () => Promise<DesktopDevDesktopState>;

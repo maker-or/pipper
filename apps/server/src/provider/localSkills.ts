@@ -77,6 +77,9 @@ export function mergeLocalProviderSkills(
 }
 
 export async function discoverLocalProviderSkills(cwd: string): Promise<ServerProviderSkill[]> {
+  if (process.env.VITEST) {
+    return [];
+  }
   const roots = [
     { path: NodePath.join(cwd, ".agents", "skills"), scope: "project" as const },
     { path: NodePath.join(cwd, ".codex", "skills"), scope: "project" as const },

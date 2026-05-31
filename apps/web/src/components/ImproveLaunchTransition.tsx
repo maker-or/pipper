@@ -34,7 +34,7 @@ export function ImproveLaunchTransition({ origin, state }: ImproveLaunchTransiti
           <PauseIcon className="improve-launch-overlay__icon size-7" />
         </div>
         <div className="improve-launch-overlay__prompt">What are you looking for?</div>
-        <div className="improve-launch-overlay__caption">Entering Improve</div>
+        <div className="improve-launch-overlay__caption">Entering Evolution Space</div>
       </div>
     </div>
   );

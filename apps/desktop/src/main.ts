@@ -79,6 +79,7 @@ import { waitForBackendStartupReady } from "./backendStartupReadiness.ts";
 import { getAutoUpdateDisabledReason, shouldBroadcastDownloadProgress } from "./updateState.ts";
 import { doesVersionMatchDesktopUpdateChannel } from "./updateChannels.ts";
 import { ServerListeningDetector } from "./serverListeningDetector.ts";
+import { prepareEvolutionWorkspaceSource, resolveEvolutionRepoUrl } from "./evolutionWorkspace.ts";
 import {
   createInitialDesktopUpdateState,
   reduceDesktopUpdateStateOnCheckFailure,
@@ -195,6 +196,7 @@ const EVOLUTION_APPROVAL_CHECK_COMMANDS = [
   ["bun", ["run", "test"]],
   ["bun", ["typecheck"]],
 ] as const;
+const EVOLUTION_REPO_URL = resolveEvolutionRepoUrl(process.env);
 
 function resolvePickFolderDefaultPath(rawOptions: unknown): string | undefined {
   if (typeof rawOptions !== "object" || rawOptions === null) {
@@ -723,32 +725,21 @@ function runEvolutionCommand(
   });
 }
 
-function copyEvolutionSourceFallback(sourceRoot: string, targetRoot: string): void {
-  const ignoredNames = new Set([
-    ".git",
-    ".turbo",
-    "node_modules",
-    "release",
-    PIPPER_EVOLUTION_RELEASES_DIRECTORY_NAME,
-  ]);
-  FS.cpSync(sourceRoot, targetRoot, {
-    recursive: true,
-    filter: (source) => !source.split(Path.sep).some((segment) => ignoredNames.has(segment)),
-  });
-}
-
 async function ensureEvolutionWorkspace(): Promise<DesktopEvolutionWorkspaceState> {
   const workspaceRoot = IMPROVE_DEV_DESKTOP_CWD;
-  const existed = FS.existsSync(Path.join(workspaceRoot, "package.json"));
-
-  if (!existed) {
-    if (FS.existsSync(workspaceRoot) && FS.readdirSync(workspaceRoot).length > 0) {
-      throw new Error(`${workspaceRoot} exists but is not a Pipper workspace.`);
-    }
-    FS.mkdirSync(Path.dirname(workspaceRoot), { recursive: true });
-    FS.rmSync(workspaceRoot, { recursive: true, force: true });
-    copyEvolutionSourceFallback(ROOT_DIR, workspaceRoot);
-  }
+  const { existed } = prepareEvolutionWorkspaceSource({
+    workspaceRoot,
+    sourceRoot: ROOT_DIR,
+    isPackaged: app.isPackaged,
+    repoUrl: EVOLUTION_REPO_URL,
+    log: (stream, output) => {
+      if (stream === "stderr") {
+        process.stderr.write(`[evolution:git:stderr] ${output}`);
+        return;
+      }
+      process.stdout.write(`[evolution:git:stdout] ${output}`);
+    },
+  });
 
   const hasNodeModules = FS.existsSync(Path.join(workspaceRoot, "node_modules"));
   if (!hasNodeModules) {

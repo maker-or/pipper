@@ -2877,7 +2877,7 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
               render={
                 <button
                   type="button"
-                  aria-label="Press and hold to open Improve"
+                  aria-label="Press and hold to enter Evolution Space"
                   aria-pressed={activeSpace === "improve" || improveLaunchState === "entering"}
                   data-hold-state={improveLaunchState}
                   data-testid="sidebar-improve-trigger"
@@ -2926,9 +2926,9 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
                 className="improve-hold-icon improve-hold-icon--pause size-5"
                 aria-hidden="true"
               />
-              <span className="sr-only">Hold until the button fills to enter Improve.</span>
+              <span className="sr-only">Hold until the button fills to enter Evolution Space.</span>
             </TooltipTrigger>
-            <TooltipPopup side="right">Press and hold to enter Improve</TooltipPopup>
+            <TooltipPopup side="right">Press and hold to enter Evolution Space</TooltipPopup>
           </Tooltip>
 
           {!isImproveSpace ? <div className="h-px w-7 bg-border/70" /> : null}

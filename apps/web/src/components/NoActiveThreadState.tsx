@@ -1,4 +1,5 @@
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./ui/empty";
+import { EvolutionSpace } from "./EvolutionSpace";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { isElectron } from "../env";
 import { useAppSpaceStore } from "../appSpaceStore";
@@ -8,6 +9,10 @@ import { cn } from "~/lib/utils";
 export function NoActiveThreadState() {
   const activeSpace = useAppSpaceStore((store) => store.activeSpace);
   const isImproveSpace = activeSpace === "improve";
+
+  if (isImproveSpace) {
+    return <EvolutionSpace />;
+  }
 
   return (
     <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
@@ -25,11 +30,10 @@ export function NoActiveThreadState() {
               <span className="text-xs text-muted-foreground/50 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
                 No active thread
               </span>
-              {isImproveSpace ? <ImproveEvolutionActions /> : null}
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {isImproveSpace ? null : <SidebarTrigger className="size-7 shrink-0 md:hidden" />}
+              <SidebarTrigger className="size-7 shrink-0 md:hidden" />
               <span className="text-sm font-medium text-foreground md:text-muted-foreground/60">
                 No active thread
               </span>

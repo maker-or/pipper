@@ -1,10 +1,10 @@
 import { ArchiveIcon, ArchiveX, LoaderIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { readEnvironmentApi } from "../../environmentApi";
+import { newCommandId, newThreadId, newMessageId } from "../../lib/utils";
 import {
   defaultInstanceIdForDriver,
-  type DesktopUpdateChannel,
   PROVIDER_DISPLAY_NAMES,
   ProviderDriverKind,
   type ProviderInstanceConfig,
@@ -17,22 +17,20 @@ import { createModelSelection } from "@t3tools/shared/model";
 import { Equal } from "effect";
 import { APP_VERSION } from "../../branding";
 import {
-  canCheckForUpdate,
-  getDesktopUpdateButtonTooltip,
-  getDesktopUpdateInstallConfirmationMessage,
-  isDesktopUpdateButtonDisabled,
-  resolveDesktopUpdateButtonAction,
-} from "../../components/desktopUpdate.logic";
+  checkForAppUpdates,
+  hasAppUpdateRegistry,
+  resolveCheckForUpdatesButtonLabel,
+  resolveUpdateActionLabel,
+  resolveUpdateSectionDescription,
+  shouldShowUpdateAvailableState,
+  startAppUpdateWorkflow,
+  useAppUpdateState,
+} from "../../lib/appUpdateStore";
 import { ProviderModelPicker } from "../chat/ProviderModelPicker";
 import { TraitsPicker } from "../chat/TraitsPicker";
-import { isElectron } from "../../env";
 import { useTheme } from "../../hooks/useTheme";
 import { useSettings, useUpdateSettings } from "../../hooks/useSettings";
 import { useThreadActions } from "../../hooks/useThreadActions";
-import {
-  setDesktopUpdateStateQueryData,
-  useDesktopUpdateState,
-} from "../../lib/desktopUpdateReactQuery";
 import {
   getCustomModelOptionsByInstance,
   resolveAppModelSelectionState,
@@ -158,111 +156,55 @@ function AboutVersionTitle() {
 }
 
 function AboutVersionSection() {
-  const queryClient = useQueryClient();
-  const updateStateQuery = useDesktopUpdateState();
-  const [isChangingUpdateChannel, setIsChangingUpdateChannel] = useState(false);
+  const updateState = useAppUpdateState();
+  const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
+  const [isStartingUpdateWorkflow, setIsStartingUpdateWorkflow] = useState(false);
 
-  const updateState = updateStateQuery.data ?? null;
-  const hasDesktopBridge = typeof window !== "undefined" && Boolean(window.desktopBridge);
-  const selectedUpdateChannel = updateState?.channel ?? "latest";
+  const navigate = useNavigate();
+  const providers = useServerProviders();
+  const activeEnvironmentId = useStore((state) => state.activeEnvironmentId);
+  const projects = useStore(selectProjectsAcrossEnvironments);
 
-  const handleUpdateChannelChange = useCallback(
-    (channel: DesktopUpdateChannel) => {
-      const bridge = window.desktopBridge;
-      if (
-        !bridge ||
-        typeof bridge.setUpdateChannel !== "function" ||
-        channel === selectedUpdateChannel
-      ) {
-        return;
-      }
+  const activeProject = useMemo(() => {
+    if (!activeEnvironmentId) return projects[0];
+    return projects.find((p) => p.environmentId === activeEnvironmentId) ?? projects[0];
+  }, [projects, activeEnvironmentId]);
 
-      setIsChangingUpdateChannel(true);
-      void bridge
-        .setUpdateChannel(channel)
-        .then((state) => {
-          setDesktopUpdateStateQueryData(queryClient, state);
-        })
-        .catch((error: unknown) => {
-          toastManager.add(
-            stackedThreadToast({
-              type: "error",
-              title: "Could not change update track",
-              description: error instanceof Error ? error.message : "Update track change failed.",
-            }),
-          );
-        })
-        .finally(() => {
-          setIsChangingUpdateChannel(false);
-        });
-    },
-    [queryClient, selectedUpdateChannel],
-  );
+  const defaultProvider = useMemo(() => {
+    return (
+      providers.find((p) => p.enabled && p.driver === "codex") ??
+      providers.find((p) => p.enabled) ??
+      providers[0]
+    );
+  }, [providers]);
 
-  const handleButtonClick = useCallback(() => {
-    const bridge = window.desktopBridge;
-    if (!bridge) return;
+  const modelSelection = useMemo(() => {
+    if (activeProject?.defaultModelSelection) {
+      return activeProject.defaultModelSelection;
+    }
+    const firstModel = defaultProvider?.models?.[0]?.name;
+    if (defaultProvider && firstModel) {
+      return createModelSelection(defaultProvider.instanceId, firstModel);
+    }
+    return undefined;
+  }, [activeProject, defaultProvider]);
 
-    const action = updateState ? resolveDesktopUpdateButtonAction(updateState) : "none";
+  const hasUpdateRegistry = hasAppUpdateRegistry();
+  const checkButtonLabel = resolveCheckForUpdatesButtonLabel(updateState);
+  const updateButtonLabel = resolveUpdateActionLabel(updateState);
+  const updateSectionDescription =
+    !hasUpdateRegistry && !updateState
+      ? "Update registry is not configured for this environment."
+      : resolveUpdateSectionDescription(updateState);
+  const showUpdateAvailable = shouldShowUpdateAvailableState(updateState);
 
-    if (action === "download") {
-      void bridge
-        .downloadUpdate()
-        .then((result) => {
-          setDesktopUpdateStateQueryData(queryClient, result.state);
-        })
-        .catch((error: unknown) => {
-          toastManager.add(
-            stackedThreadToast({
-              type: "error",
-              title: "Could not download update",
-              description: error instanceof Error ? error.message : "Download failed.",
-            }),
-          );
-        });
+  const handleCheckForUpdates = useCallback(() => {
+    if (isCheckingForUpdates) {
       return;
     }
 
-    if (action === "install") {
-      const confirmed = window.confirm(
-        getDesktopUpdateInstallConfirmationMessage(
-          updateState ?? { availableVersion: null, downloadedVersion: null },
-        ),
-      );
-      if (!confirmed) return;
-      void bridge
-        .installUpdate()
-        .then((result) => {
-          setDesktopUpdateStateQueryData(queryClient, result.state);
-        })
-        .catch((error: unknown) => {
-          toastManager.add(
-            stackedThreadToast({
-              type: "error",
-              title: "Could not install update",
-              description: error instanceof Error ? error.message : "Install failed.",
-            }),
-          );
-        });
-      return;
-    }
-
-    if (typeof bridge.checkForUpdate !== "function") return;
-    void bridge
-      .checkForUpdate()
-      .then((result) => {
-        setDesktopUpdateStateQueryData(queryClient, result.state);
-        if (!result.checked) {
-          toastManager.add(
-            stackedThreadToast({
-              type: "error",
-              title: "Could not check for updates",
-              description:
-                result.state.message ?? "Automatic updates are not available in this build.",
-            }),
-          );
-        }
-      })
+    setIsCheckingForUpdates(true);
+    void checkForAppUpdates()
       .catch((error: unknown) => {
         toastManager.add(
           stackedThreadToast({
@@ -271,85 +213,187 @@ function AboutVersionSection() {
             description: error instanceof Error ? error.message : "Update check failed.",
           }),
         );
+      })
+      .finally(() => {
+        setIsCheckingForUpdates(false);
       });
-  }, [queryClient, updateState]);
+  }, [isCheckingForUpdates]);
 
-  const action = updateState ? resolveDesktopUpdateButtonAction(updateState) : "none";
-  const buttonTooltip = updateState ? getDesktopUpdateButtonTooltip(updateState) : null;
-  const buttonDisabled =
-    action === "none"
-      ? !canCheckForUpdate(updateState)
-      : isDesktopUpdateButtonDisabled(updateState);
+  const handleStartUpdateWorkflow = useCallback(() => {
+    if (isCheckingForUpdates || isStartingUpdateWorkflow) {
+      return;
+    }
 
-  const actionLabel: Record<string, string> = {
-    download: "Download",
-    install: "Install",
-  };
-  const statusLabel: Record<string, string> = {
-    checking: "Checking…",
-    downloading: "Downloading…",
-    "up-to-date": "Up to Date",
-  };
-  const buttonLabel =
-    actionLabel[action] ?? statusLabel[updateState?.status ?? ""] ?? "Check for Updates";
-  const description =
-    action === "download" || action === "install"
-      ? "Update available."
-      : "Current version of the application.";
+    if (!activeProject) {
+      toastManager.add(
+        stackedThreadToast({
+          type: "error",
+          title: "Cannot start update",
+          description: "No active project found.",
+        }),
+      );
+      return;
+    }
+
+    const api = readEnvironmentApi(activeProject.environmentId);
+    if (!api) {
+      toastManager.add(
+        stackedThreadToast({
+          type: "error",
+          title: "Cannot start update",
+          description: "Environment API not available.",
+        }),
+      );
+      return;
+    }
+
+    if (!modelSelection) {
+      toastManager.add(
+        stackedThreadToast({
+          type: "error",
+          title: "Cannot start update",
+          description: "No model or provider configured.",
+        }),
+      );
+      return;
+    }
+
+    setIsStartingUpdateWorkflow(true);
+    void startAppUpdateWorkflow()
+      .then(async (nextState) => {
+        if (!nextState || !nextState.latestManifest) {
+          throw new Error("Failed to load latest update manifest.");
+        }
+        const manifest = nextState.latestManifest;
+        const threadId = newThreadId();
+
+        // 1. Create the thread
+        await api.orchestration.dispatchCommand({
+          type: "thread.create",
+          commandId: newCommandId(),
+          threadId,
+          projectId: activeProject.id,
+          title: `Update to ${manifest.version}`,
+          modelSelection,
+          runtimeMode: "full-access",
+          interactionMode: "default",
+          branch: null,
+          worktreePath: null,
+          createdAt: new Date().toISOString(),
+        });
+
+        // 2. Start the turn with the YOLO configuration
+        const actualPrompt = `port the changes from the upstream provider to the current codebase, use the information from the metadata to get more git information and read the files and its changes using the commands.
+
+Update Metadata:
+${JSON.stringify(manifest, null, 2)}
+
+Please read the local "patch.md" file from the workspace to understand previous customizations and ensure they are merged correctly.`;
+
+        await api.orchestration.dispatchCommand({
+          type: "thread.turn.start",
+          commandId: newCommandId(),
+          threadId,
+          message: {
+            messageId: newMessageId(),
+            role: "user",
+            text: actualPrompt,
+            attachments: [],
+          },
+          modelSelection,
+          runtimeMode: "full-access",
+          interactionMode: "default",
+          createdAt: new Date().toISOString(),
+        });
+
+        toastManager.add({
+          type: "success",
+          title: "Update Agent Triggered",
+          description: `Started update thread for version ${manifest.version} in the background.`,
+        });
+
+        void navigate({
+          to: "/$environmentId/$threadId",
+          params: {
+            environmentId: activeProject.environmentId,
+            threadId,
+          },
+        });
+      })
+      .catch((error: unknown) => {
+        toastManager.add(
+          stackedThreadToast({
+            type: "error",
+            title: "Could not start update workflow",
+            description: error instanceof Error ? error.message : "Workflow start failed.",
+          }),
+        );
+      })
+      .finally(() => {
+        setIsStartingUpdateWorkflow(false);
+      });
+  }, [isCheckingForUpdates, isStartingUpdateWorkflow, activeProject, modelSelection, navigate]);
 
   return (
     <>
       <SettingsRow
         title={<AboutVersionTitle />}
-        description={description}
+        description={updateSectionDescription}
         control={
           <Tooltip>
             <TooltipTrigger
               render={
                 <Button
                   size="xs"
-                  variant={action === "install" ? "default" : "outline"}
-                  disabled={buttonDisabled}
-                  onClick={handleButtonClick}
+                  variant="outline"
+                  disabled={
+                    !hasUpdateRegistry ||
+                    isCheckingForUpdates ||
+                    isStartingUpdateWorkflow ||
+                    updateState?.status === "downloading-manifest" ||
+                    updateState?.status === "updating"
+                  }
+                  onClick={handleCheckForUpdates}
                 >
-                  {buttonLabel}
+                  {checkButtonLabel}
                 </Button>
               }
             />
-            {buttonTooltip ? <TooltipPopup>{buttonTooltip}</TooltipPopup> : null}
+            <TooltipPopup>
+              {updateState?.message ??
+                (hasUpdateRegistry
+                  ? "Compare the current app version against the registry."
+                  : "Update registry is not configured for this environment.")}
+            </TooltipPopup>
           </Tooltip>
         }
       />
-      <SettingsRow
-        title="Update track"
-        description="Stable follows full releases. Nightly follows the nightly desktop channel and can switch back to stable immediately."
-        control={
-          <Select
-            value={selectedUpdateChannel}
-            onValueChange={(value) => {
-              handleUpdateChannelChange(value as DesktopUpdateChannel);
-            }}
-          >
-            <SelectTrigger
-              className="w-full sm:w-40"
-              aria-label="Update track"
-              disabled={!hasDesktopBridge || isChangingUpdateChannel}
+      {showUpdateAvailable ? (
+        <SettingsRow
+          title="Update Available"
+          description={
+            updateState?.latestVersion
+              ? `Version ${updateState.latestVersion} is ready to download from the registry.`
+              : "A newer version is ready to download from the registry."
+          }
+          control={
+            <Button
+              size="xs"
+              variant="default"
+              disabled={
+                !hasUpdateRegistry ||
+                isCheckingForUpdates ||
+                isStartingUpdateWorkflow ||
+                updateState?.status === "downloading-manifest" ||
+                updateState?.status === "updating"
+              }
+              onClick={handleStartUpdateWorkflow}
             >
-              <SelectValue>
-                {selectedUpdateChannel === "nightly" ? "Nightly" : "Stable"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectPopup align="end" alignItemWithTrigger={false}>
-              <SelectItem hideIndicator value="latest">
-                Stable
-              </SelectItem>
-              <SelectItem hideIndicator value="nightly">
-                Nightly
-              </SelectItem>
-            </SelectPopup>
-          </Select>
-        }
-      />
+              {updateButtonLabel}
+            </Button>
+          }
+        />
+      ) : null}
     </>
   );
 }
@@ -824,14 +868,7 @@ export function GeneralSettingsPanel() {
       </SettingsSection>
 
       <SettingsSection title="About">
-        {isElectron ? (
-          <AboutVersionSection />
-        ) : (
-          <SettingsRow
-            title={<AboutVersionTitle />}
-            description="Current version of the application."
-          />
-        )}
+        <AboutVersionSection />
         <SettingsRow
           title="Diagnostics"
           description={diagnosticsDescription}

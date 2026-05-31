@@ -1,0 +1,8 @@
+{
+  "version": "0.0.28",
+  "pr_url": "https://github.com/maker-or/pipper/pull/181",
+  "files_changed": [
+    "apps/web/src/components/settings/SettingsPanels.tsx",
+    "apps/web/src/lib/desktopUpdateReactQuery.ts"
+  ]
+}

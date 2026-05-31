@@ -19,7 +19,8 @@ import {
 import { PIPPER_EVOLUTION_WORKSPACE_ROOT } from "@t3tools/shared/evolution";
 import { normalizeModelSlug } from "@t3tools/shared/model";
 import { Deferred, Effect, Exit, Layer, Queue, Ref, Scope, Random, Schema, Stream } from "effect";
-import { resolve as resolvePath } from "node:path";
+import { resolve as resolvePath, join as joinPath } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 import { expandHomePath } from "../../pathExpansion.ts";
 import * as SchemaIssue from "effect/SchemaIssue";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
@@ -318,6 +319,16 @@ function resolveDeveloperInstructions(input: {
   readonly cwd: string | undefined;
   readonly interactionMode: ProviderInteractionMode;
 }): string {
+  if (input.cwd) {
+    const customPromptPath = joinPath(resolvePath(expandHomePath(input.cwd)), "prompt.md");
+    if (existsSync(customPromptPath)) {
+      try {
+        return readFileSync(customPromptPath, "utf8");
+      } catch (error) {
+        // ignore and fallback
+      }
+    }
+  }
   if (input.interactionMode === "plan") {
     return CODEX_PLAN_MODE_DEVELOPER_INSTRUCTIONS;
   }

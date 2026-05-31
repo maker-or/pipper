@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_HTTP_URL: string;
   readonly VITE_WS_URL: string;
   readonly VITE_HOSTED_APP_URL: string;
+  readonly VITE_UPDATE_REGISTRY_URL?: string;
   readonly VITE_POSTHOG_KEY?: string;
   readonly VITE_POSTHOG_HOST?: string;
   readonly APP_VERSION: string;

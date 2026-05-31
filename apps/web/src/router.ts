@@ -1,9 +1,15 @@
-import { createElement } from "react";
+import { createElement, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterHistory } from "@tanstack/react-router";
 
 import { AppAtomRegistryProvider } from "./rpc/atomRegistry";
 import { routeTree } from "./routeTree.gen";
+import { useAppUpdateBootstrap } from "./lib/appUpdateStore";
+
+function AppUpdateBootstrapper({ children }: { readonly children: ReactNode }) {
+  useAppUpdateBootstrap();
+  return children;
+}
 
 export function getRouter(history: RouterHistory) {
   const queryClient = new QueryClient();
@@ -18,7 +24,11 @@ export function getRouter(history: RouterHistory) {
       createElement(
         QueryClientProvider,
         { client: queryClient },
-        createElement(AppAtomRegistryProvider, undefined, children),
+        createElement(
+          AppAtomRegistryProvider,
+          undefined,
+          createElement(AppUpdateBootstrapper, undefined, children),
+        ),
       ),
   });
 }

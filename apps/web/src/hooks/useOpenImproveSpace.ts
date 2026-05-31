@@ -46,8 +46,8 @@ export function useOpenImproveSpace() {
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Improve is unavailable",
-            description: "Connect a local environment before opening Improve.",
+            title: "Evolution Space is unavailable",
+            description: "Connect a local environment before opening Evolution Space.",
           }),
         );
       }
@@ -102,7 +102,7 @@ export function useOpenImproveSpace() {
         toastManager.add(
           stackedThreadToast({
             type: "error",
-            title: "Failed to open Improve",
+            title: "Failed to open Evolution Space",
             description: error instanceof Error ? error.message : "An error occurred.",
           }),
         );
