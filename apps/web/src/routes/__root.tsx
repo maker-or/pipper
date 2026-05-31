@@ -11,6 +11,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 import { APP_DISPLAY_NAME } from "../branding";
+import { useAppSpaceStore } from "../appSpaceStore";
 import { AppSidebarLayout } from "../components/AppSidebarLayout";
 import { CommandPalette } from "../components/CommandPalette";
 import { SshPasswordPromptDialog } from "../components/desktop/SshPasswordPromptDialog";
@@ -29,6 +30,8 @@ import {
 } from "../components/ui/toast";
 import { resolveAndPersistPreferredEditor } from "../editorPreferences";
 import { readLocalApi } from "../localApi";
+import { useOpenImproveSpace } from "../hooks/useOpenImproveSpace";
+import { usePrimaryEnvironmentId } from "../environments/primary";
 import { useSettings } from "../hooks/useSettings";
 import {
   deriveLogicalProjectKeyFromSettings,
@@ -101,6 +104,7 @@ export const Route = createRootRouteWithContext<{
 
 function RootRouteView() {
   const pathname = useLocation({ select: (location) => location.pathname });
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
   const { authGateState } = Route.useRouteContext();
   const primaryEnvironmentAuthenticated = authGateState.status === "authenticated";
 
@@ -111,7 +115,7 @@ function RootRouteView() {
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [pathname]);
+  }, [pathname, activeSpace]);
 
   if (pathname === "/pair") {
     return <Outlet />;
@@ -137,6 +141,7 @@ function RootRouteView() {
         <EnvironmentConnectionManagerBootstrap />
         <SshPasswordPromptDialog />
         <HostedStaticEnvironmentBootstrap />
+        {primaryEnvironmentAuthenticated ? <ImproveSpaceWindowBootstrap /> : null}
         {primaryEnvironmentAuthenticated ? <EventRouter /> : null}
         {primaryEnvironmentAuthenticated ? <ProviderUpdateLaunchNotification /> : null}
         {primaryEnvironmentAuthenticated ? <WebSocketConnectionCoordinator /> : null}
@@ -149,6 +154,28 @@ function RootRouteView() {
       </AnchoredToastProvider>
     </ToastProvider>
   );
+}
+
+function ImproveSpaceWindowBootstrap() {
+  const consumedInitialSpaceRef = useRef(false);
+  const primaryEnvironmentId = usePrimaryEnvironmentId();
+  const { openImproveSpace } = useOpenImproveSpace();
+
+  useEffect(() => {
+    if (consumedInitialSpaceRef.current || !primaryEnvironmentId) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("space") !== "improve") {
+      return;
+    }
+
+    consumedInitialSpaceRef.current = true;
+    openImproveSpace();
+  }, [openImproveSpace, primaryEnvironmentId]);
+
+  return null;
 }
 
 function HostedStaticEnvironmentBootstrap() {

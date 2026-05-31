@@ -30,10 +30,21 @@ import type {
   DesktopUpdateActionResult,
   DesktopUpdateCheckResult,
   DesktopUpdateState,
+  DesktopAppWindowOptions,
+  DesktopDevDesktopState,
+  DesktopDevDesktopLaunchInput,
+  DesktopEvolutionApproveInput,
+  DesktopEvolutionApproveResult,
+  DesktopEvolutionPortResult,
+  DesktopEvolutionWorkspaceState,
 } from "@t3tools/contracts";
 import { autoUpdater } from "electron-updater";
 
 import type { ContextMenuItem } from "@t3tools/contracts";
+import {
+  PIPPER_EVOLUTION_HOME_RELATIVE_PATH,
+  PIPPER_EVOLUTION_RELEASES_DIRECTORY_NAME,
+} from "@t3tools/shared/evolution";
 import { RotatingFileSink } from "@t3tools/shared/logging";
 import { parsePersistedServerObservabilitySettings } from "@t3tools/shared/serverSettings";
 import type { RemoteT3RunnerOptions } from "@t3tools/ssh/tunnel";
@@ -92,6 +103,13 @@ const CONFIRM_CHANNEL = "desktop:confirm";
 const SET_THEME_CHANNEL = "desktop:set-theme";
 const CONTEXT_MENU_CHANNEL = "desktop:context-menu";
 const OPEN_EXTERNAL_CHANNEL = "desktop:open-external";
+const OPEN_APP_WINDOW_CHANNEL = "desktop:open-app-window";
+const ENSURE_EVOLUTION_WORKSPACE_CHANNEL = "desktop:ensure-evolution-workspace";
+const APPROVE_EVOLUTION_CHANGES_CHANNEL = "desktop:approve-evolution-changes";
+const PORT_EVOLUTION_RELEASE_CHANNEL = "desktop:port-evolution-release";
+const GET_DEV_DESKTOP_STATE_CHANNEL = "desktop:get-dev-desktop-state";
+const START_DEV_DESKTOP_CHANNEL = "desktop:start-dev-desktop";
+const STOP_DEV_DESKTOP_CHANNEL = "desktop:stop-dev-desktop";
 const MENU_ACTION_CHANNEL = "desktop:menu-action";
 const UPDATE_STATE_CHANNEL = "desktop:update-state";
 const UPDATE_GET_STATE_CHANNEL = "desktop:update-get-state";
@@ -119,7 +137,12 @@ const CLIENT_SETTINGS_PATH = Path.join(STATE_DIR, "client-settings.json");
 const SAVED_ENVIRONMENT_REGISTRY_PATH = Path.join(STATE_DIR, "saved-environments.json");
 const DESKTOP_SCHEME = "t3";
 const ROOT_DIR = Path.resolve(__dirname, "../../..");
+const IMPROVE_DEV_DESKTOP_CWD = Path.join(
+  OS.homedir(),
+  ...PIPPER_EVOLUTION_HOME_RELATIVE_PATH.split("/"),
+);
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
+const isImproveInstance = process.env.T3CODE_DESKTOP_INSTANCE?.trim() === "improve";
 // Dev-only SSH launcher override. Set this to an absolute path on the SSH host
 // for a built server entry, for example:
 // "/Users/julius/Development/Work/codething-mvp/apps/server/dist/bin.mjs"
@@ -129,12 +152,32 @@ const desktopAppBranding: DesktopAppBranding = resolveDesktopAppBranding({
   isDevelopment,
   appVersion: app.getVersion(),
 });
-const APP_DISPLAY_NAME = desktopAppBranding.displayName;
-const APP_USER_MODEL_ID = isDevelopment ? "com.t3tools.pipper.dev" : "com.t3tools.pipper";
-const LINUX_DESKTOP_ENTRY_NAME = isDevelopment ? "pipper-dev.desktop" : "pipper.desktop";
-const LINUX_WM_CLASS = isDevelopment ? "pipper-dev" : "pipper";
-const USER_DATA_DIR_NAME = isDevelopment ? "pipper-dev" : "pipper";
-const LEGACY_USER_DATA_DIR_NAME = isDevelopment ? "T3 Code (Dev)" : "T3 Code (Alpha)";
+const APP_DISPLAY_NAME = isImproveInstance ? "polarish Improve" : desktopAppBranding.displayName;
+const APP_USER_MODEL_ID = isImproveInstance
+  ? "com.t3tools.pipper.improve"
+  : isDevelopment
+    ? "com.t3tools.pipper.dev"
+    : "com.t3tools.pipper";
+const LINUX_DESKTOP_ENTRY_NAME = isImproveInstance
+  ? "pipper-improve.desktop"
+  : isDevelopment
+    ? "pipper-dev.desktop"
+    : "pipper.desktop";
+const LINUX_WM_CLASS = isImproveInstance
+  ? "pipper-improve"
+  : isDevelopment
+    ? "pipper-dev"
+    : "pipper";
+const USER_DATA_DIR_NAME = isImproveInstance
+  ? "pipper-improve"
+  : isDevelopment
+    ? "pipper-dev"
+    : "pipper";
+const LEGACY_USER_DATA_DIR_NAME = isImproveInstance
+  ? null
+  : isDevelopment
+    ? "T3 Code (Dev)"
+    : "T3 Code (Alpha)";
 const COMMIT_HASH_PATTERN = /^[0-9a-f]{7,40}$/i;
 const COMMIT_HASH_DISPLAY_LENGTH = 12;
 const LOG_DIR = Path.join(STATE_DIR, "logs");
@@ -144,6 +187,14 @@ const APP_RUN_ID = Crypto.randomBytes(6).toString("hex");
 const SERVER_SETTINGS_PATH = Path.join(STATE_DIR, "settings.json");
 const AUTO_UPDATE_STARTUP_DELAY_MS = 15_000;
 const AUTO_UPDATE_POLL_INTERVAL_MS = 4 * 60 * 60 * 1000;
+const DEV_DESKTOP_RUNNER_ARGS = ["scripts/dev-runner.ts", "dev:desktop"] as const;
+const EVOLUTION_PORT_RUNNER_ARGS = ["run", "dist:desktop:dmg"] as const;
+const EVOLUTION_APPROVAL_CHECK_COMMANDS = [
+  ["bun", ["fmt"]],
+  ["bun", ["lint"]],
+  ["bun", ["run", "test"]],
+  ["bun", ["typecheck"]],
+] as const;
 
 function resolvePickFolderDefaultPath(rawOptions: unknown): string | undefined {
   if (typeof rawOptions !== "object" || rawOptions === null) {
@@ -169,6 +220,46 @@ function resolvePickFolderDefaultPath(rawOptions: unknown): string | undefined {
   }
 
   return Path.resolve(trimmedPath);
+}
+
+function resolveDevDesktopCwd(rawInput: DesktopDevDesktopLaunchInput | undefined): string {
+  const rawCwd = rawInput?.cwd?.trim();
+  let targetPath = IMPROVE_DEV_DESKTOP_CWD;
+  if (rawCwd) {
+    if (rawCwd === "~") {
+      targetPath = OS.homedir();
+    } else if (rawCwd.startsWith("~/") || rawCwd.startsWith("~\\")) {
+      targetPath = Path.join(OS.homedir(), rawCwd.slice(2));
+    } else {
+      targetPath = Path.resolve(rawCwd);
+    }
+  }
+
+  try {
+    if (FS.existsSync(targetPath)) {
+      if (!FS.existsSync(Path.join(targetPath, "package.json"))) {
+        const pipperPath = Path.join(targetPath, "pipper");
+        if (FS.existsSync(Path.join(pipperPath, "package.json"))) {
+          targetPath = pipperPath;
+        } else {
+          const files = FS.readdirSync(targetPath, { withFileTypes: true });
+          for (const file of files) {
+            if (file.isDirectory()) {
+              const subPath = Path.join(targetPath, file.name);
+              if (FS.existsSync(Path.join(subPath, "package.json"))) {
+                targetPath = subPath;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore filesystem errors and stick to resolved targetPath
+  }
+
+  return targetPath;
 }
 const DESKTOP_LOOPBACK_HOST = "127.0.0.1";
 const DESKTOP_REQUIRED_PORT_PROBE_HOSTS = ["0.0.0.0", "::"] as const;
@@ -239,6 +330,9 @@ let restoreStdIoCapture: (() => void) | null = null;
 let backendObservabilitySettings = readPersistedBackendObservabilitySettings();
 let desktopSettings = readDesktopSettings(DESKTOP_SETTINGS_PATH, app.getVersion());
 let desktopServerExposureMode: DesktopServerExposureMode = desktopSettings.serverExposureMode;
+let devDesktopProcess: ChildProcess.ChildProcess | null = null;
+let devDesktopStopInFlight: Promise<void> | null = null;
+let devDesktopTargetCwd = IMPROVE_DEV_DESKTOP_CWD;
 
 let destructiveMenuIconCache: Electron.NativeImage | null | undefined;
 const expectedBackendExitChildren = new WeakSet<ChildProcess.ChildProcess>();
@@ -303,6 +397,36 @@ function resolveDesktopDevServerUrl(): string {
   return devServerUrl;
 }
 
+function appendAppWindowSearchParams(
+  baseUrl: string,
+  options: DesktopAppWindowOptions = {},
+): string {
+  const url = new URL(baseUrl);
+  if (options.space && options.space !== "main") {
+    url.searchParams.set("space", options.space);
+  }
+  return url.toString();
+}
+
+function parseAppWindowOptions(rawOptions: unknown): DesktopAppWindowOptions {
+  if (rawOptions === undefined || rawOptions === null) {
+    return {};
+  }
+  if (typeof rawOptions !== "object") {
+    throw new Error("Invalid app window options.");
+  }
+
+  const { space } = rawOptions as { readonly space?: unknown };
+  if (space === undefined || space === "main") {
+    return {};
+  }
+  if (space === "improve") {
+    return { space } satisfies DesktopAppWindowOptions;
+  }
+
+  throw new Error("Invalid app window space.");
+}
+
 function backendChildEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
   delete env.VITE_DEV_SERVER_URL;
@@ -313,6 +437,26 @@ function backendChildEnv(): NodeJS.ProcessEnv {
   delete env.T3CODE_TAILSCALE_SERVE;
   delete env.T3CODE_TAILSCALE_SERVE_PORT;
   return env;
+}
+
+function devDesktopChildEnv(): NodeJS.ProcessEnv {
+  const env = backendChildEnv();
+  env.T3CODE_DESKTOP_INSTANCE = "improve";
+  env.T3CODE_DEV_INSTANCE = "improve";
+  env.T3CODE_HOME = Path.join(OS.homedir(), ".t3-improve");
+  delete env.PORT;
+  delete env.T3CODE_PORT;
+  delete env.VITE_HTTP_URL;
+  delete env.VITE_WS_URL;
+  delete env.T3CODE_HOST;
+  return env;
+}
+
+function resolveDevDesktopSpawnCommand(cwd: string): { command: string; args: string[] } {
+  if (FS.existsSync(Path.join(cwd, ".mise.toml"))) {
+    return { command: "mise", args: ["exec", "--", "bun", ...DEV_DESKTOP_RUNNER_ARGS] };
+  }
+  return { command: "bun", args: [...DEV_DESKTOP_RUNNER_ARGS] };
 }
 
 function getDesktopServerExposureState(): DesktopServerExposureState {
@@ -352,6 +496,423 @@ function getDesktopSecretStorage() {
     encryptString: (value: string) => safeStorage.encryptString(value),
     decryptString: (value: Buffer) => safeStorage.decryptString(value),
   } as const;
+}
+
+function getDevDesktopState(): DesktopDevDesktopState {
+  const spawnCommand = resolveDevDesktopSpawnCommand(devDesktopTargetCwd);
+  return {
+    running: devDesktopProcess !== null && devDesktopProcess.exitCode === null,
+    pid: devDesktopProcess?.pid ?? null,
+    cwd: devDesktopTargetCwd,
+    command: spawnCommand.command,
+    args: spawnCommand.args,
+  };
+}
+
+function emitDevDesktopState(): void {
+  const state = getDevDesktopState();
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (window.isDestroyed()) continue;
+    window.webContents.send("desktop:dev-desktop-state-changed", state);
+  }
+}
+
+function bindDevDesktopProcessLifecycle(process: ChildProcess.ChildProcess): void {
+  process.once("exit", () => {
+    if (devDesktopProcess !== process) {
+      return;
+    }
+    devDesktopProcess = null;
+    emitDevDesktopState();
+  });
+  process.once("error", (error) => {
+    if (devDesktopProcess !== process) {
+      return;
+    }
+    devDesktopProcess = null;
+    console.warn("[desktop] dev:desktop process failed", error);
+    emitDevDesktopState();
+  });
+}
+
+function captureDevDesktopOutput(child: ChildProcess.ChildProcess): void {
+  const attachStream = (
+    streamName: "stdout" | "stderr",
+    stream: NodeJS.ReadableStream | null | undefined,
+  ): void => {
+    stream?.on("data", (chunk: unknown) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), "utf8");
+
+      const message = buffer.toString("utf8");
+      if (streamName === "stderr") {
+        process.stderr.write(`[dev-desktop:stderr] ${message}`);
+      } else {
+        process.stdout.write(`[dev-desktop:stdout] ${message}`);
+      }
+
+      try {
+        if (!FS.existsSync(LOG_DIR)) {
+          FS.mkdirSync(LOG_DIR, { recursive: true });
+        }
+        FS.appendFileSync(Path.join(LOG_DIR, "dev-desktop.log"), buffer);
+      } catch {
+        // Ignored: logging should be best-effort
+      }
+    });
+  };
+
+  attachStream("stdout", child.stdout);
+  attachStream("stderr", child.stderr);
+}
+
+async function stopDevDesktopProcess(signal: NodeJS.Signals = "SIGINT"): Promise<void> {
+  const child = devDesktopProcess;
+  if (!child || child.exitCode !== null) {
+    return;
+  }
+
+  if (devDesktopStopInFlight) {
+    return devDesktopStopInFlight;
+  }
+
+  devDesktopStopInFlight = new Promise<void>((resolve) => {
+    const finalize = () => {
+      if (devDesktopProcess === child) {
+        devDesktopProcess = null;
+      }
+      emitDevDesktopState();
+      devDesktopStopInFlight = null;
+      resolve();
+    };
+
+    const cleanup = () => {
+      child.removeListener("exit", onExit);
+      child.removeListener("error", onError);
+    };
+
+    const onExit = () => {
+      cleanup();
+      finalize();
+    };
+
+    const onError = () => {
+      cleanup();
+      finalize();
+    };
+
+    child.once("exit", onExit);
+    child.once("error", onError);
+    emitDevDesktopState();
+
+    try {
+      if (process.platform === "win32") {
+        child.kill(signal);
+      } else {
+        process.kill(-child.pid!, signal);
+      }
+    } catch {
+      cleanup();
+      finalize();
+      return;
+    }
+
+    setTimeout(() => {
+      if (devDesktopProcess !== child || child.exitCode !== null) {
+        cleanup();
+        finalize();
+        return;
+      }
+      try {
+        if (process.platform === "win32") {
+          child.kill("SIGKILL");
+        } else {
+          process.kill(-child.pid!, "SIGKILL");
+        }
+      } catch {
+        // ignored: the process may already be exiting.
+      }
+      setTimeout(() => {
+        cleanup();
+        finalize();
+      }, 500);
+    }, 5_000);
+  });
+
+  return devDesktopStopInFlight;
+}
+
+function startDevDesktopProcess(
+  input?: DesktopDevDesktopLaunchInput,
+): Promise<DesktopDevDesktopState> {
+  if (devDesktopProcess !== null && devDesktopProcess.exitCode === null) {
+    return Promise.resolve(getDevDesktopState());
+  }
+
+  devDesktopTargetCwd = resolveDevDesktopCwd(input);
+
+  return new Promise<DesktopDevDesktopState>((resolve, reject) => {
+    const spawnCommand = resolveDevDesktopSpawnCommand(devDesktopTargetCwd);
+    const child = ChildProcess.spawn(spawnCommand.command, spawnCommand.args, {
+      cwd: devDesktopTargetCwd,
+      env: devDesktopChildEnv(),
+      stdio: "pipe",
+      detached: process.platform !== "win32",
+    });
+
+    captureDevDesktopOutput(child);
+
+    const handleSpawnError = (error: Error) => {
+      if (devDesktopProcess === child) {
+        devDesktopProcess = null;
+      }
+      emitDevDesktopState();
+      reject(error);
+    };
+
+    child.once("error", handleSpawnError);
+    child.once("spawn", () => {
+      child.removeListener("error", handleSpawnError);
+      devDesktopProcess = child;
+      bindDevDesktopProcessLifecycle(child);
+      emitDevDesktopState();
+      resolve(getDevDesktopState());
+    });
+  });
+}
+
+function runEvolutionCommand(
+  command: string,
+  args: readonly string[],
+  options: { readonly cwd: string; readonly env?: NodeJS.ProcessEnv },
+): Promise<{ readonly stdout: string; readonly stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = ChildProcess.spawn(command, [...args], {
+      cwd: options.cwd,
+      env: options.env ?? backendChildEnv(),
+      stdio: "pipe",
+    });
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+
+    child.stdout?.on("data", (chunk: unknown) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+      stdout.push(buffer);
+      process.stdout.write(`[evolution:${command}:stdout] ${buffer.toString("utf8")}`);
+    });
+    child.stderr?.on("data", (chunk: unknown) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+      stderr.push(buffer);
+      process.stderr.write(`[evolution:${command}:stderr] ${buffer.toString("utf8")}`);
+    });
+    child.once("error", reject);
+    child.once("exit", (code) => {
+      const result = {
+        stdout: Buffer.concat(stdout).toString("utf8"),
+        stderr: Buffer.concat(stderr).toString("utf8"),
+      };
+      if (code === 0) {
+        resolve(result);
+        return;
+      }
+      reject(
+        new Error(
+          `${command} ${args.join(" ")} failed with exit code ${code ?? "unknown"}. ${result.stderr}`.trim(),
+        ),
+      );
+    });
+  });
+}
+
+function copyEvolutionSourceFallback(sourceRoot: string, targetRoot: string): void {
+  const ignoredNames = new Set([
+    ".git",
+    ".turbo",
+    "node_modules",
+    "release",
+    PIPPER_EVOLUTION_RELEASES_DIRECTORY_NAME,
+  ]);
+  FS.cpSync(sourceRoot, targetRoot, {
+    recursive: true,
+    filter: (source) => !source.split(Path.sep).some((segment) => ignoredNames.has(segment)),
+  });
+}
+
+async function ensureEvolutionWorkspace(): Promise<DesktopEvolutionWorkspaceState> {
+  const workspaceRoot = IMPROVE_DEV_DESKTOP_CWD;
+  const existed = FS.existsSync(Path.join(workspaceRoot, "package.json"));
+
+  if (!existed) {
+    if (FS.existsSync(workspaceRoot) && FS.readdirSync(workspaceRoot).length > 0) {
+      throw new Error(`${workspaceRoot} exists but is not a Pipper workspace.`);
+    }
+    FS.mkdirSync(Path.dirname(workspaceRoot), { recursive: true });
+    FS.rmSync(workspaceRoot, { recursive: true, force: true });
+    copyEvolutionSourceFallback(ROOT_DIR, workspaceRoot);
+  }
+
+  const hasNodeModules = FS.existsSync(Path.join(workspaceRoot, "node_modules"));
+  if (!hasNodeModules) {
+    const installCommand = resolveDevDesktopSpawnCommand(workspaceRoot);
+    const installArgs =
+      installCommand.command === "mise" ? ["exec", "--", "bun", "install"] : ["install"];
+    await runEvolutionCommand(installCommand.command, installArgs, {
+      cwd: workspaceRoot,
+    });
+  }
+
+  return {
+    workspaceRoot,
+    existed,
+    installedDependencies: !hasNodeModules,
+  };
+}
+
+function parseEvolutionApproveInput(rawInput: unknown): DesktopEvolutionApproveInput | undefined {
+  if (rawInput === undefined || rawInput === null) return undefined;
+  if (typeof rawInput !== "object") throw new Error("Invalid evolution approval input.");
+  const summary = (rawInput as { readonly summary?: unknown }).summary;
+  if (summary !== undefined && typeof summary !== "string") {
+    throw new Error("Invalid evolution approval summary.");
+  }
+  return summary === undefined ? {} : { summary };
+}
+
+async function approveEvolutionChanges(
+  input?: DesktopEvolutionApproveInput,
+): Promise<DesktopEvolutionApproveResult> {
+  await ensureEvolutionWorkspace();
+  const cwd = IMPROVE_DEV_DESKTOP_CWD;
+  const status = (
+    await runEvolutionCommand("git", ["status", "--porcelain"], { cwd })
+  ).stdout.trim();
+  if (!status) {
+    throw new Error("No Improve workspace changes to approve.");
+  }
+
+  for (const [command, args] of EVOLUTION_APPROVAL_CHECK_COMMANDS) {
+    await runEvolutionCommand(command, args, { cwd });
+  }
+
+  await runEvolutionCommand("git", ["add", "-A"], { cwd });
+  await runEvolutionCommand(
+    "git",
+    [
+      "-c",
+      "user.name=Pipper Improve",
+      "-c",
+      "user.email=improve@pipper.local",
+      "commit",
+      "-m",
+      input?.summary?.trim() || "Approve Improve changes",
+    ],
+    { cwd },
+  );
+  const initialCommit = (
+    await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })
+  ).stdout.trim();
+  const filesChanged = (
+    await runEvolutionCommand(
+      "git",
+      ["diff-tree", "--no-commit-id", "--name-only", "-r", initialCommit],
+      {
+        cwd,
+      },
+    )
+  ).stdout
+    .split("\n")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  const patchPath = Path.join(cwd, "patch.md");
+  const createdAt = new Date().toISOString();
+  const summary = input?.summary?.trim() || "Approved Improve changes.";
+  FS.appendFileSync(
+    patchPath,
+    `\n\n## Approved Improve Change (${createdAt})\n\n- Commit: ${initialCommit}\n- Summary: ${summary}\n- Files changed:\n${filesChanged.map((file) => `  - ${file}`).join("\n")}\n`,
+    "utf8",
+  );
+  await runEvolutionCommand("git", ["add", "patch.md"], { cwd });
+  await runEvolutionCommand("git", ["commit", "--amend", "--no-edit"], { cwd });
+  const commit = (await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })).stdout.trim();
+
+  return { commit, filesChanged, patchPath };
+}
+
+function findNewestDmg(searchRoot: string): string | null {
+  if (!FS.existsSync(searchRoot)) return null;
+  const candidates: Array<{ path: string; mtimeMs: number }> = [];
+  const visit = (dir: string): void => {
+    for (const entry of FS.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = Path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (
+          entry.name === PIPPER_EVOLUTION_RELEASES_DIRECTORY_NAME ||
+          entry.name === "node_modules"
+        ) {
+          continue;
+        }
+        visit(entryPath);
+        continue;
+      }
+      if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".dmg")) continue;
+      candidates.push({ path: entryPath, mtimeMs: FS.statSync(entryPath).mtimeMs });
+    }
+  };
+  visit(searchRoot);
+  candidates.sort((left, right) => right.mtimeMs - left.mtimeMs);
+  return candidates[0]?.path ?? null;
+}
+
+function resolveNextEvolutionReleaseDir(workspaceRoot: string): {
+  releaseId: string;
+  releaseDir: string;
+} {
+  const releasesRoot = Path.join(workspaceRoot, PIPPER_EVOLUTION_RELEASES_DIRECTORY_NAME);
+  FS.mkdirSync(releasesRoot, { recursive: true });
+  for (let index = 1; index < 10_000; index += 1) {
+    const releaseId = `release-${index}`;
+    const releaseDir = Path.join(releasesRoot, releaseId);
+    if (!FS.existsSync(releaseDir)) {
+      FS.mkdirSync(releaseDir);
+      return { releaseId, releaseDir };
+    }
+  }
+  throw new Error("Unable to allocate an evolution release directory.");
+}
+
+async function portEvolutionRelease(): Promise<DesktopEvolutionPortResult> {
+  await ensureEvolutionWorkspace();
+  const cwd = IMPROVE_DEV_DESKTOP_CWD;
+  const commit = (await runEvolutionCommand("git", ["rev-parse", "HEAD"], { cwd })).stdout.trim();
+  const beforeBuild = Date.now();
+  const buildCommand = resolveDevDesktopSpawnCommand(cwd);
+  const buildArgs =
+    buildCommand.command === "mise"
+      ? ["exec", "--", "bun", ...EVOLUTION_PORT_RUNNER_ARGS]
+      : [...EVOLUTION_PORT_RUNNER_ARGS];
+  await runEvolutionCommand(buildCommand.command, buildArgs, { cwd });
+
+  const dmgPath = findNewestDmg(cwd);
+  if (!dmgPath || FS.statSync(dmgPath).mtimeMs + 1_000 < beforeBuild) {
+    throw new Error("Build completed, but no fresh .dmg artifact was found.");
+  }
+
+  const { releaseId, releaseDir } = resolveNextEvolutionReleaseDir(cwd);
+  const releaseDmgPath = Path.join(releaseDir, Path.basename(dmgPath));
+  FS.copyFileSync(dmgPath, releaseDmgPath);
+  const manifest = {
+    releaseId,
+    commit,
+    createdAt: new Date().toISOString(),
+    dmgPath: releaseDmgPath,
+    platform: "macos" as const,
+  };
+  FS.writeFileSync(
+    Path.join(releaseDir, "manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf8",
+  );
+  await runEvolutionCommand("open", [releaseDmgPath], { cwd });
+  return { manifest, releaseDir };
 }
 
 function resolveAdvertisedHostOverride(): string | undefined {
@@ -1083,6 +1644,13 @@ function resolveResourcePath(fileName: string): string | null {
 }
 
 function resolveIconPath(ext: "ico" | "icns" | "png"): string | null {
+  if (isImproveInstance && ext === "png") {
+    const improveIconPath = Path.join(ROOT_DIR, "prod_favicon_io", "improve.png");
+    if (FS.existsSync(improveIconPath)) {
+      return improveIconPath;
+    }
+  }
+
   if (isDevelopment && process.platform === "darwin" && ext === "png") {
     const developmentDockIconPath = Path.join(
       ROOT_DIR,
@@ -1118,9 +1686,11 @@ function resolveUserDataPath(): string {
         ? Path.join(OS.homedir(), "Library", "Application Support")
         : process.env.XDG_CONFIG_HOME || Path.join(OS.homedir(), ".config");
 
-  const legacyPath = Path.join(appDataBase, LEGACY_USER_DATA_DIR_NAME);
-  if (FS.existsSync(legacyPath)) {
-    return legacyPath;
+  if (LEGACY_USER_DATA_DIR_NAME !== null) {
+    const legacyPath = Path.join(appDataBase, LEGACY_USER_DATA_DIR_NAME);
+    if (FS.existsSync(legacyPath)) {
+      return legacyPath;
+    }
   }
 
   return Path.join(appDataBase, USER_DATA_DIR_NAME);
@@ -1787,6 +2357,34 @@ function registerIpcHandlers(): void {
   ipcMain.removeHandler(GET_ADVERTISED_ENDPOINTS_CHANNEL);
   ipcMain.handle(GET_ADVERTISED_ENDPOINTS_CHANNEL, async () => getDesktopAdvertisedEndpoints());
 
+  ipcMain.removeHandler(ENSURE_EVOLUTION_WORKSPACE_CHANNEL);
+  ipcMain.handle(ENSURE_EVOLUTION_WORKSPACE_CHANNEL, async () => ensureEvolutionWorkspace());
+
+  ipcMain.removeHandler(APPROVE_EVOLUTION_CHANGES_CHANNEL);
+  ipcMain.handle(APPROVE_EVOLUTION_CHANGES_CHANNEL, async (_event, rawInput: unknown) =>
+    approveEvolutionChanges(parseEvolutionApproveInput(rawInput)),
+  );
+
+  ipcMain.removeHandler(PORT_EVOLUTION_RELEASE_CHANNEL);
+  ipcMain.handle(PORT_EVOLUTION_RELEASE_CHANNEL, async () => portEvolutionRelease());
+
+  ipcMain.removeHandler(GET_DEV_DESKTOP_STATE_CHANNEL);
+  ipcMain.handle(GET_DEV_DESKTOP_STATE_CHANNEL, async () => getDevDesktopState());
+
+  ipcMain.removeHandler(START_DEV_DESKTOP_CHANNEL);
+  ipcMain.handle(START_DEV_DESKTOP_CHANNEL, async (_event, rawInput: unknown) => {
+    if (rawInput !== undefined && (typeof rawInput !== "object" || rawInput === null)) {
+      throw new Error("Invalid dev desktop launch input.");
+    }
+    return startDevDesktopProcess(rawInput as DesktopDevDesktopLaunchInput | undefined);
+  });
+
+  ipcMain.removeHandler(STOP_DEV_DESKTOP_CHANNEL);
+  ipcMain.handle(STOP_DEV_DESKTOP_CHANNEL, async () => {
+    await stopDevDesktopProcess();
+    return getDevDesktopState();
+  });
+
   ipcMain.removeHandler(PICK_FOLDER_CHANNEL);
   ipcMain.handle(PICK_FOLDER_CHANNEL, async (_event, rawOptions: unknown) => {
     const owner = BrowserWindow.getFocusedWindow() ?? mainWindow;
@@ -1900,6 +2498,15 @@ function registerIpcHandlers(): void {
     } catch {
       return false;
     }
+  });
+
+  ipcMain.removeHandler(OPEN_APP_WINDOW_CHANNEL);
+  ipcMain.handle(OPEN_APP_WINDOW_CHANNEL, async (_event, rawOptions: unknown) => {
+    const window = createWindow(parseAppWindowOptions(rawOptions));
+    if (mainWindow === null) {
+      mainWindow = window;
+    }
+    return true;
   });
 
   ipcMain.removeHandler(UPDATE_GET_STATE_CHANNEL);
@@ -2036,7 +2643,7 @@ function syncAllWindowAppearance(): void {
 
 nativeTheme.on("updated", syncAllWindowAppearance);
 
-function createWindow(): BrowserWindow {
+function createWindow(options: DesktopAppWindowOptions = {}): BrowserWindow {
   const window = new BrowserWindow({
     width: 1100,
     height: 780,
@@ -2133,10 +2740,10 @@ function createWindow(): BrowserWindow {
   bindFirstRevealTrigger(revealSubscribers, () => revealWindow(window));
 
   if (isDevelopment) {
-    void window.loadURL(resolveDesktopDevServerUrl());
+    void window.loadURL(appendAppWindowSearchParams(resolveDesktopDevServerUrl(), options));
     window.webContents.openDevTools({ mode: "detach" });
   } else {
-    void window.loadURL(backendHttpUrl);
+    void window.loadURL(appendAppWindowSearchParams(backendHttpUrl, options));
   }
 
   window.on("closed", () => {
@@ -2234,6 +2841,18 @@ app.on("before-quit", () => {
   clearUpdatePollTimer();
   cancelBackendReadinessWait();
   stopBackend();
+  try {
+    if (devDesktopProcess && devDesktopProcess.pid) {
+      if (process.platform === "win32") {
+        devDesktopProcess.kill("SIGKILL");
+      } else {
+        process.kill(-devDesktopProcess.pid, "SIGKILL");
+      }
+    }
+  } catch {
+    // ignore
+  }
+  void stopDevDesktopProcess().catch(() => undefined);
   void desktopSshEnvironmentBridge.dispose().catch(() => undefined);
   restoreStdIoCapture?.();
 });

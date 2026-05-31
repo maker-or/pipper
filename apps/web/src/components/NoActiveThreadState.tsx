@@ -1,9 +1,14 @@
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./ui/empty";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { isElectron } from "../env";
+import { useAppSpaceStore } from "../appSpaceStore";
+import { ImproveEvolutionActions } from "./ImproveEvolutionActions";
 import { cn } from "~/lib/utils";
 
 export function NoActiveThreadState() {
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
+
   return (
     <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
@@ -16,12 +21,15 @@ export function NoActiveThreadState() {
           )}
         >
           {isElectron ? (
-            <span className="text-xs text-muted-foreground/50 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
-              No active thread
-            </span>
+            <div className="flex w-full items-center justify-between gap-3 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
+              <span className="text-xs text-muted-foreground/50 wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]">
+                No active thread
+              </span>
+              {isImproveSpace ? <ImproveEvolutionActions /> : null}
+            </div>
           ) : (
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="size-7 shrink-0 md:hidden" />
+              {isImproveSpace ? null : <SidebarTrigger className="size-7 shrink-0 md:hidden" />}
               <span className="text-sm font-medium text-foreground md:text-muted-foreground/60">
                 No active thread
               </span>

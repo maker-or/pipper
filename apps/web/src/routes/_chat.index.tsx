@@ -5,6 +5,8 @@ import { NoActiveThreadState } from "../components/NoActiveThreadState";
 import { Button } from "../components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "../components/ui/empty";
 import { SidebarInset, SidebarTrigger } from "../components/ui/sidebar";
+import { useAppSpaceStore } from "../appSpaceStore";
+import { ImproveEvolutionActions } from "../components/ImproveEvolutionActions";
 import { useSavedEnvironmentRegistryStore } from "../environments/runtime";
 import { APP_DISPLAY_NAME } from "~/branding";
 
@@ -26,15 +28,21 @@ export const Route = createFileRoute("/_chat/")({
 });
 
 function HostedStaticOnboardingState() {
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
+
   return (
     <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
         <header className="border-b border-border px-3 py-2 sm:px-5 sm:py-3">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="size-7 shrink-0 md:hidden" />
-            <span className="text-sm font-medium text-foreground md:text-muted-foreground/60">
-              {APP_DISPLAY_NAME}
-            </span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              {isImproveSpace ? null : <SidebarTrigger className="size-7 shrink-0 md:hidden" />}
+              <span className="text-sm font-medium text-foreground md:text-muted-foreground/60">
+                {APP_DISPLAY_NAME}
+              </span>
+            </div>
+            {isImproveSpace ? <ImproveEvolutionActions /> : null}
           </div>
         </header>
 

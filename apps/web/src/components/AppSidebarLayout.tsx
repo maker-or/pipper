@@ -2,7 +2,9 @@ import { useEffect, useMemo, type CSSProperties, type ReactNode } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 import ThreadSidebar from "./Sidebar";
-import { Sidebar, SidebarProvider, SidebarRail } from "./ui/sidebar";
+import { Sidebar, SidebarProvider, SidebarRail, useSidebar } from "./ui/sidebar";
+import { useAppSpaceStore } from "../appSpaceStore";
+import { isElectron } from "../env";
 import {
   clearShortcutModifierState,
   syncShortcutModifierStateFromKeyboardEvent,
@@ -16,6 +18,8 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isOnSettings = location.pathname.startsWith("/settings");
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
 
   const { sidebarWidth, sidebarMaxWidth, sidebarMinWidth } = useMemo(() => {
     if (isOnSettings) {
@@ -74,38 +78,84 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider
       className="h-dvh! min-h-0!"
+      data-active-space={activeSpace}
       defaultOpen
       style={{ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties}
     >
-      <Sidebar
-        side="left"
-        collapsible="none"
-        className={
-          isOnSettings
-            ? "relative z-10 h-dvh bg-card text-foreground"
-            : "h-dvh bg-card text-foreground"
-        }
-        style={
-          {
-            "--sidebar-width": `${sidebarWidth}px`,
-          } as CSSProperties
-        }
-        resizable={
-          isOnSettings
-            ? false
-            : {
-                maxWidth: sidebarMaxWidth,
-                minWidth: sidebarMinWidth,
-                shouldAcceptWidth: ({ nextWidth, wrapper }) =>
-                  wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
-                storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
-              }
-        }
-      >
-        <ThreadSidebar />
-        <SidebarRail />
-      </Sidebar>
+      {isImproveSpace ? null : (
+        <Sidebar
+          side="left"
+          collapsible="offcanvas"
+          className={
+            isOnSettings
+              ? "relative z-10 h-dvh bg-card text-foreground"
+              : "h-dvh bg-card text-foreground"
+          }
+          style={
+            {
+              "--sidebar-width": `${sidebarWidth}px`,
+            } as CSSProperties
+          }
+          resizable={
+            isOnSettings
+              ? false
+              : {
+                  maxWidth: sidebarMaxWidth,
+                  minWidth: sidebarMinWidth,
+                  shouldAcceptWidth: ({ nextWidth, wrapper }) =>
+                    wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
+                  storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
+                }
+          }
+        >
+          <ThreadSidebar />
+          <SidebarRail />
+        </Sidebar>
+      )}
+      {isElectron && !isImproveSpace ? <SidebarKeyboardShortcutListener /> : null}
       {children}
     </SidebarProvider>
   );
+}
+
+function SidebarKeyboardShortcutListener() {
+  const { toggleSidebar } = useSidebar();
+
+  useEffect(() => {
+    const onWindowKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat) {
+        return;
+      }
+      if (event.key.toLowerCase() !== "b") {
+        return;
+      }
+      if (!event.ctrlKey && !event.metaKey) {
+        return;
+      }
+      if (event.altKey || event.shiftKey) {
+        return;
+      }
+
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const tagName = target?.tagName;
+      if (
+        target?.isContentEditable ||
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT"
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      toggleSidebar();
+    };
+
+    window.addEventListener("keydown", onWindowKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", onWindowKeyDown, true);
+    };
+  }, [toggleSidebar]);
+
+  return null;
 }

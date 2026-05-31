@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { /* PlusMinusIcon, */ TerminalIcon, XIcon } from "@phosphor-icons/react";
+import { useAppSpaceStore } from "../../appSpaceStore";
 import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
 // import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { SidebarTrigger } from "../ui/sidebar";
@@ -14,6 +15,7 @@ import { hasUnseenCompletion, isThreadTabRunning } from "../Sidebar.logic";
 import { useNewThreadHandler } from "../../hooks/useHandleNewThread";
 import type { SidebarThreadSummary } from "../../types";
 import { ThreadRunningIndicator } from "./ThreadRunningIndicator";
+import { ImproveEvolutionActions } from "../ImproveEvolutionActions";
 
 const EMPTY_THREAD_SUMMARIES: readonly SidebarThreadSummary[] = [];
 const DOCK_ICON_BUTTON_CLASS_NAME =
@@ -81,6 +83,8 @@ export const ChatHeader = memo(function ChatHeader({
   onToggleDiff,
 }: ChatHeaderProps) {
   const { handleNewThread } = useNewThreadHandler();
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
   // Keep props and constants referenced to avoid unused variable warnings
   void onToggleTerminal;
   void onToggleDiff;
@@ -149,8 +153,9 @@ export const ChatHeader = memo(function ChatHeader({
     setCreateMenuOpen(false);
     if (activeProjectRef) {
       void handleNewThread(activeProjectRef);
+      onSelectThreadTab();
     }
-  }, [activeProjectRef, handleNewThread]);
+  }, [activeProjectRef, handleNewThread, onSelectThreadTab]);
 
   const handleCreateTerminal = useCallback(() => {
     setCreateMenuOpen(false);
@@ -492,6 +497,7 @@ export const ChatHeader = memo(function ChatHeader({
           </div>
         </div>
       </div>
+      {isImproveSpace ? <ImproveEvolutionActions className="shrink-0" /> : null}
       {/* <div className="fixed right-3 bottom-[var(--chat-bottom-controls-inset)] z-40 flex h-10 shrink-0 items-center justify-end gap-2 rounded-full bg-background/60 dark:bg-zinc-900/60 backdrop-blur-md border border-border/40 px-3 shadow-md shadow-black/5 hover:border-border/60 dark:hover:border-border/30 transition-all duration-200">
         <Tooltip>
           <TooltipTrigger

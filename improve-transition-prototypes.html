@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Improve Press-and-Hold Transition Prototypes</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: oklch(0.12 0.018 255);
+        --panel: oklch(0.17 0.022 255);
+        --panel-2: oklch(0.2 0.028 255);
+        --text: oklch(0.94 0.012 255);
+        --muted: oklch(0.68 0.02 255);
+        --line: oklch(0.32 0.025 255);
+        --orange: oklch(0.74 0.2 52);
+        --orange-2: oklch(0.64 0.23 36);
+        --gold: oklch(0.86 0.16 78);
+        --ember: oklch(0.52 0.22 32);
+        --hold-dur: 900ms;
+        --enter-dur: 780ms;
+        --enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+        --snap-ease: cubic-bezier(0.2, 0, 0, 1);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 10% 0%, oklch(0.24 0.05 255 / 0.5), transparent 24rem),
+          radial-gradient(circle at 90% 12%, oklch(0.22 0.07 36 / 0.35), transparent 26rem),
+          linear-gradient(145deg, oklch(0.1 0.018 255), var(--bg));
+        color: var(--text);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      .page {
+        width: min(1380px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 40px 0 56px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 26px;
+      }
+
+      .eyebrow {
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 780px;
+        margin: 0;
+        font-size: clamp(34px, 5vw, 64px);
+        letter-spacing: -0.055em;
+        line-height: 0.95;
+        text-wrap: balance;
+      }
+
+      .hero p {
+        max-width: 720px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+        text-wrap: pretty;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      @media (max-width: 1100px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(220px, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .concept {
+        position: relative;
+        min-height: 410px;
+        overflow: hidden;
+        border: 1px solid color-mix(in oklch, var(--line), transparent 18%);
+        border-radius: 24px;
+        background:
+          linear-gradient(180deg, oklch(0.21 0.028 255 / 0.76), oklch(0.15 0.02 255 / 0.82)),
+          var(--panel);
+        box-shadow:
+          0 1px 0 oklch(1 0 0 / 0.06) inset,
+          0 24px 70px oklch(0 0 0 / 0.28);
+        isolation: isolate;
+        transition:
+          transform 240ms var(--snap-ease),
+          border-color 240ms var(--snap-ease),
+          box-shadow 240ms var(--snap-ease);
+      }
+
+      .concept__chrome {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 42px;
+        padding: 0 13px;
+        border-bottom: 1px solid oklch(1 0 0 / 0.07);
+        background: oklch(0.13 0.016 255 / 0.54);
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: oklch(0.34 0.02 255);
+      }
+
+      .concept__body {
+        position: relative;
+        height: calc(100% - 42px);
+        min-height: 368px;
+        padding: 16px;
+      }
+
+      .rail {
+        position: absolute;
+        top: 16px;
+        bottom: 16px;
+        left: 16px;
+        display: flex;
+        width: 48px;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        border-right: 1px solid oklch(1 0 0 / 0.07);
+      }
+
+      .fake-item {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: oklch(0.27 0.025 255 / 0.8);
+      }
+
+      .copy {
+        margin-left: 64px;
+        padding-top: 7px;
+      }
+
+      .copy h2 {
+        margin: 0 0 8px;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+      }
+
+      .copy p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .improve-button {
+        position: relative;
+        display: grid;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        user-select: none;
+        touch-action: none;
+        transition:
+          scale 160ms var(--snap-ease),
+          border-color 180ms var(--snap-ease),
+          background 180ms var(--snap-ease),
+          color 180ms var(--snap-ease),
+          box-shadow 180ms var(--snap-ease);
+      }
+
+      .improve-button:active {
+        scale: 0.96;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .concept:hover {
+          transform: translateY(-2px);
+          border-color: oklch(0.72 0.12 58 / 0.28);
+          box-shadow:
+            0 1px 0 oklch(1 0 0 / 0.08) inset,
+            0 28px 80px oklch(0 0 0 / 0.34);
+        }
+
+        .improve-button:hover {
+          border-color: oklch(0.76 0.18 58 / 0.3);
+          background: oklch(0.68 0.18 45 / 0.1);
+          color: oklch(0.9 0.08 70);
+        }
+      }
+
+      .improve-button[data-hold-state="holding"],
+      .improve-button[data-hold-state="entering"] {
+        scale: 0.96;
+        border-color: oklch(0.8 0.18 62 / 0.58);
+        background: linear-gradient(180deg, oklch(0.74 0.18 58 / 0.22), oklch(0.62 0.22 42 / 0.42));
+        color: oklch(0.98 0.035 78);
+        box-shadow: 0 12px 26px oklch(0.62 0.22 42 / 0.24);
+      }
+
+      .hold-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0;
+        border-radius: inherit;
+        background: linear-gradient(90deg, oklch(0.66 0.24 35 / 0.18), oklch(0.84 0.18 74 / 0.66));
+        opacity: 0;
+        will-change: width, opacity;
+      }
+
+      .improve-button[data-hold-state="holding"] .hold-fill {
+        opacity: 1;
+        animation: hold-fill var(--hold-dur) linear forwards;
+      }
+
+      .improve-button[data-hold-state="entering"] .hold-fill {
+        width: 100%;
+        opacity: 1;
+      }
+
+      .hold-shine {
+        position: absolute;
+        inset: -45% auto -45% -75%;
+        width: 70%;
+        rotate: 18deg;
+        background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.38), transparent);
+        opacity: 0;
+        transform: translateX(0);
+      }
+
+      .improve-button[data-hold-state="holding"] .hold-shine,
+      .improve-button[data-hold-state="entering"] .hold-shine {
+        opacity: 1;
+        transform: translateX(245%);
+        transition:
+          transform var(--hold-dur) linear,
+          opacity 160ms ease-out;
+      }
+
+      .flame {
+        position: relative;
+        z-index: 1;
+        width: 20px;
+        height: 20px;
+        filter: drop-shadow(0 0 10px oklch(0.74 0.2 52 / 0.2));
+      }
+
+      .hint {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid oklch(1 0 0 / 0.09);
+        border-radius: 999px;
+        background: oklch(0.1 0.015 255 / 0.52);
+        padding: 7px 10px;
+        color: oklch(0.76 0.03 255);
+        font-size: 11px;
+        backdrop-filter: blur(10px);
+      }
+
+      .hint kbd {
+        border: 1px solid oklch(1 0 0 / 0.12);
+        border-radius: 7px;
+        background: oklch(0.2 0.02 255 / 0.7);
+        padding: 2px 5px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 10px;
+      }
+
+      .world {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+        opacity: 0;
+        will-change: opacity, transform, filter, clip-path;
+      }
+
+      .world__label {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 3;
+        translate: -50% -50%;
+        white-space: nowrap;
+        border: 1px solid oklch(0.86 0.16 62 / 0.28);
+        border-radius: 999px;
+        background: oklch(0.16 0.04 44 / 0.62);
+        padding: 8px 11px;
+        color: oklch(0.96 0.04 78);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+        transition:
+          opacity 240ms var(--snap-ease) 180ms,
+          transform 360ms var(--enter-ease) 180ms;
+        backdrop-filter: blur(14px);
+      }
+
+      .concept[data-state="entering"] .world {
+        opacity: 1;
+      }
+
+      .concept[data-state="entering"] .world__label {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      /* 1. Portal Bloom */
+      .style-portal .world {
+        clip-path: circle(0 at 40px 74px);
+        filter: blur(12px) saturate(1.16);
+        transform: scale(0.985);
+        background:
+          radial-gradient(circle at 40px 74px, oklch(0.86 0.16 74), transparent 0),
+          radial-gradient(circle at 20% 20%, oklch(0.78 0.2 52 / 0.34), transparent 40%),
+          radial-gradient(circle at 80% 78%, oklch(0.56 0.22 34 / 0.32), transparent 45%),
+          linear-gradient(135deg, oklch(0.12 0.03 45), oklch(0.2 0.06 35));
+        transition:
+          clip-path var(--enter-dur) var(--enter-ease),
+          opacity 180ms var(--snap-ease),
+          filter var(--enter-dur) var(--enter-ease),
+          transform var(--enter-dur) var(--enter-ease);
+      }
+
+      .style-portal .world::before,
+      .style-portal .world::after {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        opacity: 0;
+        background-image:
+          radial-gradient(circle, oklch(0.94 0.08 76 / 0.45) 0 1px, transparent 1.5px),
+          radial-gradient(circle, oklch(0.86 0.18 45 / 0.32) 0 1px, transparent 1.5px);
+        background-size:
+          56px 56px,
+          84px 84px;
+        transform: translateY(18px) scale(1.04);
+        transition:
+          opacity 260ms ease-out,
+          transform var(--enter-dur) var(--enter-ease);
+      }
+
+      .style-portal .world::after {
+        rotate: 9deg;
+        mix-blend-mode: screen;
+      }
+
+      .style-portal[data-state="entering"] .world {
+        clip-path: circle(150vmax at 40px 74px);
+        filter: blur(0);
+        transform: scale(1);
+      }
+
+      .style-portal[data-state="entering"] .world::before {
+        opacity: 0.62;
+        transform: translateY(-18px) scale(1);
+      }
+
+      .style-portal[data-state="entering"] .world::after {
+        opacity: 0.3;
+        transform: translateY(20px) scale(1);
+      }
+
+      /* 2. Solar Curtain */
+      .style-curtain .world {
+        transform: translateX(-105%) skewX(-8deg);
+        filter: blur(10px) saturate(1.08);
+        background:
+          linear-gradient(
+            100deg,
+            oklch(0.85 0.18 72 / 0.96),
+            oklch(0.66 0.24 35 / 0.96) 44%,
+            oklch(0.14 0.03 38 / 0.98)
+          ),
+          linear-gradient(135deg, oklch(0.16 0.04 42), oklch(0.08 0.02 255));
+        transition:
+          transform 760ms var(--enter-ease),
+          opacity 160ms var(--snap-ease),
+          filter 760ms var(--enter-ease);
+      }
+
+      .style-curtain .world::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(90deg, transparent 0 15px, oklch(1 0 0 / 0.08) 16px 17px),
+          radial-gradient(circle at 82% 40%, oklch(0.95 0.12 86 / 0.44), transparent 22rem);
+        transform: translateX(-10%);
+        transition: transform 900ms var(--enter-ease);
+      }
+
+      .style-curtain[data-state="entering"] .world {
+        transform: translateX(0) skewX(0deg);
+        filter: blur(0);
+      }
+
+      .style-curtain[data-state="entering"] .world::before {
+        transform: translateX(8%);
+      }
+
+      /* 3. Ember Warp */
+      .style-warp .world {
+        transform: scale(0.68) rotate(-7deg);
+        filter: blur(20px) saturate(1.45);
+        border-radius: 999px;
+        background:
+          conic-gradient(
+            from 240deg,
+            oklch(0.92 0.14 80),
+            oklch(0.72 0.22 42),
+            oklch(0.35 0.2 28),
+            oklch(0.88 0.16 74)
+          ),
+          radial-gradient(circle, oklch(0.12 0.04 42), oklch(0.05 0.02 255));
+        transition:
+          opacity 180ms var(--snap-ease),
+          transform 820ms var(--enter-ease),
+          filter 820ms var(--enter-ease),
+          border-radius 820ms var(--enter-ease);
+      }
+
+      .style-warp .world::before {
+        content: "";
+        position: absolute;
+        inset: 8%;
+        border: 1px solid oklch(1 0 0 / 0.16);
+        border-radius: 50%;
+        background: radial-gradient(circle, transparent 40%, oklch(0.95 0.12 80 / 0.16));
+        transform: scale(0.4) rotate(35deg);
+        transition: transform 900ms cubic-bezier(0.2, 1, 0.2, 1);
+      }
+
+      .style-warp[data-state="entering"] .world {
+        transform: scale(1.22) rotate(0deg);
+        filter: blur(0) saturate(1.08);
+        border-radius: 0;
+      }
+
+      .style-warp[data-state="entering"] .world::before {
+        transform: scale(2.2) rotate(0deg);
+      }
+
+      /* 4. Focus Dive */
+      .style-focus .world {
+        transform: scale(1.12);
+        filter: blur(24px);
+        background:
+          radial-gradient(
+            circle at 50% 48%,
+            transparent 0 5rem,
+            oklch(0.87 0.16 74 / 0.42) 5.1rem 5.35rem,
+            transparent 5.5rem
+          ),
+          radial-gradient(circle at 50% 48%, oklch(0.82 0.18 62 / 0.18), transparent 15rem),
+          linear-gradient(135deg, oklch(0.1 0.026 44), oklch(0.2 0.055 35));
+        transition:
+          opacity 180ms var(--snap-ease),
+          transform 760ms var(--enter-ease),
+          filter 760ms var(--enter-ease);
+      }
+
+      .style-focus .world::before {
+        content: "";
+        position: absolute;
+        inset: -10%;
+        background: repeating-radial-gradient(
+          circle at 50% 48%,
+          transparent 0 22px,
+          oklch(0.9 0.12 80 / 0.12) 23px 24px
+        );
+        opacity: 0;
+        transform: scale(1.25);
+        transition:
+          opacity 240ms ease-out,
+          transform 900ms var(--enter-ease);
+      }
+
+      .style-focus[data-state="entering"] .world {
+        transform: scale(1);
+        filter: blur(0);
+      }
+
+      .style-focus[data-state="entering"] .world::before {
+        opacity: 1;
+        transform: scale(0.86);
+      }
+
+      /* 5. Glass Rift */
+      .style-rift .world {
+        clip-path: polygon(47% 0, 53% 0, 56% 100%, 43% 100%);
+        filter: blur(10px) saturate(1.14);
+        background:
+          linear-gradient(90deg, oklch(0.95 0.09 80 / 0.92), oklch(0.65 0.23 36 / 0.92)),
+          linear-gradient(135deg, oklch(0.1 0.025 255), oklch(0.18 0.05 36));
+        transition:
+          clip-path 780ms var(--enter-ease),
+          opacity 180ms var(--snap-ease),
+          filter 780ms var(--enter-ease);
+      }
+
+      .style-rift .world::before,
+      .style-rift .world::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          105deg,
+          transparent 0 42%,
+          oklch(1 0 0 / 0.32) 48%,
+          transparent 55%
+        );
+        transform: translateX(-28%);
+        transition: transform 840ms var(--enter-ease);
+      }
+
+      .style-rift .world::after {
+        background: radial-gradient(
+          circle at 70% 30%,
+          oklch(0.88 0.16 76 / 0.28),
+          transparent 22rem
+        );
+        transform: translateX(28%);
+      }
+
+      .style-rift[data-state="entering"] .world {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        filter: blur(0);
+      }
+
+      .style-rift[data-state="entering"] .world::before,
+      .style-rift[data-state="entering"] .world::after {
+        transform: translateX(0);
+      }
+
+      /* 6. Aurora Gate */
+      .style-aurora .world {
+        clip-path: inset(50% 0 50% 0 round 28px);
+        filter: blur(14px) saturate(1.25);
+        transform: scale(0.98);
+        background:
+          radial-gradient(circle at 50% 44%, oklch(0.92 0.1 92 / 0.28), transparent 12rem),
+          linear-gradient(
+            115deg,
+            oklch(0.18 0.08 190),
+            oklch(0.2 0.12 145) 42%,
+            oklch(0.28 0.1 72) 72%,
+            oklch(0.13 0.04 250)
+          );
+        transition:
+          clip-path 820ms var(--enter-ease),
+          opacity 180ms var(--snap-ease),
+          filter 820ms var(--enter-ease),
+          transform 820ms var(--enter-ease);
+      }
+
+      .style-aurora .world::before,
+      .style-aurora .world::after {
+        content: "";
+        position: absolute;
+        inset: -18%;
+        background: linear-gradient(
+          105deg,
+          transparent 0 18%,
+          oklch(0.82 0.18 145 / 0.22) 28%,
+          transparent 42%,
+          oklch(0.9 0.14 82 / 0.2) 58%,
+          transparent 74%
+        );
+        opacity: 0;
+        transform: translateY(18px) rotate(-4deg);
+        transition:
+          opacity 260ms var(--snap-ease),
+          transform 960ms var(--enter-ease);
+      }
+
+      .style-aurora .world::after {
+        rotate: 180deg;
+        mix-blend-mode: screen;
+      }
+
+      .style-aurora[data-state="entering"] .world {
+        clip-path: inset(0 0 0 0 round 0);
+        filter: blur(0) saturate(1.05);
+        transform: scale(1);
+      }
+
+      .style-aurora[data-state="entering"] .world::before,
+      .style-aurora[data-state="entering"] .world::after {
+        opacity: 1;
+        transform: translateY(-12px) rotate(0deg);
+      }
+
+      /* 7. Prism Fold */
+      .style-prism .world {
+        transform: perspective(720px) rotateY(-68deg) translateX(-26%);
+        transform-origin: 24% 50%;
+        filter: blur(8px) brightness(1.08);
+        background: linear-gradient(
+          115deg,
+          oklch(0.98 0.02 90 / 0.76) 0 12%,
+          oklch(0.78 0.19 72 / 0.76) 13% 26%,
+          oklch(0.58 0.24 36 / 0.74) 27% 46%,
+          oklch(0.16 0.05 255 / 0.94) 47% 100%
+        );
+        transition:
+          opacity 180ms var(--snap-ease),
+          transform 840ms var(--enter-ease),
+          filter 840ms var(--enter-ease);
+      }
+
+      .style-prism .world::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          oklch(1 0 0 / 0.36),
+          transparent 28%,
+          oklch(1 0 0 / 0.16) 54%,
+          transparent
+        );
+        transform: translateX(-46%);
+        transition: transform 920ms var(--enter-ease);
+      }
+
+      .style-prism[data-state="entering"] .world {
+        transform: perspective(720px) rotateY(0deg) translateX(0);
+        filter: blur(0) brightness(1);
+      }
+
+      .style-prism[data-state="entering"] .world::before {
+        transform: translateX(18%);
+      }
+
+      /* 8. Night Lift */
+      .style-night .world {
+        transform: translateY(110%) scale(0.98);
+        filter: blur(12px);
+        background:
+          radial-gradient(circle at 50% 78%, oklch(0.82 0.16 74 / 0.42), transparent 14rem),
+          radial-gradient(circle at 20% 20%, oklch(0.44 0.11 280 / 0.28), transparent 10rem),
+          linear-gradient(
+            180deg,
+            oklch(0.08 0.03 260),
+            oklch(0.16 0.05 255) 48%,
+            oklch(0.22 0.07 42)
+          );
+        transition:
+          opacity 160ms var(--snap-ease),
+          transform 760ms cubic-bezier(0.32, 0.72, 0, 1),
+          filter 760ms var(--enter-ease);
+      }
+
+      .style-night .world::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(
+          circle,
+          oklch(0.96 0.04 95 / 0.52) 0 1px,
+          transparent 1.5px
+        );
+        background-size: 38px 38px;
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 280ms var(--snap-ease) 120ms,
+          transform 900ms var(--enter-ease);
+      }
+
+      .style-night[data-state="entering"] .world {
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+
+      .style-night[data-state="entering"] .world::before {
+        opacity: 0.5;
+        transform: translateY(-10px);
+      }
+
+      /* 9. Signal Bloom */
+      .style-signal .world {
+        clip-path: circle(0 at 40px 74px);
+        filter: blur(12px);
+        background:
+          repeating-radial-gradient(
+            circle at 40px 74px,
+            oklch(0.92 0.13 78 / 0.24) 0 2px,
+            transparent 3px 18px
+          ),
+          radial-gradient(circle at 40px 74px, oklch(0.84 0.19 68 / 0.8), transparent 14rem),
+          linear-gradient(135deg, oklch(0.11 0.03 255), oklch(0.2 0.07 44));
+        transition:
+          clip-path 820ms var(--enter-ease),
+          opacity 170ms var(--snap-ease),
+          filter 820ms var(--enter-ease);
+      }
+
+      .style-signal .world::before {
+        content: "";
+        position: absolute;
+        inset: -24%;
+        background: conic-gradient(
+          from 40deg at 40px 74px,
+          transparent,
+          oklch(0.9 0.14 82 / 0.28),
+          transparent 28%,
+          oklch(0.66 0.2 38 / 0.2),
+          transparent 56%
+        );
+        opacity: 0;
+        transform: rotate(-18deg) scale(0.92);
+        transition:
+          opacity 240ms var(--snap-ease),
+          transform 980ms var(--enter-ease);
+      }
+
+      .style-signal[data-state="entering"] .world {
+        clip-path: circle(150vmax at 40px 74px);
+        filter: blur(0);
+      }
+
+      .style-signal[data-state="entering"] .world::before {
+        opacity: 1;
+        transform: rotate(18deg) scale(1.04);
+      }
+
+      .preview-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .utility-button {
+        border: 1px solid oklch(1 0 0 / 0.12);
+        border-radius: 999px;
+        background: oklch(0.18 0.025 255 / 0.8);
+        color: var(--text);
+        cursor: pointer;
+        padding: 9px 13px;
+        font: inherit;
+        font-size: 12px;
+      }
+
+      @keyframes hold-fill {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+
+        .improve-button[data-hold-state="holding"] .hold-fill,
+        .improve-button[data-hold-state="entering"] .hold-fill {
+          width: 100%;
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="eyebrow">Improve launch studies</div>
+        <h1>Press, hold, then cross into a different world.</h1>
+        <p>
+          Each card uses the same interaction: hold the flame until the button fills. Releasing
+          early cancels. When the hold completes, a different world-entry transition plays. Use
+          “Replay all” to compare rhythm.
+        </p>
+        <div class="preview-actions">
+          <button class="utility-button" data-replay-all>Replay all transitions</button>
+          <button class="utility-button" data-reset-all>Reset</button>
+        </div>
+      </header>
+
+      <section class="grid" aria-label="Improve transition concepts">
+        <article class="concept style-portal" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Portal Bloom">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>1. Portal Bloom</h2>
+              <p>
+                Expands from the icon into a warm starfield. Closest to the current app
+                implementation.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-curtain" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Solar Curtain">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>2. Solar Curtain</h2>
+              <p>
+                A decisive left-to-right wipe, like pulling back a glowing curtain into Improve.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-warp" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Ember Warp">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>3. Ember Warp</h2>
+              <p>A rotating ember lens opens into a portal. More magical and dramatic.</p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-focus" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Focus Dive">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>4. Focus Dive</h2>
+              <p>A soft zoom through concentric rings. Feels quieter and more premium.</p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-rift" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Glass Rift">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>5. Glass Rift</h2>
+              <p>A vertical tear opens, then floods the screen. Sharp, sci-fi, and energetic.</p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-aurora" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Aurora Gate">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>6. Aurora Gate</h2>
+              <p>
+                A calm horizontal aperture that opens into a northern-light workspace. Expansive but
+                not loud.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-prism" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Prism Fold">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>7. Prism Fold</h2>
+              <p>
+                A glass pane folds toward the viewer, then locks flat. Best if Improve should feel
+                dimensional.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-night" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Night Lift">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>8. Night Lift</h2>
+              <p>
+                The Improve space rises from below like a stage lift, with a subtle star grid for
+                depth.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="concept style-signal" data-state="idle">
+          <div class="concept__chrome">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="concept__body">
+            <div class="rail">
+              <button class="improve-button" type="button" aria-label="Hold to enter Signal Bloom">
+                <span class="hold-fill"></span><span class="hold-shine"></span>
+                <svg class="flame" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 22c4.1 0 7-2.9 7-6.9 0-2.8-1.5-5.1-3.9-7.2-.4 2.2-1.6 3.2-2.6 3.8.4-3.5-.9-6.1-4-8.7.1 4.2-3.5 5.9-3.5 10.5C5 18.5 8 22 12 22Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+              <span class="fake-item"></span><span class="fake-item"></span>
+            </div>
+            <div class="copy">
+              <h2>9. Signal Bloom</h2>
+              <p>
+                Concentric signal rings broadcast from the Improve icon before resolving into the
+                new space.
+              </p>
+            </div>
+            <div class="hint"><kbd>Hold</kbd> release early cancels</div>
+            <div class="world">
+              <div class="world__label">Entering Improve</div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const HOLD_MS = 900;
+      const RESET_MS = 1550;
+      const conceptStateByElement = new WeakMap();
+      const replayTimerIds = new Set();
+
+      function getConceptState(concept) {
+        let state = conceptStateByElement.get(concept);
+        if (state === undefined) {
+          state = {
+            button: concept.querySelector(".improve-button"),
+            holdTimer: null,
+            enterTimer: null,
+            isEntering: false,
+          };
+          conceptStateByElement.set(concept, state);
+        }
+        return state;
+      }
+
+      function clearReplayTimers() {
+        for (const timerId of replayTimerIds) {
+          window.clearTimeout(timerId);
+        }
+        replayTimerIds.clear();
+      }
+
+      function resetConcept(concept) {
+        const state = getConceptState(concept);
+        if (state.holdTimer !== null) {
+          window.clearTimeout(state.holdTimer);
+          state.holdTimer = null;
+        }
+        if (state.enterTimer !== null) {
+          window.clearTimeout(state.enterTimer);
+          state.enterTimer = null;
+        }
+        state.isEntering = false;
+        clearReplayTimers();
+        concept.dataset.state = "idle";
+        state.button.dataset.holdState = "idle";
+      }
+
+      function enterConcept(concept) {
+        const state = getConceptState(concept);
+        state.button.dataset.holdState = "entering";
+        concept.dataset.state = "entering";
+        if (state.enterTimer !== null) {
+          window.clearTimeout(state.enterTimer);
+        }
+        state.enterTimer = window.setTimeout(() => {
+          state.enterTimer = null;
+          resetConcept(concept);
+        }, RESET_MS);
+      }
+
+      for (const concept of document.querySelectorAll(".concept")) {
+        const state = getConceptState(concept);
+
+        const beginHold = () => {
+          if (state.isEntering) return;
+          if (state.holdTimer !== null) {
+            window.clearTimeout(state.holdTimer);
+          }
+          state.button.dataset.holdState = "holding";
+          state.holdTimer = window.setTimeout(() => {
+            state.holdTimer = null;
+            state.isEntering = true;
+            enterConcept(concept);
+          }, HOLD_MS);
+        };
+
+        const cancelHold = () => {
+          if (state.isEntering) return;
+          if (state.holdTimer !== null) {
+            window.clearTimeout(state.holdTimer);
+            state.holdTimer = null;
+            state.button.dataset.holdState = "idle";
+          }
+        };
+
+        state.button.dataset.holdState = "idle";
+        state.button.addEventListener("pointerdown", (event) => {
+          if (event.button !== 0) return;
+          state.button.setPointerCapture(event.pointerId);
+          beginHold();
+        });
+        state.button.addEventListener("pointerup", cancelHold);
+        state.button.addEventListener("pointercancel", cancelHold);
+        state.button.addEventListener("pointerleave", cancelHold);
+        state.button.addEventListener("blur", cancelHold);
+        state.button.addEventListener("click", (event) => event.preventDefault());
+        state.button.addEventListener("keydown", (event) => {
+          if (event.repeat) return;
+          if (event.key !== " " && event.key !== "Enter") return;
+          event.preventDefault();
+          beginHold();
+        });
+        state.button.addEventListener("keyup", (event) => {
+          if (event.key !== " " && event.key !== "Enter") return;
+          event.preventDefault();
+          cancelHold();
+        });
+      }
+
+      document.querySelector("[data-replay-all]").addEventListener("click", () => {
+        clearReplayTimers();
+        document.querySelectorAll(".concept").forEach((concept, index) => {
+          const timerId = window.setTimeout(() => {
+            replayTimerIds.delete(timerId);
+            enterConcept(concept);
+          }, index * 120);
+          replayTimerIds.add(timerId);
+        });
+      });
+
+      document.querySelector("[data-reset-all]").addEventListener("click", () => {
+        clearReplayTimers();
+        document.querySelectorAll(".concept").forEach(resetConcept);
+      });
+    </script>
+  </body>
+</html>

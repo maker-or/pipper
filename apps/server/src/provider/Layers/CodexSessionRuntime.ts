@@ -16,8 +16,11 @@ import {
   ThreadId,
   TurnId,
 } from "@t3tools/contracts";
+import { PIPPER_EVOLUTION_WORKSPACE_ROOT } from "@t3tools/shared/evolution";
 import { normalizeModelSlug } from "@t3tools/shared/model";
 import { Deferred, Effect, Exit, Layer, Queue, Ref, Scope, Random, Schema, Stream } from "effect";
+import { resolve as resolvePath } from "node:path";
+import { expandHomePath } from "../../pathExpansion.ts";
 import * as SchemaIssue from "effect/SchemaIssue";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 import * as CodexClient from "effect-codex-app-server/client";
@@ -26,9 +29,9 @@ import * as CodexRpc from "effect-codex-app-server/rpc";
 import * as EffectCodexSchema from "effect-codex-app-server/schema";
 
 import { buildCodexInitializeParams } from "./CodexProvider.ts";
-import { expandHomePath } from "../../pathExpansion.ts";
 import {
   CODEX_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
+  CODEX_PIPPER_LIBRARY_EVOLVE_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
   CODEX_PLAN_MODE_DEVELOPER_INSTRUCTIONS,
 } from "../CodexDeveloperInstructions.ts";
 
@@ -300,7 +303,31 @@ function runtimeModeToTurnSandboxPolicy(
   }
 }
 
+const PIPPER_LIBRARY_EVOLVE_WORKSPACE_CWD = resolvePath(
+  expandHomePath(PIPPER_EVOLUTION_WORKSPACE_ROOT),
+);
+
+function isPipperLibraryEvolveWorkspace(cwd: string | undefined): boolean {
+  if (!cwd) {
+    return false;
+  }
+  return resolvePath(expandHomePath(cwd)) === PIPPER_LIBRARY_EVOLVE_WORKSPACE_CWD;
+}
+
+function resolveDeveloperInstructions(input: {
+  readonly cwd: string | undefined;
+  readonly interactionMode: ProviderInteractionMode;
+}): string {
+  if (input.interactionMode === "plan") {
+    return CODEX_PLAN_MODE_DEVELOPER_INSTRUCTIONS;
+  }
+  return isPipperLibraryEvolveWorkspace(input.cwd)
+    ? CODEX_PIPPER_LIBRARY_EVOLVE_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS
+    : CODEX_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS;
+}
+
 function buildCodexCollaborationMode(input: {
+  readonly cwd: string | undefined;
   readonly interactionMode?: ProviderInteractionMode;
   readonly model?: string;
   readonly effort?: EffectCodexSchema.V2TurnStartParams__ReasoningEffort;
@@ -314,10 +341,10 @@ function buildCodexCollaborationMode(input: {
     settings: {
       model,
       reasoning_effort: input.effort ?? "medium",
-      developer_instructions:
-        input.interactionMode === "plan"
-          ? CODEX_PLAN_MODE_DEVELOPER_INSTRUCTIONS
-          : CODEX_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
+      developer_instructions: resolveDeveloperInstructions({
+        cwd: input.cwd,
+        interactionMode: input.interactionMode,
+      }),
     },
   };
 }
@@ -325,6 +352,7 @@ function buildCodexCollaborationMode(input: {
 export function buildTurnStartParams(input: {
   readonly threadId: string;
   readonly runtimeMode: RuntimeMode;
+  readonly cwd?: string;
   readonly prompt?: string;
   readonly attachments?: ReadonlyArray<{
     readonly type: "image";
@@ -351,6 +379,7 @@ export function buildTurnStartParams(input: {
 
   const config = runtimeModeToThreadConfig(input.runtimeMode);
   const collaborationMode = buildCodexCollaborationMode({
+    cwd: input.cwd,
     ...(input.interactionMode ? { interactionMode: input.interactionMode } : {}),
     ...(input.model ? { model: input.model } : {}),
     ...(input.effort ? { effort: input.effort } : {}),
@@ -1222,6 +1251,7 @@ export const makeCodexSessionRuntime = (
           const params = yield* buildTurnStartParams({
             threadId: providerThreadId,
             runtimeMode: options.runtimeMode,
+            cwd: options.cwd,
             ...(input.input ? { prompt: input.input } : {}),
             ...(input.attachments ? { attachments: input.attachments } : {}),
             ...(normalizedModel ? { model: normalizedModel } : {}),

@@ -202,6 +202,53 @@ export interface PickFolderOptions {
   initialPath?: string | null;
 }
 
+export type DesktopAppWindowSpace = "main" | "improve";
+
+export interface DesktopAppWindowOptions {
+  space?: DesktopAppWindowSpace;
+}
+
+export interface DesktopDevDesktopState {
+  running: boolean;
+  pid: number | null;
+  cwd: string;
+  command: string;
+  args: readonly string[];
+}
+
+export interface DesktopDevDesktopLaunchInput {
+  readonly cwd?: string;
+}
+
+export interface DesktopEvolutionWorkspaceState {
+  readonly workspaceRoot: string;
+  readonly existed: boolean;
+  readonly installedDependencies: boolean;
+}
+
+export interface DesktopEvolutionApproveInput {
+  readonly summary?: string;
+}
+
+export interface DesktopEvolutionApproveResult {
+  readonly commit: string;
+  readonly filesChanged: readonly string[];
+  readonly patchPath: string;
+}
+
+export interface DesktopEvolutionReleaseManifest {
+  readonly releaseId: string;
+  readonly commit: string;
+  readonly createdAt: string;
+  readonly dmgPath: string;
+  readonly platform: "macos";
+}
+
+export interface DesktopEvolutionPortResult {
+  readonly manifest: DesktopEvolutionReleaseManifest;
+  readonly releaseDir: string;
+}
+
 export interface DesktopBridge {
   getAppBranding: () => DesktopAppBranding | null;
   getLocalEnvironmentBootstrap: () => DesktopEnvironmentBootstrap | null;
@@ -247,6 +294,16 @@ export interface DesktopBridge {
     position?: { x: number; y: number },
   ) => Promise<T | null>;
   openExternal: (url: string) => Promise<boolean>;
+  openAppWindow: (options?: DesktopAppWindowOptions) => Promise<boolean>;
+  ensureEvolutionWorkspace?: () => Promise<DesktopEvolutionWorkspaceState>;
+  approveEvolutionChanges?: (
+    input?: DesktopEvolutionApproveInput,
+  ) => Promise<DesktopEvolutionApproveResult>;
+  portEvolutionRelease?: () => Promise<DesktopEvolutionPortResult>;
+  getDevDesktopState?: () => Promise<DesktopDevDesktopState>;
+  startDevDesktop?: (input?: DesktopDevDesktopLaunchInput) => Promise<DesktopDevDesktopState>;
+  stopDevDesktop?: () => Promise<DesktopDevDesktopState>;
+  onDevDesktopStateChange?: (listener: (state: DesktopDevDesktopState) => void) => () => void;
   onMenuAction: (listener: (action: string) => void) => () => void;
   getUpdateState: () => Promise<DesktopUpdateState>;
   setUpdateChannel: (channel: DesktopUpdateChannel) => Promise<DesktopUpdateState>;
