@@ -1,0 +1,5 @@
+{
+  "version": "0.0.31",
+  "pr_url": "https://github.com/maker-or/pipper/commit/cc6fe4eb78cbaf8d60445be87931f1e82cd72340",
+  "files_changed": ["apps/web/src/components/chat/ChatHeader.tsx"]
+}
