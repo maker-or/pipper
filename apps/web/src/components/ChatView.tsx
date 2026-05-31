@@ -96,6 +96,7 @@ import {
 } from "../types";
 import { useTheme } from "../hooks/useTheme";
 import { useTurnDiffSummaries } from "../hooks/useTurnDiffSummaries";
+import { useAppSpaceStore } from "../appSpaceStore";
 import { useCommandPaletteStore } from "../commandPaletteStore";
 import { buildTemporaryWorktreeBranchName } from "@t3tools/shared/git";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -502,6 +503,8 @@ export default function ChatView(props: ChatViewProps) {
     select: (params) => parseDiffRouteSearch(params),
   });
   const { resolvedTheme } = useTheme();
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
   // Granular store selectors — avoid subscribing to prompt changes.
   const composerRuntimeMode = useComposerDraftStore(
     (store) => store.getComposerDraft(composerDraftTarget)?.runtimeMode ?? null,
@@ -3352,58 +3355,72 @@ export default function ChatView(props: ChatViewProps) {
   );
 
   return (
-    <div className="flex  min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden ">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
       {/* Top bar */}
-      <header
-        className={cn(
-          "bg-[var(--surface-canvas)]",
-          isElectron
-            ? cn(
-                "drag-region flex h-[42px] shrink-0 items-center pl-[90px] pr-4 wco:h-[env(titlebar-area-height)] wco:pl-[calc(env(titlebar-area-x)+1em)]",
-                reserveTitleBarControlInset &&
-                  "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",
-              )
-            : "flex h-12 shrink-0 items-center pl-[calc(env(safe-area-inset-left)+0.75rem)] pr-[calc(env(safe-area-inset-right)+0.75rem)] sm:pl-[calc(env(safe-area-inset-left)+1.25rem)] sm:pr-[calc(env(safe-area-inset-right)+1.25rem)]",
-        )}
-      >
-        <div className="flex min-w-0 flex-1 items-center">
-          <ActiveProjectTitleBar
-            projectName={activeProject?.name}
-            isGitRepo={isGitRepo}
-            branchToolbar={
-              isGitRepo ? (
-                <BranchToolbar
-                  variant="titlebar"
-                  popupSide="bottom"
-                  environmentId={activeThread.environmentId}
-                  threadId={activeThread.id}
-                  {...(routeKind === "draft" && draftId ? { draftId } : {})}
-                  onEnvModeChange={onEnvModeChange}
-                  {...(canOverrideServerThreadEnvMode ? { effectiveEnvModeOverride: envMode } : {})}
-                  {...(canOverrideServerThreadEnvMode
-                    ? {
-                        activeThreadBranchOverride: activeThreadBranch,
-                        onActiveThreadBranchOverrideChange: setPendingServerThreadBranch,
-                      }
-                    : {})}
-                  envLocked={envLocked}
-                  onComposerFocusRequest={scheduleComposerFocus}
-                  {...(canCheckoutPullRequestIntoThread
-                    ? {
-                        onCheckoutPullRequestRequest: openPullRequestDialog,
-                      }
-                    : {})}
-                  {...(hasMultipleEnvironments ? { onEnvironmentChange } : {})}
-                  availableEnvironments={logicalProjectEnvironments}
-                />
-              ) : null
-            }
-          />
-        </div>
-      </header>
+      {!isImproveSpace ? (
+        <header
+          className={cn(
+            "bg-[var(--surface-canvas)]",
+            isElectron
+              ? cn(
+                  "drag-region flex h-[42px] shrink-0 items-center pl-[90px] pr-4 wco:h-[env(titlebar-area-height)] wco:pl-[calc(env(titlebar-area-x)+1em)]",
+                  reserveTitleBarControlInset &&
+                    "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",
+                )
+              : "flex h-12 shrink-0 items-center pl-[calc(env(safe-area-inset-left)+0.75rem)] pr-[calc(env(safe-area-inset-right)+0.75rem)] sm:pl-[calc(env(safe-area-inset-left)+1.25rem)] sm:pr-[calc(env(safe-area-inset-right)+1.25rem)]",
+          )}
+        >
+          <div className="flex min-w-0 flex-1 items-center">
+            <ActiveProjectTitleBar
+              projectName={activeProject?.name}
+              isGitRepo={isGitRepo}
+              branchToolbar={
+                isGitRepo ? (
+                  <BranchToolbar
+                    variant="titlebar"
+                    popupSide="bottom"
+                    environmentId={activeThread.environmentId}
+                    threadId={activeThread.id}
+                    {...(routeKind === "draft" && draftId ? { draftId } : {})}
+                    onEnvModeChange={onEnvModeChange}
+                    {...(canOverrideServerThreadEnvMode
+                      ? { effectiveEnvModeOverride: envMode }
+                      : {})}
+                    {...(canOverrideServerThreadEnvMode
+                      ? {
+                          activeThreadBranchOverride: activeThreadBranch,
+                          onActiveThreadBranchOverrideChange: setPendingServerThreadBranch,
+                        }
+                      : {})}
+                    envLocked={envLocked}
+                    onComposerFocusRequest={scheduleComposerFocus}
+                    {...(canCheckoutPullRequestIntoThread
+                      ? {
+                          onCheckoutPullRequestRequest: openPullRequestDialog,
+                        }
+                      : {})}
+                    {...(hasMultipleEnvironments ? { onEnvironmentChange } : {})}
+                    availableEnvironments={logicalProjectEnvironments}
+                  />
+                ) : null
+              }
+            />
+          </div>
+        </header>
+      ) : null}
+      {isImproveSpace && isElectron ? (
+        <header
+          aria-hidden="true"
+          className={cn(
+            "drag-region flex h-[42px] shrink-0 items-center bg-[var(--surface-canvas)] pl-[90px] pr-4 wco:h-[env(titlebar-area-height)] wco:pl-[calc(env(titlebar-area-x)+1em)]",
+            reserveTitleBarControlInset &&
+              "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",
+          )}
+        />
+      ) : null}
       <div
         className={cn(
-          "flex h-10 shrink-0 items-center  border-t border-border/60 bg-[var(--surface-canvas)] px-3",
+          "flex h-10 shrink-0 items-center border-t border-border/60 bg-[var(--surface-canvas)] px-3",
           isElectron &&
             reserveTitleBarControlInset &&
             "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",

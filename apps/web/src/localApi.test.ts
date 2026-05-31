@@ -225,6 +225,7 @@ function makeDesktopBridge(overrides: Partial<DesktopBridge> = {}): DesktopBridg
     setTheme: async () => undefined,
     showContextMenu: async () => null,
     openExternal: async () => true,
+    openAppWindow: async () => true,
     onMenuAction: () => () => undefined,
     getUpdateState: async () => {
       throw new Error("getUpdateState not implemented in test");
@@ -407,7 +408,9 @@ describe("wsApi", () => {
 
     await api.vcs.refreshStatus({ cwd: "/repo" });
 
-    expect(rpcClientMock.vcs.refreshStatus).toHaveBeenCalledWith({ cwd: "/repo" });
+    expect(rpcClientMock.vcs.refreshStatus).toHaveBeenCalledWith({
+      cwd: "/repo",
+    });
   });
 
   it("forwards shell stream subscription options to the RPC client", async () => {
@@ -425,7 +428,9 @@ describe("wsApi", () => {
   });
 
   it("sends orchestration dispatch commands as the direct RPC payload", async () => {
-    rpcClientMock.orchestration.dispatchCommand.mockResolvedValue({ sequence: 1 });
+    rpcClientMock.orchestration.dispatchCommand.mockResolvedValue({
+      sequence: 1,
+    });
     const { createEnvironmentApi } = await import("./environmentApi");
 
     const api = createEnvironmentApi(rpcClientMock as never);
@@ -447,7 +452,9 @@ describe("wsApi", () => {
   });
 
   it("forwards workspace file writes to the project RPC", async () => {
-    rpcClientMock.projects.writeFile.mockResolvedValue({ relativePath: "plan.md" });
+    rpcClientMock.projects.writeFile.mockResolvedValue({
+      relativePath: "plan.md",
+    });
     const { createEnvironmentApi } = await import("./environmentApi");
 
     const api = createEnvironmentApi(rpcClientMock as never);
@@ -484,7 +491,9 @@ describe("wsApi", () => {
   });
 
   it("forwards full-thread diff requests to the orchestration RPC", async () => {
-    rpcClientMock.orchestration.getFullThreadDiff.mockResolvedValue({ diff: "patch" });
+    rpcClientMock.orchestration.getFullThreadDiff.mockResolvedValue({
+      diff: "patch",
+    });
     const { createEnvironmentApi } = await import("./environmentApi");
 
     const api = createEnvironmentApi(rpcClientMock as never);
@@ -506,12 +515,16 @@ describe("wsApi", () => {
         checkedAt: "2026-01-03T00:00:00.000Z",
       },
     ];
-    rpcClientMock.server.refreshProviders.mockResolvedValue({ providers: nextProviders });
+    rpcClientMock.server.refreshProviders.mockResolvedValue({
+      providers: nextProviders,
+    });
     const { createLocalApi } = await import("./localApi");
 
     const api = createLocalApi(rpcClientMock as never);
 
-    await expect(api.server.refreshProviders()).resolves.toEqual({ providers: nextProviders });
+    await expect(api.server.refreshProviders()).resolves.toEqual({
+      providers: nextProviders,
+    });
     expect(rpcClientMock.server.refreshProviders).toHaveBeenCalledWith();
   });
 
@@ -528,7 +541,9 @@ describe("wsApi", () => {
         },
       },
     ];
-    rpcClientMock.server.updateProvider.mockResolvedValue({ providers: nextProviders });
+    rpcClientMock.server.updateProvider.mockResolvedValue({
+      providers: nextProviders,
+    });
     const { createLocalApi } = await import("./localApi");
 
     const api = createLocalApi(rpcClientMock as never);
@@ -594,7 +609,10 @@ describe("wsApi", () => {
     const items = [{ id: "rename", label: "Rename" }] as const;
 
     await expect(api.contextMenu.show(items, { x: 4, y: 5 })).resolves.toBe("rename");
-    expect(showContextMenuFallbackMock).toHaveBeenCalledWith(items, { x: 4, y: 5 });
+    expect(showContextMenuFallbackMock).toHaveBeenCalledWith(items, {
+      x: 4,
+      y: 5,
+    });
   });
 
   it("reads and writes persistence through the desktop bridge when available", async () => {

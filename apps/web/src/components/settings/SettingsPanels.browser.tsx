@@ -430,6 +430,7 @@ const createDesktopBridgeStub = (overrides?: {
     setTheme: vi.fn().mockResolvedValue(undefined),
     showContextMenu: vi.fn().mockResolvedValue(null),
     openExternal: vi.fn().mockResolvedValue(true),
+    openAppWindow: vi.fn().mockResolvedValue(true),
     onMenuAction: () => () => {},
     getUpdateState: vi.fn().mockResolvedValue(idleUpdateState),
     setUpdateChannel:
@@ -439,12 +440,16 @@ const createDesktopBridgeStub = (overrides?: {
         channel,
       })),
     checkForUpdate: vi.fn().mockResolvedValue({ checked: false, state: idleUpdateState }),
-    downloadUpdate: vi
-      .fn()
-      .mockResolvedValue({ accepted: false, completed: false, state: idleUpdateState }),
-    installUpdate: vi
-      .fn()
-      .mockResolvedValue({ accepted: false, completed: false, state: idleUpdateState }),
+    downloadUpdate: vi.fn().mockResolvedValue({
+      accepted: false,
+      completed: false,
+      state: idleUpdateState,
+    }),
+    installUpdate: vi.fn().mockResolvedValue({
+      accepted: false,
+      completed: false,
+      state: idleUpdateState,
+    }),
     onUpdateState: () => () => {},
   };
 };
@@ -1008,9 +1013,16 @@ describe("GeneralSettingsPanel observability", () => {
     );
 
     await page.getByRole("button", { name: "Add environment", exact: true }).click();
-    const addEnvironmentDialog = page.getByRole("dialog", { name: "Add Environment" });
+    const addEnvironmentDialog = page.getByRole("dialog", {
+      name: "Add Environment",
+    });
     await expect
-      .element(addEnvironmentDialog.getByRole("heading", { name: "Add Environment", exact: true }))
+      .element(
+        addEnvironmentDialog.getByRole("heading", {
+          name: "Add Environment",
+          exact: true,
+        }),
+      )
       .toBeInTheDocument();
     await addEnvironmentDialog.getByRole("button", { name: /^SSH\b/ }).click();
     await vi.waitFor(() => {

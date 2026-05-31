@@ -8,6 +8,7 @@ import * as CodexRpc from "effect-codex-app-server/rpc";
 
 import {
   CODEX_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
+  CODEX_PIPPER_LIBRARY_EVOLVE_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
   CODEX_PLAN_MODE_DEVELOPER_INSTRUCTIONS,
 } from "../CodexDeveloperInstructions.ts";
 import {
@@ -45,6 +46,7 @@ describe("buildTurnStartParams", () => {
       buildTurnStartParams({
         threadId: "provider-thread-1",
         runtimeMode: "full-access",
+        cwd: "/tmp/project",
         prompt: "Make a plan",
         model: "gpt-5.3-codex",
         effort: "medium",
@@ -82,6 +84,7 @@ describe("buildTurnStartParams", () => {
       buildTurnStartParams({
         threadId: "provider-thread-1",
         runtimeMode: "auto-accept-edits",
+        cwd: "/tmp/project",
         prompt: "Implement it",
         model: "gpt-5.3-codex",
         interactionMode: "default",
@@ -127,6 +130,7 @@ describe("buildTurnStartParams", () => {
       buildTurnStartParams({
         threadId: "provider-thread-1",
         runtimeMode: "approval-required",
+        cwd: "/tmp/project",
         prompt: "Review",
       }),
     );
@@ -144,6 +148,24 @@ describe("buildTurnStartParams", () => {
         },
       ],
     });
+  });
+
+  it("uses pipper workspace developer instructions when cwd is the configured tilde path", () => {
+    const params = Effect.runSync(
+      buildTurnStartParams({
+        threadId: "provider-thread-1",
+        runtimeMode: "full-access",
+        cwd: "~/Library/evolve/pipper",
+        prompt: "Implement it",
+        model: "gpt-5.3-codex",
+        interactionMode: "default",
+      }),
+    );
+
+    assert.equal(
+      params.collaborationMode?.settings.developer_instructions,
+      CODEX_PIPPER_LIBRARY_EVOLVE_DEFAULT_MODE_DEVELOPER_INSTRUCTIONS,
+    );
   });
 });
 

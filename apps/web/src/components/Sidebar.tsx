@@ -1,4 +1,4 @@
-import { ArrowUpDownIcon, SquarePenIcon } from "lucide-react";
+import { ArrowUpDownIcon, MicIcon, PauseIcon, SquarePenIcon } from "lucide-react";
 import {
   ArchiveIcon,
   CaretRightIcon,
@@ -83,6 +83,7 @@ import {
 import { useModelPickerOpen } from "../modelPickerOpenState";
 import { useShortcutModifierState } from "../shortcutModifierState";
 import { useGitStatus } from "../lib/gitStatusState";
+import { readEnvironmentApi } from "../environmentApi";
 import { readLocalApi } from "../localApi";
 import { useComposerDraftStore } from "../composerDraftStore";
 import { useNewThreadHandler } from "../hooks/useHandleNewThread";
@@ -165,7 +166,8 @@ import {
 import { sortThreads } from "../lib/threadSort";
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
 import { CommandDialogTrigger } from "./ui/command";
-import { readEnvironmentApi } from "../environmentApi";
+import { useAppSpaceStore } from "../appSpaceStore";
+import { useOpenImproveSpace } from "../hooks/useOpenImproveSpace";
 import { useSettings, useUpdateSettings } from "~/hooks/useSettings";
 import { useServerKeybindings } from "../rpc/serverState";
 import {
@@ -184,7 +186,11 @@ import {
   type SidebarProjectGroupMember,
   type SidebarProjectSnapshot,
 } from "../sidebarProjectGrouping";
+import { ImproveLaunchTransition, type ImproveLaunchOrigin } from "./ImproveLaunchTransition";
 const THREAD_PREVIEW_LIMIT = 6;
+const IMPROVE_HOLD_DURATION_MS = 900;
+const IMPROVE_ENTER_DELAY_MS = 680;
+const IMPROVE_TRANSITION_RESET_MS = 1280;
 const SIDEBAR_SORT_LABELS: Record<SidebarProjectSortOrder, string> = {
   updated_at: "Last user message",
   created_at: "Created at",
@@ -2676,22 +2682,156 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
   const { handleNewThread } = useNewThreadHandler();
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
+  const activeSpace = useAppSpaceStore((store) => store.activeSpace);
+  const isImproveSpace = activeSpace === "improve";
+  const setActiveSpace = useAppSpaceStore((store) => store.setActiveSpace);
+  const { isOpeningImprove, openImproveSpace } = useOpenImproveSpace();
+  const [improveLaunchState, setImproveLaunchState] = useState<"idle" | "holding" | "entering">(
+    "idle",
+  );
+  const [improveLaunchOrigin, setImproveLaunchOrigin] = useState<ImproveLaunchOrigin | null>(null);
+  const improveHoldTimerRef = useRef<number | null>(null);
+  const improveEnterTimerRef = useRef<number | null>(null);
+  const improveResetTimerRef = useRef<number | null>(null);
+  const improveLaunchingRef = useRef(false);
   const handleSettingsClick = useCallback(() => {
+    setActiveSpace("main");
     if (isMobile) {
       setOpenMobile(false);
     }
     void navigate({ to: "/settings" });
-  }, [isMobile, navigate, setOpenMobile]);
+  }, [isMobile, navigate, setActiveSpace, setOpenMobile]);
+
+  const handleAddProjectClick = useCallback(() => {
+    setActiveSpace("main");
+    openAddProject();
+  }, [openAddProject, setActiveSpace]);
 
   const createThreadForProjectMember = useCallback(
     (member: SidebarProjectGroupMember) => {
+      setActiveSpace("main");
       void handleNewThread(scopeProjectRef(member.environmentId, member.id));
     },
-    [handleNewThread],
+    [handleNewThread, setActiveSpace],
   );
+
+  const clearImproveLaunchTimers = useCallback(() => {
+    if (improveHoldTimerRef.current !== null) {
+      window.clearTimeout(improveHoldTimerRef.current);
+      improveHoldTimerRef.current = null;
+    }
+    if (improveEnterTimerRef.current !== null) {
+      window.clearTimeout(improveEnterTimerRef.current);
+      improveEnterTimerRef.current = null;
+    }
+    if (improveResetTimerRef.current !== null) {
+      window.clearTimeout(improveResetTimerRef.current);
+      improveResetTimerRef.current = null;
+    }
+  }, []);
+
+  const openImproveLaunchSequence = useCallback(
+    (origin: ImproveLaunchOrigin) => {
+      if (improveLaunchingRef.current) {
+        return;
+      }
+
+      clearImproveLaunchTimers();
+      improveLaunchingRef.current = true;
+      setImproveLaunchOrigin(origin);
+      setImproveLaunchState("entering");
+      if (isMobile) {
+        setOpenMobile(false);
+      }
+
+      improveEnterTimerRef.current = window.setTimeout(() => {
+        openImproveSpace();
+      }, IMPROVE_ENTER_DELAY_MS);
+      improveResetTimerRef.current = window.setTimeout(() => {
+        improveLaunchingRef.current = false;
+        setImproveLaunchState("idle");
+        setImproveLaunchOrigin(null);
+      }, IMPROVE_TRANSITION_RESET_MS);
+    },
+    [clearImproveLaunchTimers, isMobile, openImproveSpace, setOpenMobile],
+  );
+
+  const openImproveFromKeyboard = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (isOpeningImprove || improveLaunchingRef.current) {
+        return;
+      }
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      openImproveLaunchSequence({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+    },
+    [isOpeningImprove, openImproveLaunchSequence],
+  );
+
+  const beginImproveHold = useCallback(
+    (origin: ImproveLaunchOrigin) => {
+      if (isOpeningImprove || improveLaunchingRef.current) {
+        return;
+      }
+
+      if (improveHoldTimerRef.current !== null) {
+        window.clearTimeout(improveHoldTimerRef.current);
+      }
+      setImproveLaunchOrigin(origin);
+      setImproveLaunchState("holding");
+      improveHoldTimerRef.current = window.setTimeout(() => {
+        improveHoldTimerRef.current = null;
+        openImproveLaunchSequence(origin);
+      }, IMPROVE_HOLD_DURATION_MS);
+    },
+    [isOpeningImprove, openImproveLaunchSequence],
+  );
+
+  const cancelImproveHold = useCallback(() => {
+    if (improveLaunchingRef.current) {
+      return;
+    }
+    if (improveLaunchState !== "holding") {
+      return;
+    }
+    clearImproveLaunchTimers();
+    setImproveLaunchState("idle");
+    setImproveLaunchOrigin(null);
+  }, [clearImproveLaunchTimers, improveLaunchState]);
+
+  const handleImprovePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+      event.currentTarget.setPointerCapture(event.pointerId);
+      beginImproveHold({ x: event.clientX, y: event.clientY });
+    },
+    [beginImproveHold],
+  );
+
+  const releaseImprovePointerCapture = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      cancelImproveHold();
+    },
+    [cancelImproveHold],
+  );
+
+  useEffect(() => {
+    return () => {
+      clearImproveLaunchTimers();
+    };
+  }, [clearImproveLaunchTimers]);
 
   const handleProjectIconClick = useCallback(
     (project: SidebarProjectSnapshot, event: React.MouseEvent<HTMLButtonElement>) => {
+      setActiveSpace("main");
       if (project.memberProjects.length === 1) {
         createThreadForProjectMember(project.memberProjects[0]!);
         return;
@@ -2724,64 +2864,129 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
         createThreadForProjectMember(targetMember);
       })();
     },
-    [createThreadForProjectMember],
+    [createThreadForProjectMember, setActiveSpace],
   );
 
   return (
     <TooltipProvider delay={100}>
+      <ImproveLaunchTransition origin={improveLaunchOrigin} state={improveLaunchState} />
       <div className="flex h-full min-h-0 w-full flex-col items-center bg-[var(--surface-canvas)]">
         <SidebarHeader className="drag-region flex h-[52px] w-full items-center justify-center p-0"></SidebarHeader>
         <SidebarContent className="w-full items-center gap-3 overflow-y-auto px-2 py-2">
-          {sortedProjects.map((project) => {
-            const active = project.projectKey === activeRouteProjectKey;
-            return (
-              <Tooltip key={project.projectKey}>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      aria-label={project.displayName}
-                      className={`inline-flex size-10 items-center justify-center rounded-md transition-colors ${
-                        active
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
-                      }`}
-                      onClick={(event) => {
-                        handleProjectIconClick(project, event);
-                      }}
-                    />
-                  }
-                >
-                  <ProjectFavicon
-                    environmentId={project.environmentId}
-                    cwd={project.cwd}
-                    projectName={project.displayName}
-                    active={active}
-                    className="size-8 text-xl"
-                  />
-                </TooltipTrigger>
-                <TooltipPopup side="right">{project.displayName}</TooltipPopup>
-              </Tooltip>
-            );
-          })}
-        </SidebarContent>
-        <SidebarFooter className="w-full items-center p-2">
           <Tooltip>
             <TooltipTrigger
               render={
                 <button
                   type="button"
-                  aria-label="Add project"
-                  data-testid="sidebar-add-project-trigger"
-                  className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                  onClick={openAddProject}
+                  aria-label="Press and hold to open Improve"
+                  aria-pressed={activeSpace === "improve" || improveLaunchState === "entering"}
+                  data-hold-state={improveLaunchState}
+                  data-testid="sidebar-improve-trigger"
+                  className={`improve-hold-trigger group relative inline-flex size-10 touch-none select-none items-center justify-center overflow-hidden rounded-xl border transition-[transform,opacity,filter,background-color,border-color,color,box-shadow] duration-200 ease-out ${
+                    activeSpace === "improve" || improveLaunchState === "entering"
+                      ? "border-orange-300/60 bg-[linear-gradient(180deg,oklch(0.78_0.18_58/0.24),oklch(0.62_0.22_42/0.46))] text-orange-50 shadow-lg shadow-orange-500/20"
+                      : "border-transparent text-muted-foreground hover:border-orange-300/25 hover:bg-orange-500/10 hover:text-orange-200"
+                  }`}
+                  disabled={isOpeningImprove}
+                  style={
+                    {
+                      "--improve-hold-dur": `${IMPROVE_HOLD_DURATION_MS}ms`,
+                    } as React.CSSProperties
+                  }
+                  onPointerDown={(event) => {
+                    handleImprovePointerDown(event);
+                  }}
+                  onPointerUp={releaseImprovePointerCapture}
+                  onPointerCancel={releaseImprovePointerCapture}
+                  onPointerLeave={cancelImproveHold}
+                  onBlur={cancelImproveHold}
+                  onKeyDown={(event) => {
+                    if (event.repeat) return;
+                    if (event.key !== " " && event.key !== "Enter") return;
+                    event.preventDefault();
+                    openImproveFromKeyboard(event);
+                  }}
+                  onKeyUp={(event) => {
+                    if (event.key !== " " && event.key !== "Enter") return;
+                    event.preventDefault();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                  }}
                 />
               }
             >
-              <CirclesThreePlusIcon className="size-5" />
+              <span className="improve-hold-fill" aria-hidden="true" />
+              <span className="improve-hold-glow" aria-hidden="true" />
+              <span className="improve-hold-shine" aria-hidden="true" />
+              <MicIcon
+                className="improve-hold-icon improve-hold-icon--mic size-5"
+                aria-hidden="true"
+              />
+              <PauseIcon
+                className="improve-hold-icon improve-hold-icon--pause size-5"
+                aria-hidden="true"
+              />
+              <span className="sr-only">Hold until the button fills to enter Improve.</span>
             </TooltipTrigger>
-            <TooltipPopup side="right">Add project</TooltipPopup>
+            <TooltipPopup side="right">Press and hold to enter Improve</TooltipPopup>
           </Tooltip>
+
+          {!isImproveSpace ? <div className="h-px w-7 bg-border/70" /> : null}
+
+          {!isImproveSpace &&
+            sortedProjects.map((project) => {
+              const active = project.projectKey === activeRouteProjectKey;
+              return (
+                <Tooltip key={project.projectKey}>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        aria-label={project.displayName}
+                        className={`inline-flex size-10 items-center justify-center rounded-md transition-colors ${
+                          active
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                        }`}
+                        onClick={(event) => {
+                          handleProjectIconClick(project, event);
+                        }}
+                      />
+                    }
+                  >
+                    <ProjectFavicon
+                      environmentId={project.environmentId}
+                      cwd={project.cwd}
+                      projectName={project.displayName}
+                      active={active}
+                      className="size-8 text-xl"
+                    />
+                  </TooltipTrigger>
+                  <TooltipPopup side="right">{project.displayName}</TooltipPopup>
+                </Tooltip>
+              );
+            })}
+        </SidebarContent>
+        <SidebarFooter className="w-full items-center p-2">
+          {!isImproveSpace ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Add project"
+                    data-testid="sidebar-add-project-trigger"
+                    className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    onClick={handleAddProjectClick}
+                  />
+                }
+              >
+                <CirclesThreePlusIcon className="size-5" />
+              </TooltipTrigger>
+              <TooltipPopup side="right">Add project</TooltipPopup>
+            </Tooltip>
+          ) : null}
           <Tooltip>
             <TooltipTrigger
               render={

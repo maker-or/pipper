@@ -6,6 +6,14 @@ const CONFIRM_CHANNEL = "desktop:confirm";
 const SET_THEME_CHANNEL = "desktop:set-theme";
 const CONTEXT_MENU_CHANNEL = "desktop:context-menu";
 const OPEN_EXTERNAL_CHANNEL = "desktop:open-external";
+const OPEN_APP_WINDOW_CHANNEL = "desktop:open-app-window";
+const ENSURE_EVOLUTION_WORKSPACE_CHANNEL = "desktop:ensure-evolution-workspace";
+const APPROVE_EVOLUTION_CHANGES_CHANNEL = "desktop:approve-evolution-changes";
+const PORT_EVOLUTION_RELEASE_CHANNEL = "desktop:port-evolution-release";
+const GET_DEV_DESKTOP_STATE_CHANNEL = "desktop:get-dev-desktop-state";
+const START_DEV_DESKTOP_CHANNEL = "desktop:start-dev-desktop";
+const STOP_DEV_DESKTOP_CHANNEL = "desktop:stop-dev-desktop";
+const DEV_DESKTOP_STATE_CHANGED_CHANNEL = "desktop:dev-desktop-state-changed";
 const MENU_ACTION_CHANNEL = "desktop:menu-action";
 const UPDATE_STATE_CHANNEL = "desktop:update-state";
 const UPDATE_GET_STATE_CHANNEL = "desktop:update-get-state";
@@ -117,6 +125,24 @@ contextBridge.exposeInMainWorld("desktopBridge", {
   setTheme: (theme) => ipcRenderer.invoke(SET_THEME_CHANNEL, theme),
   showContextMenu: (items, position) => ipcRenderer.invoke(CONTEXT_MENU_CHANNEL, items, position),
   openExternal: (url: string) => ipcRenderer.invoke(OPEN_EXTERNAL_CHANNEL, url),
+  openAppWindow: (options) => ipcRenderer.invoke(OPEN_APP_WINDOW_CHANNEL, options),
+  ensureEvolutionWorkspace: () => ipcRenderer.invoke(ENSURE_EVOLUTION_WORKSPACE_CHANNEL),
+  approveEvolutionChanges: (input) => ipcRenderer.invoke(APPROVE_EVOLUTION_CHANGES_CHANNEL, input),
+  portEvolutionRelease: () => ipcRenderer.invoke(PORT_EVOLUTION_RELEASE_CHANNEL),
+  getDevDesktopState: () => ipcRenderer.invoke(GET_DEV_DESKTOP_STATE_CHANNEL),
+  startDevDesktop: (input) => ipcRenderer.invoke(START_DEV_DESKTOP_CHANNEL, input),
+  stopDevDesktop: () => ipcRenderer.invoke(STOP_DEV_DESKTOP_CHANNEL),
+  onDevDesktopStateChange: (listener) => {
+    const wrappedListener = (_event: Electron.IpcRendererEvent, state: unknown) => {
+      if (typeof state !== "object" || state === null) return;
+      listener(state as Parameters<typeof listener>[0]);
+    };
+
+    ipcRenderer.on(DEV_DESKTOP_STATE_CHANGED_CHANNEL, wrappedListener);
+    return () => {
+      ipcRenderer.removeListener(DEV_DESKTOP_STATE_CHANGED_CHANNEL, wrappedListener);
+    };
+  },
   onMenuAction: (listener) => {
     const wrappedListener = (_event: Electron.IpcRendererEvent, action: unknown) => {
       if (typeof action !== "string") return;

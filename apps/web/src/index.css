@@ -109,6 +109,13 @@
     /* Animation tokens */
     --resize-dur: 200ms;
     --resize-ease: cubic-bezier(0.2, 1, 0.3, 1);
+    --improve-hold-dur: 900ms;
+    --improve-enter-dur: 780ms;
+    --improve-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --improve-ripple-dur: 1400ms;
+    --improve-mesh-drift-dur: 16s;
+    --improve-prompt-delay: 160ms;
+    --improve-prompt-dur: 360ms;
 
     /* We don't define colors here anymore, they are injected by useTheme.ts! */
   }
@@ -119,6 +126,409 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+[data-active-space="improve"] {
+  --background: oklch(0.145 0.024 48);
+  --foreground: oklch(0.955 0.018 70);
+  --card: oklch(0.19 0.028 48);
+  --card-foreground: oklch(0.955 0.018 70);
+  --popover: oklch(0.18 0.028 48);
+  --popover-foreground: oklch(0.955 0.018 70);
+  --primary: oklch(0.72 0.22 46);
+  --primary-foreground: oklch(0.135 0.014 46);
+  --secondary: oklch(0.245 0.038 48);
+  --secondary-foreground: oklch(0.91 0.03 70);
+  --muted: oklch(0.235 0.032 48);
+  --muted-foreground: oklch(0.72 0.035 66);
+  --accent: oklch(0.3 0.06 45);
+  --accent-foreground: oklch(0.96 0.026 72);
+  --border: oklch(0.34 0.045 50);
+  --input: oklch(0.3 0.04 50);
+  --ring: oklch(0.72 0.22 46);
+  --surface-canvas: oklch(0.16 0.03 48);
+  --surface-subtle: oklch(0.195 0.034 48);
+}
+
+[data-active-space="improve"] [data-slot="sidebar-inner"],
+[data-active-space="improve"] [data-sidebar="sidebar"] {
+  background: var(--surface-canvas);
+}
+
+.improve-hold-trigger {
+  position: relative;
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.improve-hold-trigger:active {
+  transform: translate3d(0, 1px, 0) scale(0.97);
+}
+
+.improve-hold-trigger[data-hold-state="holding"] {
+  transform: translate3d(0, -1px, 0) scale(0.965);
+  filter: brightness(1.04) saturate(1.02);
+}
+
+.improve-hold-trigger[data-hold-state="entering"] {
+  transform: translate3d(0, -2px, 0) scale(0.985);
+  filter: brightness(1.08) saturate(1.08);
+  box-shadow:
+    0 10px 24px oklch(0.62 0.22 42 / 0.18),
+    inset 0 0 0 1px oklch(1 0 0 / 0.08);
+}
+
+.improve-hold-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, oklch(0.57 0.19 258 / 0.18), oklch(0.78 0.18 58 / 0.46)),
+    radial-gradient(circle at 50% 110%, oklch(0.92 0.15 82 / 0.34), transparent 48%);
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / 0.14),
+    inset 0 0 28px oklch(0.72 0.18 62 / 0.2);
+  opacity: 0;
+  transform: translate3d(0, 2px, 0) scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform 200ms ease-out,
+    opacity 120ms ease-out;
+  will-change: transform, opacity;
+}
+
+.improve-hold-trigger[data-hold-state="holding"] .improve-hold-fill {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scaleX(1);
+  transition:
+    transform var(--improve-hold-dur) linear,
+    opacity 120ms ease-out;
+}
+
+.improve-hold-trigger[data-hold-state="entering"] .improve-hold-fill {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scaleX(1);
+  transition:
+    transform 140ms ease-out,
+    opacity 120ms ease-out;
+}
+
+.improve-hold-glow {
+  position: absolute;
+  inset-inline: 0.125rem;
+  bottom: 0.1rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 100%, oklch(0.92 0.2 78 / 0.76), transparent 72%);
+  filter: blur(10px);
+  opacity: 0.72;
+  transition: opacity 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .improve-hold-trigger:hover .improve-hold-glow {
+    opacity: 1;
+  }
+}
+
+.improve-hold-shine {
+  position: absolute;
+  inset: -40% auto -40% -72%;
+  width: 72%;
+  rotate: 18deg;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.34), transparent);
+  opacity: 0;
+  transform: translateX(0);
+  will-change: transform, opacity;
+}
+
+.improve-hold-trigger[data-hold-state="holding"] .improve-hold-shine,
+.improve-hold-trigger[data-hold-state="entering"] .improve-hold-shine {
+  opacity: 1;
+  transform: translateX(245%);
+  transition:
+    transform var(--improve-hold-dur) linear,
+    opacity 160ms ease-out;
+}
+
+.improve-hold-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+  transition:
+    opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, filter;
+}
+
+.improve-hold-icon--mic {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+}
+
+.improve-hold-icon--pause {
+  opacity: 0;
+  transform: translate3d(0, 4px, 0) scale(0.52) rotate(-14deg);
+}
+
+.improve-hold-trigger[data-hold-state="holding"] .improve-hold-icon--mic {
+  transform: translate3d(0, -1px, 0) scale(1.08);
+}
+
+.improve-hold-trigger[data-hold-state="entering"] .improve-hold-icon--mic {
+  opacity: 0;
+  transform: translate3d(0, -7px, 0) scale(0.42) rotate(-18deg);
+  filter: blur(2px);
+}
+
+.improve-hold-trigger[data-hold-state="entering"] .improve-hold-icon--pause {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+}
+
+.improve-launch-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  overflow: clip;
+  opacity: 0;
+  clip-path: circle(0 at var(--improve-origin-x) var(--improve-origin-y));
+  transform: translate3d(0, 10px, 0) scale(0.985);
+  filter: blur(12px) saturate(1.16);
+  transition:
+    clip-path var(--improve-enter-dur) var(--improve-enter-ease),
+    opacity 170ms cubic-bezier(0.2, 0, 0, 1),
+    filter var(--improve-enter-dur) var(--improve-enter-ease),
+    transform var(--improve-enter-dur) var(--improve-enter-ease);
+  will-change: clip-path, opacity, filter, transform;
+}
+
+.improve-launch-overlay__scrim,
+.improve-launch-overlay__mesh,
+.improve-launch-overlay__ripple {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.improve-launch-overlay__scrim {
+  background: linear-gradient(180deg, oklch(0.03 0.014 255 / 0.72), oklch(0.05 0.018 255 / 0.94));
+  opacity: 0;
+  transition: opacity 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.improve-launch-overlay__mesh {
+  inset: -18%;
+  background:
+    radial-gradient(circle at 16% 18%, oklch(0.92 0.18 78 / 0.44) 0 11%, transparent 28%),
+    radial-gradient(circle at 78% 16%, oklch(0.56 0.22 282 / 0.34) 0 10%, transparent 26%),
+    radial-gradient(circle at 74% 76%, oklch(0.68 0.22 38 / 0.34) 0 12%, transparent 30%),
+    radial-gradient(circle at 22% 74%, oklch(0.48 0.18 180 / 0.28) 0 12%, transparent 28%),
+    radial-gradient(circle at 54% 46%, oklch(0.66 0.16 128 / 0.22) 0 15%, transparent 32%),
+    linear-gradient(135deg, oklch(0.09 0.02 255 / 0.94), oklch(0.15 0.03 255 / 0.86));
+  opacity: 0;
+  filter: blur(30px) saturate(1.22);
+  transform: translate3d(-4%, -4%, 0) scale(1.08);
+  mix-blend-mode: screen;
+  transition:
+    opacity 260ms ease-out,
+    transform 900ms var(--improve-enter-ease);
+  will-change: transform, opacity;
+}
+
+.improve-launch-overlay__ripple {
+  background:
+    radial-gradient(
+      circle at var(--improve-origin-x) var(--improve-origin-y),
+      oklch(1 0 0 / 0.34) 0 6px,
+      transparent 16px
+    ),
+    radial-gradient(
+      circle at var(--improve-origin-x) var(--improve-origin-y),
+      transparent 0 120px,
+      oklch(1 0 0 / 0.16) 126px 130px,
+      transparent 136px 210px,
+      oklch(1 0 0 / 0.08) 220px 226px,
+      transparent 232px
+    );
+  opacity: 0;
+  transform: scale(0.12);
+  filter: blur(0.5px);
+  mix-blend-mode: screen;
+}
+
+.improve-launch-overlay[data-state="entering"] {
+  opacity: 1;
+  clip-path: circle(150vmax at var(--improve-origin-x) var(--improve-origin-y));
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0) saturate(1.04);
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__scrim {
+  opacity: 1;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__mesh {
+  opacity: 1;
+  animation: improve-mesh-drift var(--improve-mesh-drift-dur) ease-in-out infinite alternate;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__ripple {
+  opacity: 1;
+  animation: improve-ripple-bloom var(--improve-ripple-dur) cubic-bezier(0.2, 0.84, 0.2, 1) 1 both;
+}
+
+.improve-launch-overlay__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: min(100vw - 2rem, 28rem);
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  transition:
+    opacity var(--improve-prompt-dur) cubic-bezier(0.2, 0, 0, 1) var(--improve-prompt-delay),
+    transform var(--improve-prompt-dur) var(--improve-enter-ease) var(--improve-prompt-delay);
+  will-change: opacity, transform;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__orb {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+}
+
+.improve-launch-overlay__orb {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, oklch(0.78 0.18 62 / 0.32), oklch(0.14 0.04 46 / 0.84)),
+    radial-gradient(circle at 50% 15%, oklch(1 0 0 / 0.15), transparent 42%);
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.04) inset,
+    0 20px 60px oklch(0 0 0 / 0.4),
+    0 0 42px oklch(0.78 0.18 62 / 0.22);
+  transform: translate3d(0, 6px, 0) scale(0.92);
+  opacity: 0.96;
+}
+
+.improve-launch-overlay__icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: oklch(0.97 0.03 78);
+  filter: drop-shadow(0 0 12px oklch(0.82 0.18 74 / 0.18));
+}
+
+.improve-launch-overlay__prompt {
+  color: oklch(0.98 0.02 78);
+  font-size: clamp(1.75rem, 2.1vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.improve-launch-overlay__caption {
+  border: 1px solid oklch(1 0 0 / 0.12);
+  border-radius: 999px;
+  background: oklch(0.14 0.03 46 / 0.62);
+  padding: 0.45rem 0.75rem;
+  color: oklch(0.9 0.03 76);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  backdrop-filter: blur(14px);
+}
+
+@keyframes improve-mesh-drift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1.06) rotate(-1deg);
+  }
+
+  50% {
+    transform: translate3d(2%, -4%, 0) scale(1.08) rotate(1deg);
+  }
+
+  100% {
+    transform: translate3d(-1%, 3%, 0) scale(1.07) rotate(-0.5deg);
+  }
+}
+
+@keyframes improve-ripple-bloom {
+  0% {
+    transform: translate3d(0, 3px, 0) scale(0.12);
+    opacity: 0.18;
+  }
+
+  28% {
+    opacity: 0.96;
+  }
+
+  100% {
+    transform: translate3d(0, -10px, 0) scale(1.75);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .improve-hold-trigger,
+  .improve-hold-fill,
+  .improve-hold-glow,
+  .improve-hold-shine,
+  .improve-hold-icon,
+  .improve-launch-overlay,
+  .improve-launch-overlay__scrim,
+  .improve-launch-overlay__mesh,
+  .improve-launch-overlay__ripple,
+  .improve-launch-overlay__panel,
+  .improve-launch-overlay__orb,
+  .improve-launch-overlay__icon,
+  .improve-launch-overlay__prompt,
+  .improve-launch-overlay__caption {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .improve-hold-trigger[data-hold-state="holding"] .improve-hold-fill,
+  .improve-hold-trigger[data-hold-state="entering"] .improve-hold-fill {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .improve-launch-overlay[data-state="entering"] {
+    clip-path: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__scrim,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__mesh,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__ripple,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__panel {
+    opacity: 1;
   }
 }
 
