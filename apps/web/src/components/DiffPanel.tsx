@@ -420,8 +420,14 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
           No completed turns yet.
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col rounded-t-md">
-          <div className="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-border/70 px-3 py-2">
+        <div
+          data-pipper-id="diff-panel-content"
+          className="flex min-h-0 flex-1 flex-col rounded-t-md"
+        >
+          <div
+            data-pipper-id="diff-panel-toolbar"
+            className="flex min-h-12 shrink-0 items-center justify-between gap-3 border-b border-border/70 px-3 py-2"
+          >
             <GitActionsControl
               activeThreadRef={routeThreadRef}
               gitCwd={activeCwd ?? null}
@@ -430,7 +436,10 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
             />
             <div className="flex shrink-0 items-center gap-2">
               {renderableFiles.length > 0 ? (
-                <div className="hidden font-mono text-xs tabular-nums sm:block">
+                <div
+                  data-pipper-id="diff-panel-stats"
+                  className="hidden font-mono text-xs tabular-nums sm:block"
+                >
                   <span className="text-[var(--diffs-addition-base)]">
                     +{totalRenderableStats.additions}
                   </span>{" "}
@@ -439,7 +448,10 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                   </span>
                 </div>
               ) : null}
-              <div className="inline-flex overflow-hidden rounded-lg border border-border/70 bg-background/45 p-0.5">
+              <div
+                data-pipper-id="diff-panel-view-toggle"
+                className="inline-flex overflow-hidden rounded-lg border border-border/70 bg-background/45 p-0.5"
+              >
                 <button
                   type="button"
                   className={cn(
@@ -470,6 +482,7 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                 </button>
               </div>
               <button
+                data-pipper-id="diff-panel-collapse-toggle"
                 type="button"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-background/45 px-2.5 py-1.5 text-xs text-foreground/80 transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45"
                 disabled={renderableFiles.length === 0}
@@ -485,6 +498,7 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
             </div>
           </div>
           <div
+            data-pipper-id="diff-panel-viewport"
             ref={patchViewportRef}
             className="diff-panel-viewport min-h-0 min-w-0 flex-1 overflow-hidden"
           >
@@ -507,6 +521,7 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
               )
             ) : renderablePatch.kind === "files" ? (
               <Virtualizer
+                data-pipper-id="diff-panel-file-list"
                 className="diff-render-surface h-full min-h-0 overflow-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 config={{
                   overscrollSize: 600,
@@ -521,6 +536,7 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                   const { additions, deletions } = getFileDiffLineStats(fileDiff);
                   return (
                     <div
+                      data-pipper-id="diff-panel-file"
                       key={themedFileKey}
                       data-diff-file-path={filePath}
                       className="diff-render-file group/diff-file mb-2 rounded-md first:mt-2 last:mb-0"
@@ -538,8 +554,12 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                       <FileDiff
                         fileDiff={fileDiff}
                         renderCustomHeader={() => (
-                          <div className="flex min-w-0 items-center gap-2 px-3 py-2">
+                          <div
+                            data-pipper-id="diff-panel-file-header"
+                            className="flex min-w-0 items-center gap-2 px-3 py-2"
+                          >
                             <button
+                              data-pipper-id="diff-panel-file-collapse-toggle"
                               type="button"
                               className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm border-0 bg-transparent p-0 text-muted-foreground/80 transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:outline-hidden"
                               aria-label={collapsed ? `Expand ${filePath}` : `Minimize ${filePath}`}
@@ -557,13 +577,17 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                               )}
                             </button>
                             <span
+                              data-pipper-id="diff-panel-file-title"
                               className="min-w-0 truncate text-[12px] font-medium text-foreground"
                               data-title
                               title={filePath}
                             >
                               {filePath}
                             </span>
-                            <span className="ml-auto shrink-0 tabular-nums text-[11px]">
+                            <span
+                              data-pipper-id="diff-panel-file-stats"
+                              className="ml-auto shrink-0 tabular-nums text-[11px]"
+                            >
                               <span className="text-[var(--diffs-addition-base)]">
                                 +{additions}
                               </span>{" "}
@@ -599,10 +623,14 @@ export default function DiffPanel({ mode = "inline" }: DiffPanelProps) {
                 <div data-impeccable-variant="original">
                   <div className="h-full overflow-auto p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="space-y-2">
-                      <p className="text-[11px] text-muted-foreground/75">
+                      <p
+                        data-pipper-id="diff-panel-raw-reason"
+                        className="text-[11px] text-muted-foreground/75"
+                      >
                         {renderablePatch.reason}
                       </p>
                       <pre
+                        data-pipper-id="diff-panel-raw-patch"
                         className={cn(
                           "max-h-[72vh] rounded-md border border-border/70 bg-[var(--surface-subtle)] p-3 font-mono text-[11px] leading-relaxed text-muted-foreground/90 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
                           diffWordWrap

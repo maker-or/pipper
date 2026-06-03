@@ -238,6 +238,7 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
 
   return (
     <div
+      data-pipper-id="improve-evolution-actions"
       className={cn(
         "no-drag flex min-w-0 flex-col items-end justify-end gap-1.5 lg:flex-row lg:items-center lg:gap-2",
         className,

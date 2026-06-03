@@ -103,6 +103,7 @@ export function ThreadStatusLabel({
   if (compact) {
     return (
       <span
+        data-pipper-id="thread-status-indicators"
         title={status.label}
         className={`inline-flex size-3.5 shrink-0 items-center justify-center ${status.colorClass}`}
       >
@@ -118,6 +119,7 @@ export function ThreadStatusLabel({
 
   return (
     <span
+      data-pipper-id="thread-status-indicators"
       title={status.label}
       className={`inline-flex items-center gap-1 text-[10px] ${status.colorClass}`}
     >
@@ -168,7 +170,10 @@ export function ThreadRowLeadingStatus({ thread }: { thread: SidebarThreadSummar
   }
 
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5">
+    <span
+      data-pipper-id="thread-status-indicators"
+      className="inline-flex shrink-0 items-center gap-1.5"
+    >
       {prStatus ? (
         <Tooltip>
           <TooltipTrigger
@@ -219,7 +224,10 @@ export function ThreadRowTrailingStatus({ thread }: { thread: SidebarThreadSumma
   }
 
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5">
+    <span
+      data-pipper-id="thread-status-indicators"
+      className="inline-flex shrink-0 items-center gap-1.5"
+    >
       {terminalStatus ? (
         <span
           role="img"

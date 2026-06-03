@@ -1,0 +1,262 @@
+{
+  "apps/web/src/components/AnimatedHeight.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/GitActionsControl.tsx"]
+  },
+  "apps/web/src/components/BranchToolbar.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/BranchToolbarBranchSelector.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"]
+  },
+  "apps/web/src/components/BranchToolbarEnvironmentSelector.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"]
+  },
+  "apps/web/src/components/BranchToolbarEnvModeSelector.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"]
+  },
+  "apps/web/src/components/ChatRightDockPanel.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/CommandPaletteResults.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx"]
+  },
+  "apps/web/src/components/ComposerPromptEditor.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/DiffWorkerPoolProvider.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/EvolutionOnboarding.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/EvolutionSpace.tsx"]
+  },
+  "apps/web/src/components/EvolutionSpace.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/NoActiveThreadState.tsx"]
+  },
+  "apps/web/src/components/EvolutionUpdateBanner.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/EvolutionSpace.tsx"]
+  },
+  "apps/web/src/components/ImproveLaunchTransition.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"]
+  },
+  "apps/web/src/components/NoActiveThreadState.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/PlanSidebar.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/PullRequestThreadDialog.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/RightPanelSheet.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/Sidebar.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/AppSidebarLayout.tsx"]
+  },
+  "apps/web/src/components/TerminalWorkspace.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/auth/PairingRouteSurface.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/routes/pair.tsx"]
+  },
+  "apps/web/src/components/chat/ChatComposer.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/ChatHeader.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerBannerStack.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerCommandMenu.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPendingApprovalActions.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPendingApprovalPanel.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPendingTerminalContexts.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ComposerPromptEditor.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPlanFollowUpBanner.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ComposerPrimaryActions.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/ContextWindowMeter.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"]
+  },
+  "apps/web/src/components/chat/DiffStatLabel.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChangedFilesTree.tsx"]
+  },
+  "apps/web/src/components/chat/ExpandedImageDialog.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/MessageCopyButton.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"]
+  },
+  "apps/web/src/components/chat/ModelListRow.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"]
+  },
+  "apps/web/src/components/chat/ModelPickerContent.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ProviderModelPicker.tsx"]
+  },
+  "apps/web/src/components/chat/ModelPickerSidebar.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"]
+  },
+  "apps/web/src/components/chat/ProposedPlanCard.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"]
+  },
+  "apps/web/src/components/chat/ProviderStatusBanner.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/SkillInlineText.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"]
+  },
+  "apps/web/src/components/chat/ThreadContentTransition.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"]
+  },
+  "apps/web/src/components/chat/ThreadErrorBanner.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/ChatView.tsx"]
+  },
+  "apps/web/src/components/chat/ThreadRunningIndicator.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"]
+  },
+  "apps/web/src/components/chat/TraitsPicker.tsx": {
+    "count": 1,
+    "usedIn": ["apps/web/src/components/chat/CompactComposerControlsMenu.browser.tsx"]
+  },
+  "apps/web/src/components/DiffPanelShell.tsx": {
+    "count": 2,
+    "usedIn": ["apps/web/src/components/ChatView.tsx", "apps/web/src/components/DiffPanel.tsx"]
+  },
+  "apps/web/src/components/GitActionsControl.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/DiffPanel.tsx",
+      "apps/web/src/components/GitActionsControl.browser.tsx"
+    ]
+  },
+  "apps/web/src/components/Icons.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/CommandPalette.tsx",
+      "apps/web/src/components/chat/ModelPickerSidebar.tsx"
+    ]
+  },
+  "apps/web/src/components/ImproveEvolutionActions.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/EvolutionSpace.tsx",
+      "apps/web/src/components/chat/ChatHeader.tsx"
+    ]
+  },
+  "apps/web/src/components/ProjectFavicon.tsx": {
+    "count": 2,
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx", "apps/web/src/components/Sidebar.tsx"]
+  },
+  "apps/web/src/components/ThreadStatusIndicators.tsx": {
+    "count": 2,
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx", "apps/web/src/components/Sidebar.tsx"]
+  },
+  "apps/web/src/components/ThreadTerminalDrawer.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/TerminalWorkspace.tsx",
+      "apps/web/src/components/ThreadTerminalDrawer.browser.tsx"
+    ]
+  },
+  "apps/web/src/components/chat/CompactComposerControlsMenu.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/chat/ChatComposer.tsx",
+      "apps/web/src/components/chat/CompactComposerControlsMenu.browser.tsx"
+    ]
+  },
+  "apps/web/src/components/chat/MessagesTimeline.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/ChatView.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.browser.tsx"
+    ]
+  },
+  "apps/web/src/components/chat/ProviderInstanceIcon.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+      "apps/web/src/components/chat/ProviderModelPicker.tsx"
+    ]
+  },
+  "apps/web/src/components/chat/ProviderModelPicker.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/chat/ChatComposer.tsx",
+      "apps/web/src/components/chat/ProviderModelPicker.browser.tsx"
+    ]
+  },
+  "apps/web/src/components/chat/TerminalContextInlineChip.tsx": {
+    "count": 2,
+    "usedIn": [
+      "apps/web/src/components/chat/ComposerPendingTerminalContexts.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.tsx"
+    ]
+  },
+  "apps/web/src/components/ChatMarkdown.tsx": {
+    "count": 4,
+    "usedIn": [
+      "apps/web/src/components/ChatMarkdown.browser.tsx",
+      "apps/web/src/components/PlanSidebar.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.tsx",
+      "apps/web/src/components/chat/ProposedPlanCard.tsx"
+    ]
+  }
+}

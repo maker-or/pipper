@@ -43,7 +43,10 @@ export const BranchToolbarEnvironmentSelector = memo(function BranchToolbarEnvir
 
   if (envLocked) {
     return (
-      <span className="inline-flex items-center gap-1 border border-transparent px-2 text-sm font-medium text-muted-foreground/70 sm:px-3">
+      <span
+        data-pipper-id="branch-toolbar-environment-selector"
+        className="inline-flex items-center gap-1 border border-transparent px-2 text-sm font-medium text-muted-foreground/70 sm:px-3"
+      >
         {activeEnvironment?.isPrimary ? (
           <MonitorIcon className="size-3" />
         ) : (
@@ -56,6 +59,7 @@ export const BranchToolbarEnvironmentSelector = memo(function BranchToolbarEnvir
 
   return (
     <Select
+      data-pipper-id="branch-toolbar-environment-selector"
       modal={false}
       value={environmentId}
       onValueChange={(value) => onEnvironmentChange(value as EnvironmentId)}

@@ -144,6 +144,7 @@ export const ExpandedImageDialog = memo(function ExpandedImageDialog({
 
   return (
     <div
+      data-pipper-id="expanded-image-dialog"
       ref={backdropRef}
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 px-4 py-6 [-webkit-app-region:no-drag] animate-in fade-in"
       style={{

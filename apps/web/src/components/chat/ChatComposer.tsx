@@ -1949,6 +1949,7 @@ export const ChatComposer = memo(
       return (
         <>
           <form
+            data-pipper-id="chat-composer"
             ref={composerFormRef}
             onSubmit={submitComposer}
             className="w-full min-w-0 max-w-3xl"
@@ -1956,6 +1957,7 @@ export const ChatComposer = memo(
             data-chat-composer-canvas="true"
           >
             <div
+              data-pipper-id="chat-composer-surface"
               ref={composerSurfaceRef}
               className={cn(
                 "relative transition-opacity duration-200",
@@ -1996,9 +1998,13 @@ export const ChatComposer = memo(
               ) : null}
 
               {composerImages.length > 0 ? (
-                <div className="mb-3 flex flex-wrap gap-2">
+                <div
+                  data-pipper-id="chat-composer-attachments"
+                  className="mb-3 flex flex-wrap gap-2"
+                >
                   {composerImages.map((image) => (
                     <div
+                      data-pipper-id="chat-composer-attachment"
                       key={image.id}
                       className="relative h-16 w-16 overflow-hidden rounded-lg border border-border/70 bg-background/40"
                     >
@@ -2061,12 +2067,14 @@ export const ChatComposer = memo(
 
     return (
       <form
+        data-pipper-id="chat-composer"
         ref={composerFormRef}
         onSubmit={submitComposer}
         className="w-full min-w-0 max-w-176"
         data-chat-composer-form="true"
       >
         <div
+          data-pipper-id="chat-composer-frame"
           className={cn(
             "group rounded-full p-px transition-colors duration-200",
             composerProviderState.composerFrameClassName,
@@ -2077,6 +2085,7 @@ export const ChatComposer = memo(
           onDrop={onComposerDrop}
         >
           <div
+            data-pipper-id="chat-composer-surface"
             ref={composerSurfaceRef}
             data-chat-composer-mobile-collapsed={isComposerCollapsedMobile ? "true" : "false"}
             className={cn(
@@ -2106,14 +2115,20 @@ export const ChatComposer = memo(
           >
             {!isComposerCollapsedMobile &&
               (activePendingApproval ? (
-                <div className="rounded-t-[19px] border-b border-border/65 bg-muted/20">
+                <div
+                  data-pipper-id="chat-composer-pending-panel"
+                  className="rounded-t-[19px] border-b border-border/65 bg-muted/20"
+                >
                   <ComposerPendingApprovalPanel
                     approval={activePendingApproval}
                     pendingCount={pendingApprovals.length}
                   />
                 </div>
               ) : pendingUserInputs.length > 0 ? (
-                <div className="rounded-t-[19px] border-b border-border/65 bg-muted/20">
+                <div
+                  data-pipper-id="chat-composer-pending-panel"
+                  className="rounded-t-[19px] border-b border-border/65 bg-muted/20"
+                >
                   <ComposerPendingUserInputPanel
                     pendingUserInputs={pendingUserInputs}
                     respondingRequestIds={respondingRequestIds}
@@ -2124,7 +2139,10 @@ export const ChatComposer = memo(
                   />
                 </div>
               ) : showPlanFollowUpPrompt && activeProposedPlan ? (
-                <div className="rounded-t-[19px] border-b border-border/65 bg-muted/20">
+                <div
+                  data-pipper-id="chat-composer-pending-panel"
+                  className="rounded-t-[19px] border-b border-border/65 bg-muted/20"
+                >
                   <ComposerPlanFollowUpBanner
                     key={activeProposedPlan.id}
                     planTitle={proposedPlanTitle(activeProposedPlan.planMarkdown) ?? null}
@@ -2134,6 +2152,7 @@ export const ChatComposer = memo(
 
             {isComposerCollapsedMobile && activePendingApproval ? (
               <div
+                data-pipper-id="chat-composer-pending-panel"
                 className="rounded-t-[19px] border-b border-border/65 bg-muted/20"
                 data-chat-composer-collapsed-controls="true"
               >
@@ -2151,6 +2170,7 @@ export const ChatComposer = memo(
               </div>
             ) : isComposerCollapsedMobile && pendingUserInputs.length > 0 ? (
               <div
+                data-pipper-id="chat-composer-pending-panel"
                 className="rounded-t-[19px] border-b border-border/65 bg-muted/20"
                 data-chat-composer-collapsed-controls="true"
               >
@@ -2209,7 +2229,10 @@ export const ChatComposer = memo(
             ) : null}
 
             {showCollapsedMobilePromptRow ? (
-              <div className="flex items-center justify-between gap-2 px-3 py-2">
+              <div
+                data-pipper-id="chat-composer-collapsed-row"
+                className="flex items-center justify-between gap-2 px-3 py-2"
+              >
                 <button
                   type="button"
                   className={cn(
@@ -2252,6 +2275,7 @@ export const ChatComposer = memo(
             ) : null}
 
             <div
+              data-pipper-id="chat-composer-input-row"
               className={cn(
                 "relative flex min-h-11 items-center px-3 py-1 pr-9 sm:px-4 sm:pr-10",
                 hasComposerHeader ? "pt-1.5" : "pt-1.5",
@@ -2281,9 +2305,13 @@ export const ChatComposer = memo(
                 !isComposerApprovalState &&
                 pendingUserInputs.length === 0 &&
                 composerImages.length > 0 && (
-                  <div className="mb-3 flex flex-wrap gap-2">
+                  <div
+                    data-pipper-id="chat-composer-attachments"
+                    className="mb-3 flex flex-wrap gap-2"
+                  >
                     {composerImages.map((image) => (
                       <div
+                        data-pipper-id="chat-composer-attachment"
                         key={image.id}
                         className="relative h-16 w-16 overflow-hidden rounded-lg border border-border/80 bg-background"
                       >
@@ -2345,7 +2373,7 @@ export const ChatComposer = memo(
                   </div>
                 )}
 
-              <div className="relative min-w-0 flex-1">
+              <div data-pipper-id="chat-composer-editor-area" className="relative min-w-0 flex-1">
                 <ComposerPromptEditor
                   ref={composerEditorRef}
                   value={
@@ -2392,7 +2420,10 @@ export const ChatComposer = memo(
                   }
                 />
                 {pendingUserInputs.length === 0 && !activePendingApproval ? (
-                  <div className="absolute -right-1 top-1/2 flex -translate-y-1/2 justify-end sm:-right-1.5">
+                  <div
+                    data-pipper-id="chat-composer-primary-action-area"
+                    className="absolute -right-1 top-1/2 flex -translate-y-1/2 justify-end sm:-right-1.5"
+                  >
                     <ComposerPrimaryActions
                       compact
                       pendingAction={pendingPrimaryAction}

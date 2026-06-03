@@ -21,6 +21,7 @@ export function ImproveLaunchTransition({ origin, state }: ImproveLaunchTransiti
 
   return (
     <div
+      data-pipper-id="improve-launch-transition"
       aria-hidden="true"
       className="improve-launch-overlay"
       data-state={isEntering ? "entering" : "idle"}

@@ -134,6 +134,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
 
   return (
     <Popover
+      data-pipper-id="provider-model-picker"
       open={isMenuOpen}
       onOpenChange={(open) => {
         if (props.disabled) {
@@ -146,6 +147,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
       <PopoverTrigger
         render={
           <Button
+            data-pipper-id="provider-model-picker-trigger"
             size="sm"
             variant={props.triggerVariant ?? "ghost"}
             data-chat-provider-model-picker="true"
@@ -207,6 +209,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
         </span>
       </PopoverTrigger>
       <PopoverPopup
+        data-pipper-id="provider-model-picker-popup"
         ref={popupRef}
         align="start"
         className="border-0 bg-transparent p-0 shadow-none before:hidden [--viewport-inline-padding:0] *:data-[slot=popover-viewport]:p-0"

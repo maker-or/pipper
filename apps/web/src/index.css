@@ -110,12 +110,12 @@
     --resize-dur: 200ms;
     --resize-ease: cubic-bezier(0.2, 1, 0.3, 1);
     --improve-hold-dur: 900ms;
-    --improve-enter-dur: 780ms;
+    --improve-enter-dur: 420ms;
     --improve-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
-    --improve-ripple-dur: 1400ms;
-    --improve-mesh-drift-dur: 16s;
-    --improve-prompt-delay: 160ms;
-    --improve-prompt-dur: 360ms;
+    --improve-ripple-dur: 720ms;
+    --improve-mesh-drift-dur: 12s;
+    --improve-prompt-delay: 80ms;
+    --improve-prompt-dur: 240ms;
 
     /* We don't define colors here anymore, they are injected by useTheme.ts! */
   }
@@ -303,14 +303,28 @@
   overflow: clip;
   opacity: 0;
   clip-path: circle(0 at var(--improve-origin-x) var(--improve-origin-y));
-  transform: translate3d(0, 10px, 0) scale(0.985);
+  transform: translate3d(0, 12px, 0) scale(0.98);
   filter: blur(12px) saturate(1.16);
   transition:
     clip-path var(--improve-enter-dur) var(--improve-enter-ease),
-    opacity 170ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 120ms cubic-bezier(0.2, 0, 0, 1),
     filter var(--improve-enter-dur) var(--improve-enter-ease),
     transform var(--improve-enter-dur) var(--improve-enter-ease);
-  will-change: clip-path, opacity, filter, transform;
+  will-change: opacity, filter, transform;
+}
+
+.improve-launch-overlay[data-state="holding"] {
+  opacity: 0.9;
+  clip-path: circle(28px at var(--improve-origin-x) var(--improve-origin-y));
+  transform: translate3d(0, 8px, 0) scale(0.992);
+  filter: blur(8px) saturate(1.1);
+}
+
+.improve-launch-overlay[data-state="entering"] {
+  opacity: 1;
+  clip-path: circle(150vmax at var(--improve-origin-x) var(--improve-origin-y));
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0) saturate(1.04);
 }
 
 .improve-launch-overlay__scrim,
@@ -324,7 +338,15 @@
 .improve-launch-overlay__scrim {
   background: linear-gradient(180deg, oklch(0.03 0.014 255 / 0.72), oklch(0.05 0.018 255 / 0.94));
   opacity: 0;
-  transition: opacity 220ms cubic-bezier(0.2, 0, 0, 1);
+  transition: opacity 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.improve-launch-overlay[data-state="holding"] .improve-launch-overlay__scrim {
+  opacity: 0.45;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__scrim {
+  opacity: 1;
 }
 
 .improve-launch-overlay__mesh {
@@ -341,9 +363,19 @@
   transform: translate3d(-4%, -4%, 0) scale(1.08);
   mix-blend-mode: screen;
   transition:
-    opacity 260ms ease-out,
-    transform 900ms var(--improve-enter-ease);
+    opacity 220ms ease-out,
+    transform 520ms var(--improve-enter-ease);
   will-change: transform, opacity;
+}
+
+.improve-launch-overlay[data-state="holding"] .improve-launch-overlay__mesh {
+  opacity: 0.14;
+  transform: translate3d(-4%, -4%, 0) scale(1.03);
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__mesh {
+  opacity: 1;
+  animation: improve-mesh-drift var(--improve-mesh-drift-dur) ease-in-out infinite alternate;
 }
 
 .improve-launch-overlay__ripple {
@@ -365,22 +397,15 @@
   transform: scale(0.12);
   filter: blur(0.5px);
   mix-blend-mode: screen;
+  transition:
+    opacity 180ms cubic-bezier(0.2, 0, 0, 1),
+    transform 240ms var(--improve-enter-ease);
+  will-change: opacity, transform;
 }
 
-.improve-launch-overlay[data-state="entering"] {
-  opacity: 1;
-  clip-path: circle(150vmax at var(--improve-origin-x) var(--improve-origin-y));
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0) saturate(1.04);
-}
-
-.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__scrim {
-  opacity: 1;
-}
-
-.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__mesh {
-  opacity: 1;
-  animation: improve-mesh-drift var(--improve-mesh-drift-dur) ease-in-out infinite alternate;
+.improve-launch-overlay[data-state="holding"] .improve-launch-overlay__ripple {
+  opacity: 0.28;
+  transform: scale(0.22);
 }
 
 .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__ripple {
@@ -398,7 +423,7 @@
   gap: 0.875rem;
   text-align: center;
   opacity: 0;
-  transform: translateY(12px) scale(0.96);
+  transform: translateY(14px) scale(0.95);
   transition:
     opacity var(--improve-prompt-dur) cubic-bezier(0.2, 0, 0, 1) var(--improve-prompt-delay),
     transform var(--improve-prompt-dur) var(--improve-enter-ease) var(--improve-prompt-delay);
@@ -408,11 +433,6 @@
 .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__panel {
   opacity: 1;
   transform: translateY(0) scale(1);
-}
-
-.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__orb {
-  transform: translate3d(0, 0, 0) scale(1);
-  opacity: 1;
 }
 
 .improve-launch-overlay__orb {
@@ -429,8 +449,17 @@
     0 0 0 1px oklch(1 0 0 / 0.04) inset,
     0 20px 60px oklch(0 0 0 / 0.4),
     0 0 42px oklch(0.78 0.18 62 / 0.22);
-  transform: translate3d(0, 6px, 0) scale(0.92);
-  opacity: 0.96;
+  transform: translate3d(0, 10px, 0) scale(0.88);
+  opacity: 0;
+  transition:
+    opacity 220ms cubic-bezier(0.2, 0, 0, 1) calc(var(--improve-prompt-delay) + 20ms),
+    transform 260ms var(--improve-enter-ease) calc(var(--improve-prompt-delay) + 20ms);
+  will-change: opacity, transform;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__orb {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
 }
 
 .improve-launch-overlay__icon {
@@ -447,6 +476,14 @@
   letter-spacing: -0.055em;
   line-height: 0.98;
   text-wrap: balance;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--improve-prompt-dur) cubic-bezier(0.2, 0, 0, 1)
+      calc(var(--improve-prompt-delay) + 40ms),
+    transform var(--improve-prompt-dur) var(--improve-enter-ease)
+      calc(var(--improve-prompt-delay) + 40ms);
+  will-change: opacity, transform;
 }
 
 .improve-launch-overlay__caption {
@@ -460,6 +497,20 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--improve-prompt-dur) cubic-bezier(0.2, 0, 0, 1)
+      calc(var(--improve-prompt-delay) + 100ms),
+    transform var(--improve-prompt-dur) var(--improve-enter-ease)
+      calc(var(--improve-prompt-delay) + 100ms);
+  will-change: opacity, transform;
+}
+
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__prompt,
+.improve-launch-overlay[data-state="entering"] .improve-launch-overlay__caption {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes improve-mesh-drift {
@@ -517,6 +568,7 @@
     transform: scaleX(1);
   }
 
+  .improve-launch-overlay[data-state="holding"],
   .improve-launch-overlay[data-state="entering"] {
     clip-path: none;
     opacity: 1;
@@ -524,11 +576,22 @@
     transform: none;
   }
 
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__scrim,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__mesh,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__ripple,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__panel,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__orb,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__prompt,
+  .improve-launch-overlay[data-state="holding"] .improve-launch-overlay__caption,
   .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__scrim,
   .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__mesh,
   .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__ripple,
-  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__panel {
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__panel,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__orb,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__prompt,
+  .improve-launch-overlay[data-state="entering"] .improve-launch-overlay__caption {
     opacity: 1;
+    transform: none;
   }
 }
 

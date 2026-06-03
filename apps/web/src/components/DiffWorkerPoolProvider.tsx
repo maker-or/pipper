@@ -39,6 +39,7 @@ export function DiffWorkerPoolProvider({ children }: { children?: ReactNode }) {
 
   return (
     <WorkerPoolContextProvider
+      data-pipper-id="diff-worker-pool-provider"
       poolOptions={{
         workerFactory: () => new DiffsWorker(),
         poolSize: workerPoolSize,

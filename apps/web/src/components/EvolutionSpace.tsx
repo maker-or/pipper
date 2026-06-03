@@ -130,7 +130,10 @@ export function EvolutionSpace() {
   // Loading state
   if (isChecking) {
     return (
-      <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
+      <SidebarInset
+        data-pipper-id="evolution-space"
+        className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground"
+      >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
           <EvolutionSpaceHeader />
           <div className="flex flex-1 items-center justify-center">
@@ -144,7 +147,10 @@ export function EvolutionSpace() {
   // First-time onboarding
   if (showOnboarding) {
     return (
-      <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
+      <SidebarInset
+        data-pipper-id="evolution-space"
+        className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground"
+      >
         <EvolutionOnboarding
           onSetupComplete={handleSetupComplete}
           onRetry={() => setShowOnboarding(true)}
@@ -155,7 +161,10 @@ export function EvolutionSpace() {
 
   // Main evolution space — the agent-focused workspace view
   return (
-    <SidebarInset className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground">
+    <SidebarInset
+      data-pipper-id="evolution-space"
+      className="h-dvh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground"
+    >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
         <EvolutionSpaceHeader />
 

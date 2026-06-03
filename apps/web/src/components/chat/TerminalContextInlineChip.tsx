@@ -18,7 +18,7 @@ export function TerminalContextInlineChip(props: TerminalContextInlineChipProps)
   const { label, tooltipText, expired = false } = props;
 
   return (
-    <Tooltip>
+    <Tooltip data-pipper-id="terminal-context-inline-chip">
       <TooltipTrigger
         render={
           <span

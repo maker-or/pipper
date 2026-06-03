@@ -50,7 +50,11 @@ export const ThreadRunningIndicator = memo(function ThreadRunningIndicator({
   }, [active]);
 
   return (
-    <span aria-hidden="true" className="grid size-3.5 shrink-0 grid-cols-4 grid-rows-4 gap-[1px]">
+    <span
+      data-pipper-id="thread-running-indicator"
+      aria-hidden="true"
+      className="grid size-3.5 shrink-0 grid-cols-4 grid-rows-4 gap-[1px]"
+    >
       {Array.from({ length: INDICATOR_SQUARE_COUNT }, (_, index) => (
         <span
           key={index}

@@ -78,15 +78,22 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
 
   return (
     <ScrollArea
+      data-pipper-id="model-picker-sidebar"
       hideScrollbars
       scrollFade
       className="w-12 shrink-0 border-r bg-muted/30"
       data-model-picker-sidebar="true"
     >
-      <div className="flex min-h-full flex-col gap-1 p-1">
+      <div
+        data-pipper-id="model-picker-sidebar-rail"
+        className="flex min-h-full flex-col gap-1 p-1"
+      >
         {/* Favorites section */}
         {showFavorites ? (
-          <div className="pb-1 mb-1 border-b">
+          <div
+            data-pipper-id="model-picker-sidebar-favorites-section"
+            className="pb-1 mb-1 border-b"
+          >
             <div className="relative w-full">
               {props.selectedInstanceId === "favorites" && (
                 <div className={SELECTED_INDICATOR_CLASS} />
@@ -95,6 +102,7 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
                 <TooltipTrigger
                   render={
                     <button
+                      data-pipper-id="model-picker-sidebar-favorites-button"
                       className={cn(
                         "model-picker-button relative isolate flex w-full cursor-pointer aspect-square items-center justify-center rounded-none transition-colors hover:bg-muted",
                         props.selectedInstanceId === "favorites" && SELECTED_BUTTON_CLASS,
@@ -177,7 +185,11 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
           );
 
           return (
-            <div key={entry.instanceId} className="relative w-full">
+            <div
+              data-pipper-id="model-picker-sidebar-instance-item"
+              key={entry.instanceId}
+              className="relative w-full"
+            >
               {isSelected && <div className={SELECTED_INDICATOR_CLASS} />}
               <Tooltip>
                 <TooltipTrigger render={trigger} />
@@ -201,6 +213,7 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
                 render={
                   <span className="relative block w-full">
                     <button
+                      data-pipper-id="model-picker-sidebar-coming-soon-button"
                       className={cn(
                         "relative isolate flex w-full aspect-square items-center justify-center rounded-none opacity-50 cursor-not-allowed transition-colors hover:bg-transparent",
                       )}
@@ -231,6 +244,7 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
                 render={
                   <span className="relative block w-full">
                     <button
+                      data-pipper-id="model-picker-sidebar-coming-soon-button"
                       className={cn(
                         "relative isolate flex w-full aspect-square items-center justify-center rounded-none opacity-50 cursor-not-allowed transition-colors hover:bg-transparent",
                       )}

@@ -25,7 +25,7 @@ export const CompactComposerControlsMenu = memo(function CompactComposerControls
   onRuntimeModeChange?: (mode: RuntimeMode) => void;
 }) {
   return (
-    <Menu>
+    <Menu data-pipper-id="compact-composer-controls-menu">
       <MenuTrigger
         render={
           <Button

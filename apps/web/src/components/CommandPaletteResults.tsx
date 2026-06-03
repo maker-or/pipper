@@ -28,7 +28,10 @@ interface CommandPaletteResultsProps {
 export function CommandPaletteResults(props: CommandPaletteResultsProps) {
   if (props.groups.length === 0) {
     return (
-      <div className="py-10 text-center text-sm text-muted-foreground">
+      <div
+        data-pipper-id="command-palette-results"
+        className="py-10 text-center text-sm text-muted-foreground"
+      >
         {props.emptyStateMessage ??
           (props.isActionsOnly
             ? "No matching actions."
@@ -38,7 +41,7 @@ export function CommandPaletteResults(props: CommandPaletteResultsProps) {
   }
 
   return (
-    <CommandList>
+    <CommandList data-pipper-id="command-palette-results">
       {props.groups.map((group) => (
         <CommandGroup items={group.items} key={group.value}>
           <CommandGroupLabel>{group.label}</CommandGroupLabel>

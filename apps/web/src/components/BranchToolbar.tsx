@@ -118,14 +118,17 @@ const MobileRunContextSelector = memo(function MobileRunContextSelector({
 
   if (isLocked) {
     return (
-      <span className="inline-flex min-w-0 max-w-[48%] flex-1 items-center justify-start gap-1 rounded-md border border-transparent px-[calc(--spacing(2)-1px)] text-sm font-medium text-muted-foreground/70 md:hidden">
+      <span
+        data-pipper-id="branch-toolbar"
+        className="inline-flex min-w-0 max-w-[48%] flex-1 items-center justify-start gap-1 rounded-md border border-transparent px-[calc(--spacing(2)-1px)] text-sm font-medium text-muted-foreground/70 md:hidden"
+      >
         {triggerContent}
       </span>
     );
   }
 
   return (
-    <Menu>
+    <Menu data-pipper-id="branch-toolbar">
       <MenuTrigger
         render={<Button variant="ghost" size="xs" />}
         className="min-w-0 max-w-[48%] flex-1 justify-start text-muted-foreground/70 hover:text-foreground/80 md:hidden"
@@ -251,6 +254,7 @@ export const BranchToolbar = memo(function BranchToolbar({
 
   return (
     <div
+      data-pipper-id="branch-toolbar"
       className={
         isTitlebarVariant
           ? "flex min-w-0 shrink-0 items-center gap-1"

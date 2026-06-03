@@ -53,6 +53,7 @@ export const BranchToolbarEnvModeSelector = memo(function BranchToolbarEnvModeSe
   if (envLocked) {
     return (
       <span
+        data-pipper-id="branch-toolbar-env-mode-selector"
         className={cn(
           "inline-flex items-center gap-1 border border-transparent px-2 text-sm font-medium text-muted-foreground/70 sm:px-3",
           isTitlebarVariant && "px-0 sm:px-0",
@@ -66,6 +67,7 @@ export const BranchToolbarEnvModeSelector = memo(function BranchToolbarEnvModeSe
 
   return (
     <Select
+      data-pipper-id="branch-toolbar-env-mode-selector"
       modal={false}
       value={effectiveEnvMode}
       onValueChange={(value) => onEnvModeChange(value as EnvMode)}

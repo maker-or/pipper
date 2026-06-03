@@ -64,7 +64,10 @@ export function EvolutionUpdateBanner() {
   }
 
   return (
-    <div className="relative mx-auto mb-3 w-full max-w-2xl overflow-hidden rounded-xl border border-orange-300/20 bg-gradient-to-r from-orange-500/8 to-amber-500/6 px-4 py-3 shadow-md shadow-orange-900/10 backdrop-blur-sm">
+    <div
+      data-pipper-id="evolution-update-banner"
+      className="relative mx-auto mb-3 w-full max-w-2xl overflow-hidden rounded-xl border border-orange-300/20 bg-gradient-to-r from-orange-500/8 to-amber-500/6 px-4 py-3 shadow-md shadow-orange-900/10 backdrop-blur-sm"
+    >
       <div className="flex items-center gap-3">
         <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-orange-300 ring-1 ring-orange-400/25">
           <ArrowDownToLineIcon className="size-4" />

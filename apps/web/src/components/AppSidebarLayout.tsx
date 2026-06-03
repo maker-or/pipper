@@ -77,6 +77,7 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider
+      data-pipper-id="app-sidebar-layout"
       className="h-dvh! min-h-0!"
       data-active-space={activeSpace}
       defaultOpen
@@ -84,6 +85,7 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
     >
       {isImproveSpace ? null : (
         <Sidebar
+          data-pipper-id="app-sidebar-shell"
           side="left"
           collapsible="offcanvas"
           className={
@@ -113,7 +115,9 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
         </Sidebar>
       )}
       {isElectron && !isImproveSpace ? <SidebarKeyboardShortcutListener /> : null}
-      {children}
+      <div data-pipper-id="app-main-shell" className="flex min-h-0 min-w-0 flex-1">
+        {children}
+      </div>
     </SidebarProvider>
   );
 }

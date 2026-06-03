@@ -109,6 +109,7 @@ export const ProjectFavicon = memo(function ProjectFavicon(input: {
 
   return (
     <span
+      data-pipper-id="project-favicon"
       ref={spanRef}
       aria-hidden="true"
       style={

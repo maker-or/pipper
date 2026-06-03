@@ -188,6 +188,7 @@ export function PullRequestThreadDialog({
 
   return (
     <Dialog
+      data-pipper-id="pull-request-thread-dialog"
       open={open}
       onOpenChange={(nextOpen) => {
         if (!preparePullRequestThreadMutation.isPending) {

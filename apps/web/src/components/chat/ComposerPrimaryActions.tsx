@@ -73,7 +73,10 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
 
   if (pendingAction) {
     return (
-      <div className={cn("flex items-center justify-end", compact ? "gap-1.5" : "gap-2")}>
+      <div
+        data-pipper-id="composer-primary-actions"
+        className={cn("flex items-center justify-end", compact ? "gap-1.5" : "gap-2")}
+      >
         {pendingAction.questionIndex > 0 ? (
           compact ? (
             <Button
@@ -125,6 +128,7 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
   if (isRunning) {
     return (
       <button
+        data-pipper-id="composer-primary-actions"
         type="button"
         className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-rose-500/90 text-white transition-all duration-150 hover:bg-rose-500 hover:scale-105 sm:h-8 sm:w-8"
         {...pointerFocusProps}
@@ -142,6 +146,7 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
     if (promptHasText) {
       return (
         <Button
+          data-pipper-id="composer-primary-actions"
           type="submit"
           size="sm"
           className={cn("rounded-full", compact ? "h-9 px-3 sm:h-8" : "h-9 px-4 sm:h-8")}
@@ -154,7 +159,11 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
     }
 
     return (
-      <div data-chat-composer-implement-actions="true" className="flex items-center justify-end">
+      <div
+        data-pipper-id="composer-primary-actions"
+        data-chat-composer-implement-actions="true"
+        className="flex items-center justify-end"
+      >
         <Button
           type="submit"
           size="sm"
@@ -194,6 +203,7 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
 
   return (
     <button
+      data-pipper-id="composer-primary-actions"
       type="submit"
       className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all duration-150 enabled:cursor-pointer hover:scale-105 hover:bg-primary/92 disabled:pointer-events-none disabled:opacity-30 disabled:hover:scale-100 sm:h-8 sm:w-8"
       {...pointerFocusProps}

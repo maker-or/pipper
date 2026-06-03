@@ -19,6 +19,7 @@ export const ComposerPendingApprovalActions = memo(function ComposerPendingAppro
   return (
     <>
       <Button
+        data-pipper-id="composer-pending-approval-actions"
         size="sm"
         variant="ghost"
         disabled={isResponding}

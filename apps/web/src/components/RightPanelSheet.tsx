@@ -10,6 +10,7 @@ export function RightPanelSheet(props: {
 }) {
   return (
     <Sheet
+      data-pipper-id="right-panel-sheet"
       open={props.open}
       onOpenChange={(open) => {
         if (!open) {

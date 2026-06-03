@@ -41,6 +41,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
 
   return (
     <ComboboxItem
+      data-pipper-id="model-list-row"
       hideIndicator
       index={props.index}
       value={`${props.instanceId}:${props.model.slug}`}
@@ -54,6 +55,7 @@ export const ModelListRow = memo(function ModelListRow(props: {
         <TooltipTrigger
           render={
             <button
+              data-pipper-id="model-list-row-favorite-action"
               className="model-picker-star mt-0.5 shrink-0 cursor-pointer opacity-40 transition-opacity group-hover:opacity-100"
               onClick={(event) => {
                 event.stopPropagation();
@@ -76,8 +78,11 @@ export const ModelListRow = memo(function ModelListRow(props: {
         </TooltipPopup>
       </Tooltip>
 
-      <div className="min-w-0 flex-1 text-left">
-        <div className="flex items-center justify-between gap-2 min-w-0">
+      <div data-pipper-id="model-list-row-content" className="min-w-0 flex-1 text-left">
+        <div
+          data-pipper-id="model-list-row-title-line"
+          className="flex items-center justify-between gap-2 min-w-0"
+        >
           <div className="text-xs font-medium leading-snug flex items-center gap-2 min-w-0">
             <span className="truncate">
               {props.useTriggerLabel
@@ -103,7 +108,10 @@ export const ModelListRow = memo(function ModelListRow(props: {
           ) : null}
         </div>
         {props.showProvider && (
-          <div className="flex items-center gap-1 mt-0.5">
+          <div
+            data-pipper-id="model-list-row-provider-line"
+            className="flex items-center gap-1 mt-0.5"
+          >
             {ProviderIcon ? <ProviderIcon className="size-3 shrink-0" /> : null}
             {props.providerAccentColor ? (
               <span

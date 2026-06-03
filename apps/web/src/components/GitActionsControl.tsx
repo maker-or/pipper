@@ -1627,6 +1627,7 @@ export default function GitActionsControl({
       {dockIconOnly ? (
         !isRepo ? (
           <button
+            data-pipper-id="git-actions-control"
             type="button"
             aria-label="Initialize Git"
             className={dockIconButtonClassName}
@@ -1703,6 +1704,7 @@ export default function GitActionsControl({
 
                 return (
                   <MenuItem
+                    data-pipper-id="git-actions-control"
                     key={`${item.id}-${item.label}`}
                     disabled={item.disabled}
                     onClick={() => {
@@ -1845,6 +1847,7 @@ export default function GitActionsControl({
 
                 return (
                   <MenuItem
+                    data-pipper-id="git-actions-control"
                     key={`${item.id}-${item.label}`}
                     disabled={item.disabled}
                     onClick={() => {

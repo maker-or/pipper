@@ -176,7 +176,10 @@ export function EvolutionOnboarding({ onSetupComplete, onRetry }: EvolutionOnboa
   const isError = currentStep === "error";
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10 text-foreground sm:px-6">
+    <div
+      data-pipper-id="evolution-onboarding"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10 text-foreground sm:px-6"
+    >
       {/* Background gradients */}
       <div className="pointer-events-none absolute inset-0 opacity-80">
         <div className="absolute inset-x-0 top-0 h-44 bg-[radial-gradient(44rem_16rem_at_top,color-mix(in_srgb,var(--color-orange-500)_12%,transparent),transparent)]" />

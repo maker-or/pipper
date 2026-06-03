@@ -3281,9 +3281,17 @@ export default function ChatView(props: ChatViewProps) {
     !diffOpen && terminalState.terminalOpen && activeTerminalWorkspaceRef !== null;
 
   const composerElement = (
-    <div className="flex w-full flex-col items-stretch pt-6 pb-[calc(var(--chat-bottom-controls-inset)+3.5rem)]">
-      <ComposerBannerStack className="relative z-0" items={composerBannerItems} />
-      <div className="relative z-10 flex w-full min-w-0 flex-col items-start">
+    <div
+      data-pipper-id="chat-view-composer-region"
+      className="flex w-full flex-col items-stretch pt-6 pb-[calc(var(--chat-bottom-controls-inset)+3.5rem)]"
+    >
+      <div data-pipper-id="chat-view-composer-banner-region" className="relative z-0">
+        <ComposerBannerStack items={composerBannerItems} />
+      </div>
+      <div
+        data-pipper-id="chat-view-composer-container"
+        className="relative z-10 flex w-full min-w-0 flex-col items-start"
+      >
         <ChatComposer
           ref={composerRef}
           composerDraftTarget={composerDraftTarget}
@@ -3355,10 +3363,14 @@ export default function ChatView(props: ChatViewProps) {
   );
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+    <div
+      data-pipper-id="chat-view-root"
+      className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden"
+    >
       {/* Top bar */}
       {!isImproveSpace ? (
         <header
+          data-pipper-id="chat-view-titlebar"
           className={cn(
             "bg-[var(--surface-canvas)]",
             isElectron
@@ -3370,7 +3382,10 @@ export default function ChatView(props: ChatViewProps) {
               : "flex h-12 shrink-0 items-center pl-[calc(env(safe-area-inset-left)+0.75rem)] pr-[calc(env(safe-area-inset-right)+0.75rem)] sm:pl-[calc(env(safe-area-inset-left)+1.25rem)] sm:pr-[calc(env(safe-area-inset-right)+1.25rem)]",
           )}
         >
-          <div className="flex min-w-0 flex-1 items-center">
+          <div
+            data-pipper-id="chat-view-titlebar-content"
+            className="flex min-w-0 flex-1 items-center"
+          >
             <ActiveProjectTitleBar
               projectName={activeProject?.name}
               isGitRepo={isGitRepo}
@@ -3410,6 +3425,7 @@ export default function ChatView(props: ChatViewProps) {
       ) : null}
       {isImproveSpace && isElectron ? (
         <header
+          data-pipper-id="chat-view-titlebar"
           aria-hidden="true"
           className={cn(
             "drag-region flex h-[42px] shrink-0 items-center bg-[var(--surface-canvas)] pl-[90px] pr-4 wco:h-[env(titlebar-area-height)] wco:pl-[calc(env(titlebar-area-x)+1em)]",
@@ -3419,6 +3435,7 @@ export default function ChatView(props: ChatViewProps) {
         />
       ) : null}
       <div
+        data-pipper-id="chat-view-tabbar"
         className={cn(
           "flex h-10 shrink-0 items-center border-t border-border/60 bg-[var(--surface-canvas)] px-3",
           isElectron &&
@@ -3458,57 +3475,74 @@ export default function ChatView(props: ChatViewProps) {
         onDismiss={() => setThreadError(activeThread.id, null)}
       />
       {/* Main content area with optional plan sidebar */}
-      <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-0 bg-[var(--surface-canvas)] px-2">
+      <div
+        data-pipper-id="chat-view-body"
+        className="flex min-h-0 min-w-0 flex-1 items-stretch gap-0 bg-[var(--surface-canvas)] px-2"
+      >
         <div
+          data-pipper-id="chat-view-primary-panel"
           className={cn(
             "flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--surface-subtle)]",
             showInlineDiffPanel ? "rounded-tl-md" : "rounded-t-md",
           )}
         >
           {showTerminalWorkspace && activeTerminalWorkspaceRef ? (
-            <TerminalWorkspace
-              workspaceRef={activeTerminalWorkspaceRef}
-              projectRef={activeProjectRef}
-              visible
-              launchContext={activeTerminalLaunchContext ?? null}
-              focusRequestId={terminalFocusRequestId}
-              splitShortcutLabel={splitTerminalShortcutLabel ?? undefined}
-              newShortcutLabel={newTerminalShortcutLabel ?? undefined}
-              closeShortcutLabel={closeTerminalShortcutLabel ?? undefined}
-              keybindings={keybindings}
-              onAddTerminalContext={addTerminalContextToDraft}
-            />
-          ) : (
-            <div className="relative flex min-h-0 flex-1 flex-col">
-              <MessagesTimeline
-                isWorking={isWorking}
-                activeTurnInProgress={isWorking || !latestTurnSettled}
-                activeTurnId={activeLatestTurn?.turnId ?? null}
-                activeTurnStartedAt={activeWorkStartedAt}
-                listRef={legendListRef}
-                timelineEntries={timelineEntries}
-                completionDividerBeforeEntryId={completionDividerBeforeEntryId}
-                completionSummary={completionSummary}
-                turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
-                activeThreadEnvironmentId={activeThread.environmentId}
-                routeThreadKey={routeThreadKey}
-                onOpenTurnDiff={onOpenTurnDiff}
-                revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
-                onRevertUserMessage={onRevertUserMessage}
-                isRevertingCheckpoint={isRevertingCheckpoint}
-                onImageExpand={onExpandTimelineImage}
-                markdownCwd={gitCwd ?? undefined}
-                resolvedTheme={resolvedTheme}
-                timestampFormat={timestampFormat}
-                workspaceRoot={activeWorkspaceRoot}
-                skills={activeProviderSkills}
-                onIsAtEndChange={onIsAtEndChange}
-                composer={composerElement}
+            <div
+              data-pipper-id="chat-view-terminal-region"
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <TerminalWorkspace
+                workspaceRef={activeTerminalWorkspaceRef}
+                projectRef={activeProjectRef}
+                visible
+                launchContext={activeTerminalLaunchContext ?? null}
+                focusRequestId={terminalFocusRequestId}
+                splitShortcutLabel={splitTerminalShortcutLabel ?? undefined}
+                newShortcutLabel={newTerminalShortcutLabel ?? undefined}
+                closeShortcutLabel={closeTerminalShortcutLabel ?? undefined}
+                keybindings={keybindings}
+                onAddTerminalContext={addTerminalContextToDraft}
               />
+            </div>
+          ) : (
+            <div
+              data-pipper-id="chat-view-conversation-region"
+              className="relative flex min-h-0 flex-1 flex-col"
+            >
+              <div data-pipper-id="chat-view-timeline-region" className="min-h-0 flex-1">
+                <MessagesTimeline
+                  isWorking={isWorking}
+                  activeTurnInProgress={isWorking || !latestTurnSettled}
+                  activeTurnId={activeLatestTurn?.turnId ?? null}
+                  activeTurnStartedAt={activeWorkStartedAt}
+                  listRef={legendListRef}
+                  timelineEntries={timelineEntries}
+                  completionDividerBeforeEntryId={completionDividerBeforeEntryId}
+                  completionSummary={completionSummary}
+                  turnDiffSummaryByAssistantMessageId={turnDiffSummaryByAssistantMessageId}
+                  activeThreadEnvironmentId={activeThread.environmentId}
+                  routeThreadKey={routeThreadKey}
+                  onOpenTurnDiff={onOpenTurnDiff}
+                  revertTurnCountByUserMessageId={revertTurnCountByUserMessageId}
+                  onRevertUserMessage={onRevertUserMessage}
+                  isRevertingCheckpoint={isRevertingCheckpoint}
+                  onImageExpand={onExpandTimelineImage}
+                  markdownCwd={gitCwd ?? undefined}
+                  resolvedTheme={resolvedTheme}
+                  timestampFormat={timestampFormat}
+                  workspaceRoot={activeWorkspaceRoot}
+                  skills={activeProviderSkills}
+                  onIsAtEndChange={onIsAtEndChange}
+                  composer={composerElement}
+                />
+              </div>
 
               {/* scroll to bottom pill — shown when user has scrolled away from the bottom */}
               {showScrollToBottom && (
-                <div className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5">
+                <div
+                  data-pipper-id="chat-view-scroll-to-bottom-region"
+                  className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5"
+                >
                   <button
                     type="button"
                     onClick={() => scrollToEnd(true)}
@@ -3541,25 +3575,29 @@ export default function ChatView(props: ChatViewProps) {
 
         {/* Plan sidebar */}
         {planSidebarOpen && !shouldUsePlanSidebarSheet ? (
-          <PlanSidebar
-            activePlan={activePlan}
-            activeProposedPlan={sidebarProposedPlan}
-            label={planSidebarLabel}
-            environmentId={environmentId}
-            markdownCwd={gitCwd ?? undefined}
-            workspaceRoot={activeWorkspaceRoot}
-            timestampFormat={timestampFormat}
-            skills={activeProviderSkills}
-            mode="sidebar"
-            onClose={closePlanSidebar}
-          />
+          <div data-pipper-id="chat-view-plan-sidebar-region" className="flex min-h-0">
+            <PlanSidebar
+              activePlan={activePlan}
+              activeProposedPlan={sidebarProposedPlan}
+              label={planSidebarLabel}
+              environmentId={environmentId}
+              markdownCwd={gitCwd ?? undefined}
+              workspaceRoot={activeWorkspaceRoot}
+              timestampFormat={timestampFormat}
+              skills={activeProviderSkills}
+              mode="sidebar"
+              onClose={closePlanSidebar}
+            />
+          </div>
         ) : null}
-        <ChatRightDockPanel
-          active={showInlineDiffPanel}
-          {...(showInlineDiffPanel ? { className: "rounded-tr-md" } : {})}
-        >
-          <ChatInlineDiffPanel mode="inline" />
-        </ChatRightDockPanel>
+        <div data-pipper-id="chat-view-right-dock-region" className="flex min-h-0 shrink-0">
+          <ChatRightDockPanel
+            active={showInlineDiffPanel}
+            {...(showInlineDiffPanel ? { className: "rounded-tr-md" } : {})}
+          >
+            <ChatInlineDiffPanel mode="inline" />
+          </ChatRightDockPanel>
+        </div>
       </div>
       {/* end horizontal flex container */}
 

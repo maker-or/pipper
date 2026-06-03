@@ -926,6 +926,7 @@ export function TerminalViewport({
 
   return (
     <div
+      data-pipper-id="thread-terminal-drawer"
       ref={containerRef}
       className="relative h-full w-full cursor-text overflow-hidden rounded-[4px] bg-[var(--surface-subtle)]"
       onPointerDownCapture={focusTerminal}
@@ -1255,6 +1256,7 @@ export default function ThreadTerminalDrawer({
 
   return (
     <aside
+      data-pipper-id="thread-terminal-drawer"
       className={`thread-terminal-drawer relative flex min-h-0 min-w-0 w-full flex-col overflow-hidden bg-[var(--surface-subtle)] p-2 rounded-t-lg ${
         layout === "panel" ? "min-h-0 flex-1 self-stretch" : "border-t border-border/80"
       }`}

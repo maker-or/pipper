@@ -71,6 +71,7 @@ export function AnimatedHeight({ children }: { readonly children: ReactNode }) {
 
   return (
     <div
+      data-pipper-id="animated-height"
       data-slot="animated-height"
       className="transition-[height] duration-200 ease-out motion-reduce:transition-none"
       style={

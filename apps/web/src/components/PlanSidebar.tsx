@@ -133,6 +133,7 @@ const PlanSidebar = memo(function PlanSidebar({
 
   return (
     <div
+      data-pipper-id="plan-sidebar"
       className={cn(
         "flex min-h-0 flex-col bg-[var(--surface-subtle)]",
         mode === "sidebar"

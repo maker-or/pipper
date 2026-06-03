@@ -1,0 +1,1490 @@
+[
+  {
+    "id": "animated-height",
+    "name": "Animated Height",
+    "location": "apps/web/src/components/AnimatedHeight.tsx",
+    "usedIn": ["apps/web/src/components/GitActionsControl.tsx"],
+    "children": []
+  },
+  {
+    "id": "branch-toolbar",
+    "name": "Branch Toolbar",
+    "location": "apps/web/src/components/BranchToolbar.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": [
+      "apps/web/src/components/BranchToolbarBranchSelector.tsx",
+      "apps/web/src/components/BranchToolbarEnvironmentSelector.tsx",
+      "apps/web/src/components/BranchToolbarEnvModeSelector.tsx"
+    ]
+  },
+  {
+    "id": "branch-toolbar-branch-selector",
+    "name": "Branch Toolbar Branch Selector",
+    "location": "apps/web/src/components/BranchToolbarBranchSelector.tsx",
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"],
+    "children": []
+  },
+  {
+    "id": "branch-toolbar-environment-selector",
+    "name": "Branch Toolbar Environment Selector",
+    "location": "apps/web/src/components/BranchToolbarEnvironmentSelector.tsx",
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"],
+    "children": []
+  },
+  {
+    "id": "branch-toolbar-env-mode-selector",
+    "name": "Branch Toolbar Env Mode Selector",
+    "location": "apps/web/src/components/BranchToolbarEnvModeSelector.tsx",
+    "usedIn": ["apps/web/src/components/BranchToolbar.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-right-dock-panel",
+    "name": "Chat Right Dock Panel",
+    "location": "apps/web/src/components/ChatRightDockPanel.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "command-palette-results",
+    "name": "Command Palette Results",
+    "location": "apps/web/src/components/CommandPaletteResults.tsx",
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-prompt-editor",
+    "name": "Composer Prompt Editor",
+    "location": "apps/web/src/components/ComposerPromptEditor.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": ["apps/web/src/components/chat/ComposerPendingTerminalContexts.tsx"]
+  },
+  {
+    "id": "diff-worker-pool-provider",
+    "name": "Diff Worker Pool Provider",
+    "location": "apps/web/src/components/DiffWorkerPoolProvider.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "evolution-onboarding",
+    "name": "Evolution Onboarding",
+    "location": "apps/web/src/components/EvolutionOnboarding.tsx",
+    "usedIn": ["apps/web/src/components/EvolutionSpace.tsx"],
+    "children": []
+  },
+  {
+    "id": "evolution-space",
+    "name": "Evolution Space",
+    "location": "apps/web/src/components/EvolutionSpace.tsx",
+    "usedIn": ["apps/web/src/components/NoActiveThreadState.tsx"],
+    "children": [
+      "apps/web/src/components/EvolutionOnboarding.tsx",
+      "apps/web/src/components/EvolutionUpdateBanner.tsx",
+      "apps/web/src/components/ImproveEvolutionActions.tsx"
+    ]
+  },
+  {
+    "id": "evolution-update-banner",
+    "name": "Evolution Update Banner",
+    "location": "apps/web/src/components/EvolutionUpdateBanner.tsx",
+    "usedIn": ["apps/web/src/components/EvolutionSpace.tsx"],
+    "children": []
+  },
+  {
+    "id": "improve-launch-transition",
+    "name": "Improve Launch Transition",
+    "location": "apps/web/src/components/ImproveLaunchTransition.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "no-active-thread-state",
+    "name": "No Active Thread State",
+    "location": "apps/web/src/components/NoActiveThreadState.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": ["apps/web/src/components/EvolutionSpace.tsx"]
+  },
+  {
+    "id": "plan-sidebar",
+    "name": "Plan Sidebar",
+    "location": "apps/web/src/components/PlanSidebar.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": ["apps/web/src/components/ChatMarkdown.tsx"]
+  },
+  {
+    "id": "pull-request-thread-dialog",
+    "name": "Pull Request Thread Dialog",
+    "location": "apps/web/src/components/PullRequestThreadDialog.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "right-panel-sheet",
+    "name": "Right Panel Sheet",
+    "location": "apps/web/src/components/RightPanelSheet.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar",
+    "name": "Sidebar",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/AppSidebarLayout.tsx"],
+    "children": [
+      "apps/web/src/components/ImproveLaunchTransition.tsx",
+      "apps/web/src/components/ProjectFavicon.tsx",
+      "apps/web/src/components/ThreadStatusIndicators.tsx"
+    ]
+  },
+  {
+    "id": "terminal-workspace",
+    "name": "Terminal Workspace",
+    "location": "apps/web/src/components/TerminalWorkspace.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": ["apps/web/src/components/ThreadTerminalDrawer.tsx"]
+  },
+  {
+    "id": "pairing-route-surface",
+    "name": "Pairing Route Surface",
+    "location": "apps/web/src/components/auth/PairingRouteSurface.tsx",
+    "usedIn": ["apps/web/src/routes/pair.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer",
+    "name": "Chat Composer",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": [
+      "apps/web/src/components/ComposerPromptEditor.tsx",
+      "apps/web/src/components/chat/ComposerCommandMenu.tsx",
+      "apps/web/src/components/chat/ComposerPendingApprovalActions.tsx",
+      "apps/web/src/components/chat/ComposerPendingApprovalPanel.tsx",
+      "apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx",
+      "apps/web/src/components/chat/ComposerPlanFollowUpBanner.tsx",
+      "apps/web/src/components/chat/ComposerPrimaryActions.tsx",
+      "apps/web/src/components/chat/ContextWindowMeter.tsx",
+      "apps/web/src/components/chat/CompactComposerControlsMenu.tsx",
+      "apps/web/src/components/chat/ProviderModelPicker.tsx"
+    ]
+  },
+  {
+    "id": "chat-header",
+    "name": "Chat Header",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": [
+      "apps/web/src/components/chat/ThreadRunningIndicator.tsx",
+      "apps/web/src/components/ImproveEvolutionActions.tsx"
+    ]
+  },
+  {
+    "id": "composer-banner-stack",
+    "name": "Composer Banner Stack",
+    "location": "apps/web/src/components/chat/ComposerBannerStack.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-command-menu",
+    "name": "Composer Command Menu",
+    "location": "apps/web/src/components/chat/ComposerCommandMenu.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-pending-approval-actions",
+    "name": "Composer Pending Approval Actions",
+    "location": "apps/web/src/components/chat/ComposerPendingApprovalActions.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-pending-approval-panel",
+    "name": "Composer Pending Approval Panel",
+    "location": "apps/web/src/components/chat/ComposerPendingApprovalPanel.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-pending-terminal-contexts",
+    "name": "Composer Pending Terminal Contexts",
+    "location": "apps/web/src/components/chat/ComposerPendingTerminalContexts.tsx",
+    "usedIn": ["apps/web/src/components/ComposerPromptEditor.tsx"],
+    "children": ["apps/web/src/components/chat/TerminalContextInlineChip.tsx"]
+  },
+  {
+    "id": "composer-pending-user-input-panel",
+    "name": "Composer Pending User Input Panel",
+    "location": "apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-plan-follow-up-banner",
+    "name": "Composer Plan Follow Up Banner",
+    "location": "apps/web/src/components/chat/ComposerPlanFollowUpBanner.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "composer-primary-actions",
+    "name": "Composer Primary Actions",
+    "location": "apps/web/src/components/chat/ComposerPrimaryActions.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-meter",
+    "name": "Context Window Meter",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-stat-label",
+    "name": "Diff Stat Label",
+    "location": "apps/web/src/components/chat/DiffStatLabel.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChangedFilesTree.tsx"],
+    "children": []
+  },
+  {
+    "id": "expanded-image-dialog",
+    "name": "Expanded Image Dialog",
+    "location": "apps/web/src/components/chat/ExpandedImageDialog.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "message-copy-button",
+    "name": "Message Copy Button",
+    "location": "apps/web/src/components/chat/MessageCopyButton.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-list-row",
+    "name": "Model List Row",
+    "location": "apps/web/src/components/chat/ModelListRow.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-content",
+    "name": "Model Picker Content",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ProviderModelPicker.tsx"],
+    "children": [
+      "apps/web/src/components/chat/ModelListRow.tsx",
+      "apps/web/src/components/chat/ModelPickerSidebar.tsx"
+    ]
+  },
+  {
+    "id": "model-picker-sidebar",
+    "name": "Model Picker Sidebar",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": [
+      "apps/web/src/components/Icons.tsx",
+      "apps/web/src/components/chat/ProviderInstanceIcon.tsx"
+    ]
+  },
+  {
+    "id": "proposed-plan-card",
+    "name": "Proposed Plan Card",
+    "location": "apps/web/src/components/chat/ProposedPlanCard.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": ["apps/web/src/components/ChatMarkdown.tsx"]
+  },
+  {
+    "id": "provider-status-banner",
+    "name": "Provider Status Banner",
+    "location": "apps/web/src/components/chat/ProviderStatusBanner.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "skill-inline-text",
+    "name": "Skill Inline Text",
+    "location": "apps/web/src/components/chat/SkillInlineText.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "thread-content-transition",
+    "name": "Thread Content Transition",
+    "location": "apps/web/src/components/chat/ThreadContentTransition.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "thread-error-banner",
+    "name": "Thread Error Banner",
+    "location": "apps/web/src/components/chat/ThreadErrorBanner.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "thread-running-indicator",
+    "name": "Thread Running Indicator",
+    "location": "apps/web/src/components/chat/ThreadRunningIndicator.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "traits-picker",
+    "name": "Traits Picker",
+    "location": "apps/web/src/components/chat/TraitsPicker.tsx",
+    "usedIn": ["apps/web/src/components/chat/CompactComposerControlsMenu.browser.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-shell",
+    "name": "Diff Panel Shell",
+    "location": "apps/web/src/components/DiffPanelShell.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx", "apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "git-actions-control",
+    "name": "Git Actions Control",
+    "location": "apps/web/src/components/GitActionsControl.tsx",
+    "usedIn": [
+      "apps/web/src/components/DiffPanel.tsx",
+      "apps/web/src/components/GitActionsControl.browser.tsx"
+    ],
+    "children": ["apps/web/src/components/AnimatedHeight.tsx"]
+  },
+  {
+    "id": "icons",
+    "name": "Icons",
+    "location": "apps/web/src/components/Icons.tsx",
+    "usedIn": [
+      "apps/web/src/components/CommandPalette.tsx",
+      "apps/web/src/components/chat/ModelPickerSidebar.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "improve-evolution-actions",
+    "name": "Improve Evolution Actions",
+    "location": "apps/web/src/components/ImproveEvolutionActions.tsx",
+    "usedIn": [
+      "apps/web/src/components/EvolutionSpace.tsx",
+      "apps/web/src/components/chat/ChatHeader.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "project-favicon",
+    "name": "Project Favicon",
+    "location": "apps/web/src/components/ProjectFavicon.tsx",
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx", "apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "thread-status-indicators",
+    "name": "Thread Status Indicators",
+    "location": "apps/web/src/components/ThreadStatusIndicators.tsx",
+    "usedIn": ["apps/web/src/components/CommandPalette.tsx", "apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "thread-terminal-drawer",
+    "name": "Thread Terminal Drawer",
+    "location": "apps/web/src/components/ThreadTerminalDrawer.tsx",
+    "usedIn": [
+      "apps/web/src/components/TerminalWorkspace.tsx",
+      "apps/web/src/components/ThreadTerminalDrawer.browser.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "compact-composer-controls-menu",
+    "name": "Compact Composer Controls Menu",
+    "location": "apps/web/src/components/chat/CompactComposerControlsMenu.tsx",
+    "usedIn": [
+      "apps/web/src/components/chat/ChatComposer.tsx",
+      "apps/web/src/components/chat/CompactComposerControlsMenu.browser.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "messages-timeline",
+    "name": "Messages Timeline",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": [
+      "apps/web/src/components/ChatView.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.browser.tsx"
+    ],
+    "children": [
+      "apps/web/src/components/chat/MessageCopyButton.tsx",
+      "apps/web/src/components/chat/ProposedPlanCard.tsx",
+      "apps/web/src/components/chat/SkillInlineText.tsx",
+      "apps/web/src/components/chat/ThreadContentTransition.tsx",
+      "apps/web/src/components/chat/TerminalContextInlineChip.tsx",
+      "apps/web/src/components/ChatMarkdown.tsx"
+    ]
+  },
+  {
+    "id": "provider-instance-icon",
+    "name": "Provider Instance Icon",
+    "location": "apps/web/src/components/chat/ProviderInstanceIcon.tsx",
+    "usedIn": [
+      "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+      "apps/web/src/components/chat/ProviderModelPicker.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "provider-model-picker",
+    "name": "Provider Model Picker",
+    "location": "apps/web/src/components/chat/ProviderModelPicker.tsx",
+    "usedIn": [
+      "apps/web/src/components/chat/ChatComposer.tsx",
+      "apps/web/src/components/chat/ProviderModelPicker.browser.tsx"
+    ],
+    "children": [
+      "apps/web/src/components/chat/ModelPickerContent.tsx",
+      "apps/web/src/components/chat/ProviderInstanceIcon.tsx"
+    ]
+  },
+  {
+    "id": "terminal-context-inline-chip",
+    "name": "Terminal Context Inline Chip",
+    "location": "apps/web/src/components/chat/TerminalContextInlineChip.tsx",
+    "usedIn": [
+      "apps/web/src/components/chat/ComposerPendingTerminalContexts.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "chat-markdown",
+    "name": "Chat Markdown",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": [
+      "apps/web/src/components/ChatMarkdown.browser.tsx",
+      "apps/web/src/components/PlanSidebar.tsx",
+      "apps/web/src/components/chat/MessagesTimeline.tsx",
+      "apps/web/src/components/chat/ProposedPlanCard.tsx"
+    ],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-heading",
+    "name": "Chat Markdown Heading",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-paragraph",
+    "name": "Chat Markdown Paragraph",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-link",
+    "name": "Chat Markdown Link",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-file-link",
+    "name": "Chat Markdown File Link",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-list",
+    "name": "Chat Markdown List",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-list-item",
+    "name": "Chat Markdown List Item",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-table",
+    "name": "Chat Markdown Table",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-table-head",
+    "name": "Chat Markdown Table Head",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-table-body",
+    "name": "Chat Markdown Table Body",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-table-row",
+    "name": "Chat Markdown Table Row",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-table-cell",
+    "name": "Chat Markdown Table Cell",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-blockquote",
+    "name": "Chat Markdown Blockquote",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-code-block",
+    "name": "Chat Markdown Code Block",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-markdown-code",
+    "name": "Chat Markdown Code",
+    "location": "apps/web/src/components/ChatMarkdown.tsx",
+    "usedIn": ["apps/web/src/components/ChatMarkdown.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-header",
+    "name": "Diff Panel Header",
+    "location": "apps/web/src/components/DiffPanelShell.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanelShell.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-content",
+    "name": "Diff Panel Content",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-toolbar",
+    "name": "Diff Panel Toolbar",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-stats",
+    "name": "Diff Panel Stats",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-view-toggle",
+    "name": "Diff Panel View Toggle",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-collapse-toggle",
+    "name": "Diff Panel Collapse Toggle",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-viewport",
+    "name": "Diff Panel Viewport",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file-list",
+    "name": "Diff Panel File List",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file",
+    "name": "Diff Panel File",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file-header",
+    "name": "Diff Panel File Header",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file-collapse-toggle",
+    "name": "Diff Panel File Collapse Toggle",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file-title",
+    "name": "Diff Panel File Title",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-file-stats",
+    "name": "Diff Panel File Stats",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-raw-reason",
+    "name": "Diff Panel Raw Reason",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "diff-panel-raw-patch",
+    "name": "Diff Panel Raw Patch",
+    "location": "apps/web/src/components/DiffPanel.tsx",
+    "usedIn": ["apps/web/src/components/DiffPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-tab-strip",
+    "name": "Chat Header Tab Strip",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-create-tab-button",
+    "name": "Chat Header Create Tab Button",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-thread-tab",
+    "name": "Chat Header Thread Tab",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-terminal-tab",
+    "name": "Chat Header Terminal Tab",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-terminal-tab-button",
+    "name": "Chat Header Terminal Tab Button",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-header-tab-close-button",
+    "name": "Chat Header Tab Close Button",
+    "location": "apps/web/src/components/chat/ChatHeader.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatHeader.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-frame",
+    "name": "Chat Composer Frame",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-surface",
+    "name": "Chat Composer Surface",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-pending-panel",
+    "name": "Chat Composer Pending Panel",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-collapsed-row",
+    "name": "Chat Composer Collapsed Row",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-input-row",
+    "name": "Chat Composer Input Row",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-editor-area",
+    "name": "Chat Composer Editor Area",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-primary-action-area",
+    "name": "Chat Composer Primary Action Area",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-attachments",
+    "name": "Chat Composer Attachments",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-composer-attachment",
+    "name": "Chat Composer Attachment",
+    "location": "apps/web/src/components/chat/ChatComposer.tsx",
+    "usedIn": ["apps/web/src/components/chat/ChatComposer.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-content",
+    "name": "Sidebar Content",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-section",
+    "name": "Sidebar Project Section",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-section-header",
+    "name": "Sidebar Project Section Header",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-list",
+    "name": "Sidebar Project List",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-row",
+    "name": "Sidebar Project Row",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-button",
+    "name": "Sidebar Project Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-project-title-area",
+    "name": "Sidebar Project Title Area",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-new-thread-button",
+    "name": "Sidebar New Thread Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-thread-list",
+    "name": "Sidebar Thread List",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-thread-row",
+    "name": "Sidebar Thread Row",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-thread-title-area",
+    "name": "Sidebar Thread Title Area",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-thread-meta-area",
+    "name": "Sidebar Thread Meta Area",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-compact-rail",
+    "name": "Sidebar Compact Rail",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-compact-project-list",
+    "name": "Sidebar Compact Project List",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-compact-project-button",
+    "name": "Sidebar Compact Project Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-improve-button",
+    "name": "Sidebar Improve Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-add-project-button",
+    "name": "Sidebar Add Project Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-footer",
+    "name": "Sidebar Footer",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "sidebar-settings-button",
+    "name": "Sidebar Settings Button",
+    "location": "apps/web/src/components/Sidebar.tsx",
+    "usedIn": ["apps/web/src/components/Sidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-row-shell",
+    "name": "Messages Timeline Row Shell",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-empty-state",
+    "name": "Messages Timeline Empty State",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-row",
+    "name": "Messages Timeline Row",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-message",
+    "name": "Messages Timeline User Message",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-message-container",
+    "name": "Messages Timeline User Message Container",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-message-bubble",
+    "name": "Messages Timeline User Message Bubble",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-attachments",
+    "name": "Messages Timeline User Attachments",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-attachment",
+    "name": "Messages Timeline User Attachment",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-message-body",
+    "name": "Messages Timeline User Message Body",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-user-message-actions",
+    "name": "Messages Timeline User Message Actions",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-revert-button",
+    "name": "Messages Timeline Revert Button",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-assistant-message",
+    "name": "Messages Timeline Assistant Message",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-assistant-message-actions",
+    "name": "Messages Timeline Assistant Message Actions",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-assistant-copy-action",
+    "name": "Messages Timeline Assistant Copy Action",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-completion-summary",
+    "name": "Messages Timeline Completion Summary",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-completion-accordion",
+    "name": "Messages Timeline Completion Accordion",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-completion-toggle",
+    "name": "Messages Timeline Completion Toggle",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-completion-row",
+    "name": "Messages Timeline Completion Row",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-proposed-plan-row",
+    "name": "Messages Timeline Proposed Plan Row",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-working-row",
+    "name": "Messages Timeline Working Row",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-working-indicator",
+    "name": "Messages Timeline Working Indicator",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-group",
+    "name": "Messages Timeline Work Group",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-group-header",
+    "name": "Messages Timeline Work Group Header",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-entry",
+    "name": "Messages Timeline Work Entry",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-entry-icon",
+    "name": "Messages Timeline Work Entry Icon",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-entry-body",
+    "name": "Messages Timeline Work Entry Body",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-entry-files",
+    "name": "Messages Timeline Work Entry Files",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "messages-timeline-work-entry-file-chip",
+    "name": "Messages Timeline Work Entry File Chip",
+    "location": "apps/web/src/components/chat/MessagesTimeline.tsx",
+    "usedIn": ["apps/web/src/components/chat/MessagesTimeline.tsx"],
+    "children": []
+  },
+  {
+    "id": "app-sidebar-layout",
+    "name": "App Sidebar Layout",
+    "location": "apps/web/src/components/AppSidebarLayout.tsx",
+    "usedIn": ["apps/web/src/components/AppSidebarLayout.tsx"],
+    "children": []
+  },
+  {
+    "id": "app-sidebar-shell",
+    "name": "App Sidebar Shell",
+    "location": "apps/web/src/components/AppSidebarLayout.tsx",
+    "usedIn": ["apps/web/src/components/AppSidebarLayout.tsx"],
+    "children": []
+  },
+  {
+    "id": "app-main-shell",
+    "name": "App Main Shell",
+    "location": "apps/web/src/components/AppSidebarLayout.tsx",
+    "usedIn": ["apps/web/src/components/AppSidebarLayout.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-root",
+    "name": "Chat View Root",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-titlebar",
+    "name": "Chat View Titlebar",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-titlebar-content",
+    "name": "Chat View Titlebar Content",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-tabbar",
+    "name": "Chat View Tabbar",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-body",
+    "name": "Chat View Body",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-primary-panel",
+    "name": "Chat View Primary Panel",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-conversation-region",
+    "name": "Chat View Conversation Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-timeline-region",
+    "name": "Chat View Timeline Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-composer-region",
+    "name": "Chat View Composer Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-composer-banner-region",
+    "name": "Chat View Composer Banner Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-composer-container",
+    "name": "Chat View Composer Container",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-terminal-region",
+    "name": "Chat View Terminal Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-scroll-to-bottom-region",
+    "name": "Chat View Scroll To Bottom Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-plan-sidebar-region",
+    "name": "Chat View Plan Sidebar Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-view-right-dock-region",
+    "name": "Chat View Right Dock Region",
+    "location": "apps/web/src/components/ChatView.tsx",
+    "usedIn": ["apps/web/src/components/ChatView.tsx"],
+    "children": []
+  },
+  {
+    "id": "chat-right-dock-surface",
+    "name": "Chat Right Dock Surface",
+    "location": "apps/web/src/components/ChatRightDockPanel.tsx",
+    "usedIn": ["apps/web/src/components/ChatRightDockPanel.tsx"],
+    "children": []
+  },
+  {
+    "id": "terminal-workspace-panel",
+    "name": "Terminal Workspace Panel",
+    "location": "apps/web/src/components/TerminalWorkspace.tsx",
+    "usedIn": ["apps/web/src/components/TerminalWorkspace.tsx"],
+    "children": []
+  },
+  {
+    "id": "provider-model-picker-trigger",
+    "name": "Provider Model Picker Trigger",
+    "location": "apps/web/src/components/chat/ProviderModelPicker.tsx",
+    "usedIn": ["apps/web/src/components/chat/ProviderModelPicker.tsx"],
+    "children": []
+  },
+  {
+    "id": "provider-model-picker-popup",
+    "name": "Provider Model Picker Popup",
+    "location": "apps/web/src/components/chat/ProviderModelPicker.tsx",
+    "usedIn": ["apps/web/src/components/chat/ProviderModelPicker.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-shell",
+    "name": "Model Picker Shell",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-locked-header",
+    "name": "Model Picker Locked Header",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-main",
+    "name": "Model Picker Main",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-search",
+    "name": "Model Picker Search",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-list-region",
+    "name": "Model Picker List Region",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-list",
+    "name": "Model Picker List",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-overlay",
+    "name": "Model Picker Options Overlay",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-panel",
+    "name": "Model Picker Options Panel",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-header",
+    "name": "Model Picker Options Header",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-content",
+    "name": "Model Picker Options Content",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-select-group",
+    "name": "Model Picker Options Select Group",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-select-list",
+    "name": "Model Picker Options Select List",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-select-option",
+    "name": "Model Picker Options Select Option",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-boolean-row",
+    "name": "Model Picker Options Boolean Row",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-options-footer",
+    "name": "Model Picker Options Footer",
+    "location": "apps/web/src/components/chat/ModelPickerContent.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerContent.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-sidebar-rail",
+    "name": "Model Picker Sidebar Rail",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerSidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-sidebar-favorites-section",
+    "name": "Model Picker Sidebar Favorites Section",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerSidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-sidebar-favorites-button",
+    "name": "Model Picker Sidebar Favorites Button",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerSidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-sidebar-instance-item",
+    "name": "Model Picker Sidebar Instance Item",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerSidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-picker-sidebar-coming-soon-button",
+    "name": "Model Picker Sidebar Coming Soon Button",
+    "location": "apps/web/src/components/chat/ModelPickerSidebar.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelPickerSidebar.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-list-row-favorite-action",
+    "name": "Model List Row Favorite Action",
+    "location": "apps/web/src/components/chat/ModelListRow.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelListRow.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-list-row-content",
+    "name": "Model List Row Content",
+    "location": "apps/web/src/components/chat/ModelListRow.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelListRow.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-list-row-title-line",
+    "name": "Model List Row Title Line",
+    "location": "apps/web/src/components/chat/ModelListRow.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelListRow.tsx"],
+    "children": []
+  },
+  {
+    "id": "model-list-row-provider-line",
+    "name": "Model List Row Provider Line",
+    "location": "apps/web/src/components/chat/ModelListRow.tsx",
+    "usedIn": ["apps/web/src/components/chat/ModelListRow.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-trigger",
+    "name": "Context Window Trigger",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-ring",
+    "name": "Context Window Ring",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-popup",
+    "name": "Context Window Popup",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-details",
+    "name": "Context Window Details",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-label",
+    "name": "Context Window Label",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-token-summary",
+    "name": "Context Window Token Summary",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-total-processed",
+    "name": "Context Window Total Processed",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  },
+  {
+    "id": "context-window-compact-note",
+    "name": "Context Window Compact Note",
+    "location": "apps/web/src/components/chat/ContextWindowMeter.tsx",
+    "usedIn": ["apps/web/src/components/chat/ContextWindowMeter.tsx"],
+    "children": []
+  }
+]

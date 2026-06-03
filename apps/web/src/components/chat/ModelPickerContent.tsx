@@ -698,8 +698,9 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
   }, [filteredModelKeys]);
 
   return (
-    <TooltipProvider delay={0}>
+    <TooltipProvider data-pipper-id="model-picker-content" delay={0}>
       <div
+        data-pipper-id="model-picker-shell"
         className={cn(
           "relative flex h-screen max-h-96 w-screen max-w-100 overflow-hidden rounded-none border bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-none before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
           isLocked && !showLockedInstanceSidebar ? "flex-col" : "flex-row",
@@ -707,7 +708,10 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
       >
         {/* Locked provider header (only shown in locked mode) */}
         {isLocked && !showLockedInstanceSidebar && LockedProviderIcon && lockedHeaderLabel && (
-          <div className="flex items-center gap-2 px-4 py-3 border-b">
+          <div
+            data-pipper-id="model-picker-locked-header"
+            className="flex items-center gap-2 px-4 py-3 border-b"
+          >
             <LockedProviderIcon className="size-5 shrink-0" />
             <span className="font-medium text-sm">{lockedHeaderLabel}</span>
           </div>
@@ -745,13 +749,17 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
           }}
         >
           <div
+            data-pipper-id="model-picker-main"
             className={cn(
               "flex min-h-0 flex-1 flex-col overflow-hidden",
               isLocked && !showLockedInstanceSidebar ? "min-w-0" : showSidebar && "border-l",
             )}
           >
             {/* Search bar */}
-            <div className="model-picker-search-container border-b px-3 py-2">
+            <div
+              data-pipper-id="model-picker-search"
+              className="model-picker-search-container border-b px-3 py-2"
+            >
               <ComboboxInput
                 ref={searchInputRef}
                 className="[&_input]:font-sans rounded-none"
@@ -790,10 +798,14 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
 
             {/* Model list */}
             <div
+              data-pipper-id="model-picker-list-region"
               ref={listRegionRef}
               className="relative min-h-0 flex-1 before:pointer-events-none before:absolute before:inset-0 before:bg-muted/40"
             >
-              <ComboboxList className="model-picker-list size-full divide-y px-2 py-1">
+              <ComboboxList
+                data-pipper-id="model-picker-list"
+                className="model-picker-list size-full divide-y px-2 py-1"
+              >
                 {filteredModelKeys.map((modelKey, index) => {
                   const model = filteredModelByKey.get(modelKey);
                   if (!model) {
@@ -828,13 +840,20 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
 
         {/* Thinking overlay panel */}
         <div
+          data-pipper-id="model-picker-options-overlay"
           ref={thinkingPanelRef}
           className="absolute inset-0 z-50 flex flex-col bg-popover translate-x-full opacity-0 pointer-events-none"
         >
           {selectedModelForThinking && (
-            <div className="flex flex-col h-full w-full bg-popover text-popover-foreground">
+            <div
+              data-pipper-id="model-picker-options-panel"
+              className="flex flex-col h-full w-full bg-popover text-popover-foreground"
+            >
               {/* Header */}
-              <div className="flex items-center gap-2 border-b px-4 py-3 bg-muted/20">
+              <div
+                data-pipper-id="model-picker-options-header"
+                className="flex items-center gap-2 border-b px-4 py-3 bg-muted/20"
+              >
                 <button
                   onClick={() => setSelectedModelForThinking(null)}
                   className="p-1 -ml-1 rounded-none text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -851,20 +870,31 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+              <div
+                data-pipper-id="model-picker-options-content"
+                className="flex-1 overflow-y-auto px-4 py-3 space-y-4"
+              >
                 {descriptors.map((descriptor) => {
                   if (descriptor.type === "select") {
                     return (
-                      <div key={descriptor.id} className="space-y-1.5">
+                      <div
+                        data-pipper-id="model-picker-options-select-group"
+                        key={descriptor.id}
+                        className="space-y-1.5"
+                      >
                         <span className="text-xs font-medium text-muted-foreground">
                           {descriptor.label}
                         </span>
-                        <div className="grid grid-cols-1 gap-1">
+                        <div
+                          data-pipper-id="model-picker-options-select-list"
+                          className="grid grid-cols-1 gap-1"
+                        >
                           {descriptor.options.map((option) => {
                             const isSelected =
                               getProviderOptionCurrentValue(descriptor) === option.id;
                             return (
                               <button
+                                data-pipper-id="model-picker-options-select-option"
                                 key={option.id}
                                 onClick={() => {
                                   const nextDescriptors = replaceDescriptorCurrentValue(
@@ -908,6 +938,7 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
                     const isChecked = descriptor.currentValue === true;
                     return (
                       <div
+                        data-pipper-id="model-picker-options-boolean-row"
                         key={descriptor.id}
                         className="flex items-center justify-between p-3 rounded-none border border-border/60 bg-transparent"
                       >
@@ -935,7 +966,10 @@ export const ModelPickerContent = memo(function ModelPickerContent(props: {
               </div>
 
               {/* Footer */}
-              <div className="border-t p-3 bg-muted/10 flex items-center justify-end gap-2">
+              <div
+                data-pipper-id="model-picker-options-footer"
+                className="border-t p-3 bg-muted/10 flex items-center justify-end gap-2"
+              >
                 <Button
                   variant="ghost"
                   size="sm"

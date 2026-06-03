@@ -265,6 +265,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     ({ item }: { item: MessagesTimelineRow }) => (
       <ThreadContentTransition className="block w-full min-w-0">
         <div
+          data-pipper-id="messages-timeline-row-shell"
           className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden"
           data-timeline-root="true"
         >
@@ -287,8 +288,14 @@ export const MessagesTimeline = memo(function MessagesTimeline({
 
   if (rows.length === 0 && !isWorking) {
     return (
-      <div className={cn("h-full overflow-y-auto px-3 sm:px-5", HIDE_SCROLLBAR_CLASS_NAME)}>
-        <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col pt-4 pb-8">
+      <div
+        data-pipper-id="messages-timeline"
+        className={cn("h-full overflow-y-auto px-3 sm:px-5", HIDE_SCROLLBAR_CLASS_NAME)}
+      >
+        <div
+          data-pipper-id="messages-timeline-empty-state"
+          className="mx-auto flex min-h-full w-full max-w-6xl flex-col pt-4 pb-8"
+        >
           {composer}
         </div>
       </div>
@@ -296,7 +303,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   }
 
   return (
-    <TimelineRowCtx.Provider value={sharedState}>
+    <TimelineRowCtx.Provider data-pipper-id="messages-timeline" value={sharedState}>
       <TimelineRowActivityCtx.Provider value={activityState}>
         <LegendList<MessagesTimelineRow>
           ref={listRef}
@@ -381,6 +388,7 @@ const TimelineRowContent = memo(function TimelineRowContent({ row }: { row: Time
 
   return (
     <div
+      data-pipper-id="messages-timeline-row"
       ref={rowRef}
       className={cn(
         "pb-4",
@@ -410,14 +418,24 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
   const canRevertAgentWork = typeof row.revertTurnCount === "number";
 
   return (
-    <div className="flex justify-start">
-      <div className="group relative max-w-[min(42rem,calc(100%-0.5rem))] px-1 py-1">
-        <div className="inline-block max-w-full rounded-xl border-2 border-border/80 bg-[var(--surface-elevated)] px-3 py-3 align-top">
+    <div data-pipper-id="messages-timeline-user-message" className="flex justify-start">
+      <div
+        data-pipper-id="messages-timeline-user-message-container"
+        className="group relative max-w-[min(42rem,calc(100%-0.5rem))] px-1 py-1"
+      >
+        <div
+          data-pipper-id="messages-timeline-user-message-bubble"
+          className="inline-block max-w-full rounded-xl border-2 border-border/80 bg-[var(--surface-elevated)] px-3 py-3 align-top"
+        >
           <div className="opacity-60">
             {userImages.length > 0 && (
-              <div className="mb-2 grid max-w-[420px] grid-cols-2 gap-2">
+              <div
+                data-pipper-id="messages-timeline-user-attachments"
+                className="mb-2 grid max-w-[420px] grid-cols-2 gap-2"
+              >
                 {userImages.map((image: NonNullable<TimelineMessage["attachments"]>[number]) => (
                   <div
+                    data-pipper-id="messages-timeline-user-attachment"
                     key={image.id}
                     className="overflow-hidden rounded-lg border border-border/80 bg-background/70"
                   >
@@ -458,7 +476,10 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
             )}
           </div>
         </div>
-        <div className="mt-1.5 flex items-center justify-end gap-2">
+        <div
+          data-pipper-id="messages-timeline-user-message-actions"
+          className="mt-1.5 flex items-center justify-end gap-2"
+        >
           <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
             {displayedUserMessage.copyText && (
               <MessageCopyButton text={displayedUserMessage.copyText} />
@@ -477,6 +498,7 @@ function RevertUserMessageButton({ messageId }: { messageId: MessageId }) {
 
   return (
     <Button
+      data-pipper-id="messages-timeline-revert-button"
       type="button"
       size="xs"
       variant="outline"
@@ -501,14 +523,17 @@ function AssistantTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "mess
           completionSummary={row.completionSummary}
         />
       )}
-      <div className="min-w-0 px-1 py-0.5">
+      <div data-pipper-id="messages-timeline-assistant-message" className="min-w-0 px-1 py-0.5">
         <ChatMarkdown
           text={messageText}
           cwd={ctx.markdownCwd}
           isStreaming={Boolean(row.message.streaming)}
           skills={ctx.skills}
         />
-        <div className="mt-1.5 flex items-center gap-2">
+        <div
+          data-pipper-id="messages-timeline-assistant-message-actions"
+          className="mt-1.5 flex items-center gap-2"
+        >
           <AssistantCopyButton row={row} />
         </div>
       </div>
@@ -532,12 +557,20 @@ function CompletionAccordion({
   const summaryText = completionSummary ?? "Completed";
 
   if (!hasTurnRows) {
-    return <div className="my-2 px-1 py-1 text-xs text-muted-foreground/50">{summaryText}</div>;
+    return (
+      <div
+        data-pipper-id="messages-timeline-completion-summary"
+        className="my-2 px-1 py-1 text-xs text-muted-foreground/50"
+      >
+        {summaryText}
+      </div>
+    );
   }
 
   return (
-    <div className="my-2">
+    <div data-pipper-id="messages-timeline-completion-accordion" className="my-2">
       <button
+        data-pipper-id="messages-timeline-completion-toggle"
         type="button"
         className="flex items-center gap-1.5 rounded-md px-1 py-1 text-xs text-muted-foreground/55 transition-colors duration-150 hover:text-muted-foreground/80"
         onClick={() => setIsExpanded((v) => !v)}
@@ -581,7 +614,7 @@ function CompletionAccordionRow({ row }: { row: MessagesTimelineRow }) {
     const text = row.message.text || "";
     if (text.trim().length === 0) return null;
     return (
-      <div className="min-w-0 px-1 py-0.5">
+      <div data-pipper-id="messages-timeline-completion-row" className="min-w-0 px-1 py-0.5">
         <ChatMarkdown text={text} cwd={ctx.markdownCwd} skills={ctx.skills} />
       </div>
     );
@@ -589,7 +622,7 @@ function CompletionAccordionRow({ row }: { row: MessagesTimelineRow }) {
 
   if (row.kind === "proposed-plan") {
     return (
-      <div className="min-w-0 px-1 py-0.5">
+      <div data-pipper-id="messages-timeline-completion-row" className="min-w-0 px-1 py-0.5">
         <ProposedPlanCard
           planMarkdown={row.proposedPlan.planMarkdown}
           environmentId={ctx.activeThreadEnvironmentId}
@@ -616,7 +649,10 @@ function AssistantCopyButton({ row }: { row: Extract<TimelineRow, { kind: "messa
   }
 
   return (
-    <div className="flex items-center opacity-0 transition-opacity duration-200  group-hover/assistant:opacity-100">
+    <div
+      data-pipper-id="messages-timeline-assistant-copy-action"
+      className="flex items-center opacity-0 transition-opacity duration-200  group-hover/assistant:opacity-100"
+    >
       <MessageCopyButton
         text={assistantCopyState.text ?? ""}
         size="icon-xs"
@@ -635,7 +671,7 @@ function ProposedPlanTimelineRow({
   const ctx = use(TimelineRowCtx);
 
   return (
-    <div className="min-w-0 px-1 py-0.5">
+    <div data-pipper-id="messages-timeline-proposed-plan-row" className="min-w-0 px-1 py-0.5">
       <ProposedPlanCard
         planMarkdown={row.proposedPlan.planMarkdown}
         environmentId={ctx.activeThreadEnvironmentId}
@@ -649,8 +685,11 @@ function ProposedPlanTimelineRow({
 
 function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "working" }> }) {
   return (
-    <div className="py-0.5 pl-1.5">
-      <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground/70">
+    <div data-pipper-id="messages-timeline-working-row" className="py-0.5 pl-1.5">
+      <div
+        data-pipper-id="messages-timeline-working-indicator"
+        className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground/70"
+      >
         <span className="inline-flex items-center gap-[3px]">
           <span className="h-1 w-1 rounded-full bg-muted-foreground/30 animate-pulse" />
           <span className="h-1 w-1 rounded-full bg-muted-foreground/30 animate-pulse [animation-delay:200ms]" />
@@ -718,9 +757,10 @@ const WorkGroupSection = memo(function WorkGroupSection({
     : "rounded-xl border border-border/45 bg-card/25 px-2 py-1.5";
 
   return (
-    <div className={containerClassName}>
+    <div data-pipper-id="messages-timeline-work-group" className={containerClassName}>
       {showHeader && (
         <div
+          data-pipper-id="messages-timeline-work-group-header"
           className={cn(
             "flex items-center justify-between gap-2 px-0.5",
             visibleEntries.length > 0 ? "mb-2" : "",
@@ -838,7 +878,10 @@ const UserMessageBody = memo(function UserMessageBody(props: {
         }
 
         return (
-          <div className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground">
+          <div
+            data-pipper-id="messages-timeline-user-message-body"
+            className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground"
+          >
             {inlineNodes}
           </div>
         );
@@ -870,7 +913,10 @@ const UserMessageBody = memo(function UserMessageBody(props: {
     }
 
     return (
-      <div className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground">
+      <div
+        data-pipper-id="messages-timeline-user-message-body"
+        className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground"
+      >
         {inlineNodes}
       </div>
     );
@@ -881,7 +927,10 @@ const UserMessageBody = memo(function UserMessageBody(props: {
   }
 
   return (
-    <div className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground">
+    <div
+      data-pipper-id="messages-timeline-user-message-body"
+      className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground"
+    >
       <SkillInlineText text={props.text} skills={props.skills} />
     </div>
   );
@@ -1107,7 +1156,10 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
   );
 
   return (
-    <div className={cn(inlineToolStyle ? "px-0 py-0" : "rounded-lg px-1 py-1")}>
+    <div
+      data-pipper-id="messages-timeline-work-entry"
+      className={cn(inlineToolStyle ? "px-0 py-0" : "rounded-lg px-1 py-1")}
+    >
       <div
         className={cn(
           "flex items-center gap-2 transition-[opacity,translate] duration-200",
@@ -1115,6 +1167,7 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
         )}
       >
         <span
+          data-pipper-id="messages-timeline-work-entry-icon"
           className={cn(
             "flex shrink-0 items-center justify-center",
             inlineToolStyle ? "size-6 text-muted-foreground/42" : "size-5",
@@ -1123,7 +1176,10 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
         >
           <EntryIcon className={inlineToolStyle ? "size-4" : "size-3"} />
         </span>
-        <div className="min-w-0 flex-1 overflow-hidden">
+        <div
+          data-pipper-id="messages-timeline-work-entry-body"
+          className="min-w-0 flex-1 overflow-hidden"
+        >
           {rawCommand ? (
             <div className="max-w-full">
               <p className={cn("truncate", textClassName)} title={displayText}>
@@ -1194,11 +1250,15 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
         </div>
       </div>
       {hasChangedFiles && !previewIsChangedFiles && (
-        <div className={cn("mt-1 flex flex-wrap gap-1", inlineToolStyle ? "pl-8" : "pl-6")}>
+        <div
+          data-pipper-id="messages-timeline-work-entry-files"
+          className={cn("mt-1 flex flex-wrap gap-1", inlineToolStyle ? "pl-8" : "pl-6")}
+        >
           {workEntry.changedFiles?.slice(0, 4).map((filePath) => {
             const displayPath = formatWorkspaceRelativePath(filePath, workspaceRoot);
             return (
               <span
+                data-pipper-id="messages-timeline-work-entry-file-chip"
                 key={`${workEntry.id}:${filePath}`}
                 className="rounded-md border border-border/55 bg-background/75 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground/75"
                 title={displayPath}

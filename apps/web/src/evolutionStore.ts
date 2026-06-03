@@ -16,7 +16,12 @@ export interface EvolutionWorkspaceStatus {
   readonly workspaceRoot: string;
 }
 
-export type EvolutionSetupStep = "cloning" | "installing" | "initializing" | "complete" | "error";
+export type EvolutionSetupStep =
+  | "cloning"
+  | "installing"
+  | "initializing"
+  | "complete"
+  | "error";
 
 /** Progress update during workspace setup. */
 export interface EvolutionSetupProgress {
@@ -52,9 +57,13 @@ interface EvolutionStore {
   /** Parsed patch entries from patch.md. */
   readonly patchEntries: readonly PatchEntry[];
 
-  readonly setWorkspaceStatus: (status: EvolutionWorkspaceStatus | null) => void;
+  readonly setWorkspaceStatus: (
+    status: EvolutionWorkspaceStatus | null,
+  ) => void;
   readonly setSetupProgress: (progress: EvolutionSetupProgress | null) => void;
-  readonly setUpdateCheckResult: (result: EvolutionUpdateCheckResult | null) => void;
+  readonly setUpdateCheckResult: (
+    result: EvolutionUpdateCheckResult | null,
+  ) => void;
   readonly setIsSettingUp: (value: boolean) => void;
   readonly setIsCheckingUpdate: (value: boolean) => void;
   readonly setIsApplyingUpdate: (value: boolean) => void;

@@ -27,6 +27,7 @@ export function DiffPanelShell(props: {
 
   return (
     <div
+      data-pipper-id="diff-panel-shell"
       className={cn(
         "flex h-full min-w-0 flex-col overflow-hidden bg-[var(--surface-subtle)]",
         props.mode === "inline"
@@ -36,14 +37,21 @@ export function DiffPanelShell(props: {
     >
       {shouldRenderHeader ? (
         shouldUseDragRegion ? (
-          <div className={getDiffPanelHeaderRowClassName(props.mode)}>{props.header}</div>
+          <div
+            data-pipper-id="diff-panel-header"
+            className={getDiffPanelHeaderRowClassName(props.mode)}
+          >
+            {props.header}
+          </div>
         ) : (
-          <div className="border-b border-border">
+          <div data-pipper-id="diff-panel-header" className="border-b border-border">
             <div className={getDiffPanelHeaderRowClassName(props.mode)}>{props.header}</div>
           </div>
         )
       ) : null}
-      {props.children}
+      <div data-pipper-id="diff-panel-content" className="contents">
+        {props.children}
+      </div>
     </div>
   );
 }

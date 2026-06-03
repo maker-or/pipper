@@ -135,6 +135,7 @@ export const ComposerCommandMenu = memo(function ComposerCommandMenu(props: {
 
   return (
     <Command
+      data-pipper-id="composer-command-menu"
       autoHighlight={false}
       mode="none"
       onItemHighlighted={(highlightedValue) => {
@@ -215,6 +216,7 @@ const ComposerCommandMenuItem = memo(function ComposerCommandMenuItem(props: {
 
   return (
     <CommandItem
+      data-pipper-id="composer-command-menu"
       value={props.item.id}
       data-composer-item-id={props.item.id}
       className={cn(

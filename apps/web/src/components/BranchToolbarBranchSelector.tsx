@@ -534,6 +534,7 @@ export function BranchToolbarBranchSelector({
     if (createBranchItemValue && itemValue === createBranchItemValue) {
       return (
         <ComboboxItem
+          data-pipper-id="branch-toolbar-branch-selector"
           hideIndicator
           key={itemValue}
           index={index}
@@ -561,6 +562,7 @@ export function BranchToolbarBranchSelector({
             : null;
     return (
       <ComboboxItem
+        data-pipper-id="branch-toolbar-branch-selector"
         hideIndicator
         key={itemValue}
         index={index}
@@ -577,6 +579,7 @@ export function BranchToolbarBranchSelector({
 
   return (
     <Combobox
+      data-pipper-id="branch-toolbar-branch-selector"
       items={branchPickerItems}
       filteredItems={filteredBranchPickerItems}
       autoHighlight

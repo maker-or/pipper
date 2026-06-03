@@ -84,7 +84,10 @@ export function ComposerBannerStack({ className, items }: ComposerBannerStackPro
   };
 
   return (
-    <div className={cn("group/banner-stack mx-auto mb-2 max-w-208", className)}>
+    <div
+      data-pipper-id="composer-banner-stack"
+      className={cn("group/banner-stack mx-auto mb-2 max-w-208", className)}
+    >
       <div
         className={cn(
           "relative",

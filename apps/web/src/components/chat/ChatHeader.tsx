@@ -282,12 +282,16 @@ export const ChatHeader = memo(function ChatHeader({
   }, [activeRailTabKey, terminalOpen, visibleThreadsInDisplayOrder]);
 
   return (
-    <div className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-center gap-2">
+    <div
+      data-pipper-id="chat-header"
+      className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-center gap-2"
+    >
       <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-hidden">
         <Popover open={createMenuOpen} onOpenChange={setCreateMenuOpen}>
           <PopoverTrigger
             render={
               <button
+                data-pipper-id="chat-header-create-tab-button"
                 type="button"
                 aria-label="Create agent or open terminal tab"
                 className="inline-flex h-full w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent/45 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
@@ -326,7 +330,10 @@ export const ChatHeader = memo(function ChatHeader({
           </PopoverPopup>
         </Popover>
         <SidebarTrigger className="size-7 shrink-0 md:hidden" />
-        <div className="flex h-full min-w-0 flex-1 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          data-pipper-id="chat-header-tab-strip"
+          className="flex h-full min-w-0 flex-1 items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           <div ref={tabRailRef} className="relative flex h-full min-w-max items-stretch">
             {activeTabIndicator ? (
               <div
@@ -362,6 +369,7 @@ export const ChatHeader = memo(function ChatHeader({
               const railKey = `thread:${threadKey}`;
               return (
                 <div
+                  data-pipper-id="chat-header-thread-tab"
                   key={threadKey}
                   ref={(node) => {
                     if (node === null) {
@@ -398,6 +406,7 @@ export const ChatHeader = memo(function ChatHeader({
                   </Link>
                   {canDismiss ? (
                     <button
+                      data-pipper-id="chat-header-tab-close-button"
                       type="button"
                       aria-label={`Close ${thread.title} tab`}
                       className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-[background-color,opacity,transform] duration-150 ease-out hover:bg-accent group-hover/tab:opacity-100 active:scale-[0.96]"
@@ -418,6 +427,7 @@ export const ChatHeader = memo(function ChatHeader({
                   const canDismiss = true;
                   return (
                     <div
+                      data-pipper-id="chat-header-terminal-tab"
                       key={railKey}
                       ref={(node) => {
                         if (node === null) {
@@ -430,6 +440,7 @@ export const ChatHeader = memo(function ChatHeader({
                       className="group/tab relative z-10 flex shrink-0 items-center"
                     >
                       <button
+                        data-pipper-id="chat-header-terminal-tab-button"
                         type="button"
                         className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
                           selected
@@ -483,6 +494,7 @@ export const ChatHeader = memo(function ChatHeader({
                       </button>
                       {canDismiss ? (
                         <button
+                          data-pipper-id="chat-header-tab-close-button"
                           type="button"
                           aria-label={`Close ${label} tab`}
                           className="absolute right-1.5 top-1/2 flex size-4 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-[background-color,opacity,transform] duration-150 ease-out hover:bg-accent group-hover/tab:opacity-100 active:scale-[0.96]"

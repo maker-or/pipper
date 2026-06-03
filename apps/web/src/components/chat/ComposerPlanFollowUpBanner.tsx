@@ -6,7 +6,7 @@ export const ComposerPlanFollowUpBanner = memo(function ComposerPlanFollowUpBann
   planTitle: string | null;
 }) {
   return (
-    <div className="px-4 py-3.5 sm:px-5 sm:py-4">
+    <div data-pipper-id="composer-plan-follow-up-banner" className="px-4 py-3.5 sm:px-5 sm:py-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="uppercase text-sm tracking-[0.2em]">Plan ready</span>
         {planTitle ? (

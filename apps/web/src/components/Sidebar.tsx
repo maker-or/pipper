@@ -548,6 +548,7 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
 
   return (
     <SidebarMenuSubItem
+      data-pipper-id="sidebar-thread-row"
       className="w-full"
       data-thread-item
       onMouseLeave={handleMouseLeave}
@@ -566,7 +567,10 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
         onKeyDown={handleRowKeyDown}
         onContextMenu={handleRowContextMenu}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 text-left">
+        <div
+          data-pipper-id="sidebar-thread-title-area"
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+        >
           {prStatus && (
             <Tooltip>
               <TooltipTrigger
@@ -613,7 +617,10 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
             </Tooltip>
           )}
         </div>
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        <div
+          data-pipper-id="sidebar-thread-meta-area"
+          className="ml-auto flex shrink-0 items-center gap-1.5"
+        >
           {terminalStatus && (
             <span
               role="img"
@@ -816,6 +823,7 @@ const SidebarProjectThreadList = memo(function SidebarProjectThreadList(
 
   return (
     <SidebarMenuSub
+      data-pipper-id="sidebar-thread-list"
       ref={attachThreadListAutoAnimateRef}
       className="mx-1 my-0 w-full translate-x-0 gap-0.5 overflow-hidden px-1.5 py-0"
     >
@@ -1987,8 +1995,9 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
 
   return (
     <>
-      <div className="group/project-header relative">
+      <div data-pipper-id="sidebar-project-row" className="group/project-header relative">
         <SidebarMenuButton
+          data-pipper-id="sidebar-project-button"
           ref={isManualProjectSorting ? dragHandleProps?.setActivatorNodeRef : undefined}
           size="sm"
           className={`sidebar-project-item gap-2 px-2 py-1.5 pr-8 text-left hover:bg-transparent group-hover/project-header:bg-transparent group-hover/project-header:text-sidebar-accent-foreground max-sm:pr-14 ${
@@ -2031,7 +2040,10 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
             active={activeRouteThreadKey !== null}
             className="size-8 text-lg"
           />
-          <span className="flex min-w-0 flex-1 items-center gap-2">
+          <span
+            data-pipper-id="sidebar-project-title-area"
+            className="flex min-w-0 flex-1 items-center gap-2"
+          >
             <span className="truncate text-xs font-medium text-foreground/90">
               {project.displayName}
             </span>
@@ -2071,6 +2083,7 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
             render={
               <div className="pointer-events-none absolute top-1 right-1.5 opacity-0 transition-opacity duration-150 max-sm:pointer-events-auto max-sm:opacity-100 group-hover/project-header:pointer-events-auto group-hover/project-header:opacity-100 group-focus-within/project-header:pointer-events-auto group-focus-within/project-header:opacity-100">
                 <button
+                  data-pipper-id="sidebar-new-thread-button"
                   type="button"
                   aria-label={`Create new thread in ${project.displayName}`}
                   data-testid="new-thread-button"
@@ -2523,7 +2536,7 @@ const SidebarProjectsContent = memo(function SidebarProjectsContent(
   );
 
   return (
-    <SidebarContent className="gap-0">
+    <SidebarContent data-pipper-id="sidebar-content" className="gap-0">
       <SidebarGroup className="px-2 pt-2 pb-1">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -2570,8 +2583,11 @@ const SidebarProjectsContent = memo(function SidebarProjectsContent(
           </Alert>
         </SidebarGroup>
       ) : null}
-      <SidebarGroup className="px-2 py-2">
-        <div className="mb-1 flex items-center justify-between pl-2 pr-1.5">
+      <SidebarGroup data-pipper-id="sidebar-project-section" className="px-2 py-2">
+        <div
+          data-pipper-id="sidebar-project-section-header"
+          className="mb-1 flex items-center justify-between pl-2 pr-1.5"
+        >
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
             Projects
           </span>
@@ -2588,6 +2604,7 @@ const SidebarProjectsContent = memo(function SidebarProjectsContent(
               <TooltipTrigger
                 render={
                   <button
+                    data-pipper-id="sidebar-add-project-button"
                     type="button"
                     aria-label="Add project"
                     data-testid="sidebar-add-project-trigger"
@@ -2612,7 +2629,7 @@ const SidebarProjectsContent = memo(function SidebarProjectsContent(
             onDragEnd={handleProjectDragEnd}
             onDragCancel={handleProjectDragCancel}
           >
-            <SidebarMenu>
+            <SidebarMenu data-pipper-id="sidebar-project-list">
               <SortableContext
                 items={sortedProjects.map((project) => project.projectKey)}
                 strategy={verticalListSortingStrategy}
@@ -2649,7 +2666,7 @@ const SidebarProjectsContent = memo(function SidebarProjectsContent(
             </SidebarMenu>
           </DndContext>
         ) : (
-          <SidebarMenu ref={attachProjectListAutoAnimateRef}>
+          <SidebarMenu data-pipper-id="sidebar-project-list" ref={attachProjectListAutoAnimateRef}>
             {sortedProjects.map((project) => (
               <SidebarProjectListRow
                 key={project.projectKey}
@@ -2907,13 +2924,20 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
   return (
     <TooltipProvider delay={100}>
       <ImproveLaunchTransition origin={improveLaunchOrigin} state={improveLaunchState} />
-      <div className="flex h-full min-h-0 w-full flex-col items-center bg-[var(--surface-canvas)]">
+      <div
+        data-pipper-id="sidebar-compact-rail"
+        className="flex h-full min-h-0 w-full flex-col items-center bg-[var(--surface-canvas)]"
+      >
         <SidebarHeader className="drag-region flex h-[52px] w-full items-center justify-center p-0"></SidebarHeader>
-        <SidebarContent className="w-full items-center gap-3 overflow-y-auto px-2 py-2">
+        <SidebarContent
+          data-pipper-id="sidebar-compact-project-list"
+          className="w-full items-center gap-3 overflow-y-auto px-2 py-2"
+        >
           <Tooltip>
             <TooltipTrigger
               render={
                 <button
+                  data-pipper-id="sidebar-improve-button"
                   type="button"
                   aria-label="Press and hold to enter Evolution Space"
                   aria-pressed={activeSpace === "improve" || improveLaunchState === "entering"}
@@ -2979,6 +3003,7 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
                   <TooltipTrigger
                     render={
                       <button
+                        data-pipper-id="sidebar-compact-project-button"
                         type="button"
                         aria-label={project.displayName}
                         className={`inline-flex size-10 items-center justify-center rounded-md transition-colors ${
@@ -3005,12 +3030,13 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
               );
             })}
         </SidebarContent>
-        <SidebarFooter className="w-full items-center p-2">
+        <SidebarFooter data-pipper-id="sidebar-footer" className="w-full items-center p-2">
           {showAppUpdateButton ? (
             <Tooltip>
               <TooltipTrigger
                 render={
                   <button
+                    data-pipper-id="sidebar-add-project-button"
                     type="button"
                     aria-label={updateButtonLabel}
                     data-testid="sidebar-app-update-trigger"
@@ -3061,6 +3087,7 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
             <TooltipTrigger
               render={
                 <button
+                  data-pipper-id="sidebar-settings-button"
                   type="button"
                   aria-label="Settings"
                   data-testid="sidebar-settings-trigger"
@@ -3732,7 +3759,7 @@ export default function Sidebar() {
   return (
     <>
       {isOnSettings ? (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div data-pipper-id="sidebar" className="flex min-h-0 min-w-0 flex-1 flex-col">
           <SidebarChromeHeader isElectron={isElectron} />
           <SettingsSidebarNav pathname={pathname} />
         </div>

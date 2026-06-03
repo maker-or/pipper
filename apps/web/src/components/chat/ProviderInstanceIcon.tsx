@@ -31,6 +31,7 @@ export const ProviderInstanceIcon = memo(function ProviderInstanceIcon(props: {
 
   return (
     <span
+      data-pipper-id="provider-instance-icon"
       className={cn(
         "relative isolate inline-flex shrink-0 items-center justify-center",
         props.className,

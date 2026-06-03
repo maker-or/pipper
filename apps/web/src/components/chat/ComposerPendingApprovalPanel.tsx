@@ -18,7 +18,7 @@ export const ComposerPendingApprovalPanel = memo(function ComposerPendingApprova
         : "File-change approval requested";
 
   return (
-    <div className="px-4 py-3.5 sm:px-5 sm:py-4">
+    <div data-pipper-id="composer-pending-approval-panel" className="px-4 py-3.5 sm:px-5 sm:py-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="uppercase text-sm tracking-[0.2em]">PENDING APPROVAL</span>
         <span className="text-sm font-medium">{approvalSummary}</span>

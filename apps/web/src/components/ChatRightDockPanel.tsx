@@ -84,6 +84,7 @@ export function ChatRightDockPanel(props: {
 
   return (
     <div
+      data-pipper-id="chat-right-dock-panel"
       className={cn(
         "chat-right-dock-shell flex min-h-0 shrink-0 flex-col self-stretch overflow-hidden",
         className,
@@ -91,7 +92,12 @@ export function ChatRightDockPanel(props: {
       data-open={visualOpen ? "true" : "false"}
       onTransitionEnd={onTransitionEnd}
     >
-      <div className="chat-right-dock-surface flex min-h-0 flex-1 flex-col">{children}</div>
+      <div
+        data-pipper-id="chat-right-dock-surface"
+        className="chat-right-dock-surface flex min-h-0 flex-1 flex-col"
+      >
+        {children}
+      </div>
     </div>
   );
 }

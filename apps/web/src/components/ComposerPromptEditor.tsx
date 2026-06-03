@@ -152,7 +152,7 @@ function ComposerMentionDecorator(props: { path: string }) {
   );
 
   return (
-    <Tooltip>
+    <Tooltip data-pipper-id="composer-prompt-editor">
       <TooltipTrigger render={chip} />
       <TooltipPopup side="top" className="max-w-120 whitespace-normal leading-tight wrap-anywhere">
         {props.path}
@@ -272,7 +272,7 @@ function ComposerSkillDecorator(props: { skillLabel: string; skillDescription: s
   }
 
   return (
-    <Tooltip>
+    <Tooltip data-pipper-id="composer-prompt-editor">
       <TooltipTrigger render={chip} />
       <TooltipPopup side="top" className="max-w-120 whitespace-normal leading-tight">
         {props.skillDescription}
@@ -352,6 +352,7 @@ class ComposerSkillNode extends DecoratorNode<ReactElement> {
   override decorate(): ReactElement {
     return (
       <ComposerSkillDecorator
+        data-pipper-id="composer-prompt-editor"
         skillLabel={this.__skillLabel}
         skillDescription={this.__skillDescription}
       />
@@ -1634,7 +1635,10 @@ function ComposerPromptEditorInner({
   }, []);
 
   return (
-    <ComposerTerminalContextActionsContext.Provider value={terminalContextActions}>
+    <ComposerTerminalContextActionsContext.Provider
+      data-pipper-id="composer-prompt-editor"
+      value={terminalContextActions}
+    >
       <div className="relative group">
         <PlainTextPlugin
           contentEditable={
@@ -1713,7 +1717,11 @@ export const ComposerPromptEditor = forwardRef<
   );
 
   return (
-    <LexicalComposer key={COMPOSER_EDITOR_HMR_KEY} initialConfig={initialConfig}>
+    <LexicalComposer
+      data-pipper-id="composer-prompt-editor"
+      key={COMPOSER_EDITOR_HMR_KEY}
+      initialConfig={initialConfig}
+    >
       <ComposerPromptEditorInner
         value={value}
         cursor={cursor}

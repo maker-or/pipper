@@ -282,7 +282,7 @@ export const TraitsMenuContent = memo(function TraitsMenuContentImpl({
   return (
     <>
       {selectDescriptors.map((descriptor, index) => (
-        <div key={descriptor.id}>
+        <div data-pipper-id="traits-picker" key={descriptor.id}>
           {index > 0 ? <MenuDivider /> : null}
           <MenuGroup>
             <div className="px-2 pt-1.5 pb-1 font-medium text-muted-foreground text-xs">
@@ -397,6 +397,7 @@ export const TraitsPicker = memo(function TraitsPicker({
 
   return (
     <Menu
+      data-pipper-id="traits-picker"
       open={isMenuOpen}
       onOpenChange={(open) => {
         setIsMenuOpen(open);

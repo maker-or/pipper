@@ -40,6 +40,7 @@ export const ThreadContentTransition = memo(function ThreadContentTransition({
 
   return (
     <div
+      data-pipper-id="thread-content-transition"
       className={cn(THREAD_CONTENT_TRANSITION_CLASS_NAME, className)}
       style={
         isEntered

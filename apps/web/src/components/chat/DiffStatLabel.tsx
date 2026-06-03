@@ -13,7 +13,9 @@ export const DiffStatLabel = memo(function DiffStatLabel(props: {
   return (
     <>
       {showParentheses && <span className="text-muted-foreground/70">(</span>}
-      <span className="text-success">{additions}</span>
+      <span data-pipper-id="diff-stat-label" className="text-success">
+        {additions}
+      </span>
       <span className="text-success"> </span>
       <span className="text-destructive">{deletions}</span>
       {showParentheses && <span className="text-muted-foreground/70">)</span>}

@@ -35,7 +35,10 @@ export function ComposerPendingTerminalContexts(props: ComposerPendingTerminalCo
   }
 
   return (
-    <div className={cn("flex flex-wrap gap-1.5", className)}>
+    <div
+      data-pipper-id="composer-pending-terminal-contexts"
+      className={cn("flex flex-wrap gap-1.5", className)}
+    >
       {contexts.map((context) => (
         <ComposerPendingTerminalContextChip key={context.id} context={context} />
       ))}

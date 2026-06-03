@@ -157,33 +157,41 @@ export const TerminalWorkspace = memo(function TerminalWorkspace({
   }
 
   return (
-    <div className={visible ? "flex min-h-0 w-full flex-1 flex-col" : "hidden"}>
-      <ThreadTerminalDrawer
-        threadRef={workspaceRef}
-        threadId={workspaceRef.threadId}
-        cwd={cwd}
-        worktreePath={effectiveWorktreePath}
-        runtimeEnv={runtimeEnv}
-        visible={visible}
-        height={terminalState.terminalHeight}
-        terminalIds={terminalState.terminalIds}
-        terminalLabelsById={terminalState.terminalLabelsById}
-        activeTerminalId={terminalState.activeTerminalId}
-        terminalGroups={terminalState.terminalGroups}
-        activeTerminalGroupId={terminalState.activeTerminalGroupId}
-        focusRequestId={focusRequestId + localFocusRequestId + (visible ? 1 : 0)}
-        onSplitTerminal={splitTerminal}
-        onNewTerminal={createNewTerminal}
-        splitShortcutLabel={visible ? splitShortcutLabel : undefined}
-        newShortcutLabel={visible ? newShortcutLabel : undefined}
-        closeShortcutLabel={visible ? closeShortcutLabel : undefined}
-        keybindings={keybindings}
-        onActiveTerminalChange={activateTerminal}
-        onCloseTerminal={closeTerminal}
-        onHeightChange={setTerminalHeight}
-        onAddTerminalContext={handleAddTerminalContext}
-        layout="panel"
-      />
+    <div
+      data-pipper-id="terminal-workspace"
+      className={visible ? "flex min-h-0 w-full flex-1 flex-col" : "hidden"}
+    >
+      <div
+        data-pipper-id="terminal-workspace-panel"
+        className="flex min-h-0 w-full flex-1 flex-col"
+      >
+        <ThreadTerminalDrawer
+          threadRef={workspaceRef}
+          threadId={workspaceRef.threadId}
+          cwd={cwd}
+          worktreePath={effectiveWorktreePath}
+          runtimeEnv={runtimeEnv}
+          visible={visible}
+          height={terminalState.terminalHeight}
+          terminalIds={terminalState.terminalIds}
+          terminalLabelsById={terminalState.terminalLabelsById}
+          activeTerminalId={terminalState.activeTerminalId}
+          terminalGroups={terminalState.terminalGroups}
+          activeTerminalGroupId={terminalState.activeTerminalGroupId}
+          focusRequestId={focusRequestId + localFocusRequestId + (visible ? 1 : 0)}
+          onSplitTerminal={splitTerminal}
+          onNewTerminal={createNewTerminal}
+          splitShortcutLabel={visible ? splitShortcutLabel : undefined}
+          newShortcutLabel={visible ? newShortcutLabel : undefined}
+          closeShortcutLabel={visible ? closeShortcutLabel : undefined}
+          keybindings={keybindings}
+          onActiveTerminalChange={activateTerminal}
+          onCloseTerminal={closeTerminal}
+          onHeightChange={setTerminalHeight}
+          onAddTerminalContext={handleAddTerminalContext}
+          layout="panel"
+        />
+      </div>
     </div>
   );
 });

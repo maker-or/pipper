@@ -212,7 +212,7 @@ const MarkdownFileLink = memo(function MarkdownFileLink({
   );
 
   return (
-    <Tooltip>
+    <Tooltip data-pipper-id="chat-markdown-file-link">
       <TooltipTrigger
         render={
           <a
@@ -285,45 +285,151 @@ function ChatMarkdown({
   const markdownComponents = useMemo<MarkdownComponents>(
     () => ({
       h1({ node: _node, children, ...props }) {
-        return <h1 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h1>;
+        return (
+          <h1 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h1>
+        );
       },
       h2({ node: _node, children, ...props }) {
-        return <h2 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h2>;
+        return (
+          <h2 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h2>
+        );
       },
       h3({ node: _node, children, ...props }) {
-        return <h3 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h3>;
+        return (
+          <h3 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h3>
+        );
       },
       h4({ node: _node, children, ...props }) {
-        return <h4 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h4>;
+        return (
+          <h4 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h4>
+        );
       },
       h5({ node: _node, children, ...props }) {
-        return <h5 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h5>;
+        return (
+          <h5 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h5>
+        );
       },
       h6({ node: _node, children, ...props }) {
-        return <h6 {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</h6>;
+        return (
+          <h6 data-pipper-id="chat-markdown-heading" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </h6>
+        );
       },
       blockquote({ node: _node, children, ...props }) {
         return (
-          <blockquote {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</blockquote>
+          <blockquote data-pipper-id="chat-markdown-blockquote" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </blockquote>
         );
       },
       p({ node: _node, children, ...props }) {
-        return <p {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</p>;
+        return (
+          <p data-pipper-id="chat-markdown-paragraph" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </p>
+        );
+      },
+      ul({ node: _node, children, ...props }) {
+        return (
+          <ul data-pipper-id="chat-markdown-list" {...props}>
+            {children}
+          </ul>
+        );
+      },
+      ol({ node: _node, children, ...props }) {
+        return (
+          <ol data-pipper-id="chat-markdown-list" {...props}>
+            {children}
+          </ol>
+        );
       },
       li({ node: _node, children, ...props }) {
-        return <li {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</li>;
+        return (
+          <li data-pipper-id="chat-markdown-list-item" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </li>
+        );
+      },
+      table({ node: _node, children, ...props }) {
+        return (
+          <table data-pipper-id="chat-markdown-table" {...props}>
+            {children}
+          </table>
+        );
+      },
+      thead({ node: _node, children, ...props }) {
+        return (
+          <thead data-pipper-id="chat-markdown-table-head" {...props}>
+            {children}
+          </thead>
+        );
+      },
+      tbody({ node: _node, children, ...props }) {
+        return (
+          <tbody data-pipper-id="chat-markdown-table-body" {...props}>
+            {children}
+          </tbody>
+        );
+      },
+      tr({ node: _node, children, ...props }) {
+        return (
+          <tr data-pipper-id="chat-markdown-table-row" {...props}>
+            {children}
+          </tr>
+        );
       },
       th({ node: _node, children, ...props }) {
-        return <th {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</th>;
+        return (
+          <th data-pipper-id="chat-markdown-table-cell" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </th>
+        );
       },
       td({ node: _node, children, ...props }) {
-        return <td {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</td>;
+        return (
+          <td data-pipper-id="chat-markdown-table-cell" {...props}>
+            {renderSkillInlineMarkdownChildren(children, skills)}
+          </td>
+        );
+      },
+      pre({ node: _node, children, ...props }) {
+        return (
+          <pre data-pipper-id="chat-markdown-code-block" {...props}>
+            {children}
+          </pre>
+        );
+      },
+      code({ node: _node, children, ...props }) {
+        return (
+          <code data-pipper-id="chat-markdown-code" {...props}>
+            {children}
+          </code>
+        );
       },
       a({ node: _node, href, ...props }) {
         const normalizedHref = href ? normalizeMarkdownLinkHrefKey(href) : "";
         const fileLinkMeta = normalizedHref ? markdownFileLinkMetaByHref.get(normalizedHref) : null;
         if (!fileLinkMeta) {
-          return <a {...props} href={href} target="_blank" rel="noopener noreferrer" />;
+          return (
+            <a
+              data-pipper-id="chat-markdown-link"
+              {...props}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          );
         }
 
         const parentSuffix = fileLinkParentSuffixByPath.get(fileLinkMeta.filePath);
@@ -352,7 +458,10 @@ function ChatMarkdown({
   );
 
   return (
-    <div className="chat-markdown w-full min-w-0 text-base leading-relaxed text-foreground/80">
+    <div
+      data-pipper-id="chat-markdown"
+      className="chat-markdown w-full min-w-0 text-base leading-relaxed text-foreground/80"
+    >
       <Streamdown
         animated={{ animation: "blurIn", duration: 200, easing: "ease-out" }}
         isAnimating={isStreaming}

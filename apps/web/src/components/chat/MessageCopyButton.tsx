@@ -57,7 +57,7 @@ export const MessageCopyButton = memo(function MessageCopyButton({
   });
 
   return (
-    <Tooltip>
+    <Tooltip data-pipper-id="message-copy-button">
       <TooltipTrigger
         render={
           <Button

@@ -31,6 +31,7 @@ export const ComposerPendingUserInputPanel = memo(function ComposerPendingUserIn
 
   return (
     <ComposerPendingUserInputCard
+      data-pipper-id="composer-pending-user-input-panel"
       key={activePrompt.requestId}
       prompt={activePrompt}
       isResponding={respondingRequestIds.includes(activePrompt.requestId)}
