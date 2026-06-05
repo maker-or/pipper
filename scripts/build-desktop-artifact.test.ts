@@ -75,6 +75,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
         verbose: Option.some(false),
         mockUpdates: Option.some(false),
         mockUpdateServerPort: Option.none(),
+        posthogKey: Option.none(),
       }).pipe(
         Effect.provide(
           ConfigProvider.layer(
@@ -96,6 +97,89 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
       assert.equal(resolved.signed, false);
       assert.equal(resolved.verbose, false);
       assert.equal(resolved.mockUpdates, false);
+    }),
+  );
+
+  it.effect("prefers --posthog-key over T3CODE_DESKTOP_POSTHOG_KEY and trims whitespace", () =>
+    Effect.gen(function* () {
+      const resolved = yield* resolveBuildOptions({
+        platform: Option.some("mac"),
+        target: Option.none(),
+        arch: Option.some("arm64"),
+        buildVersion: Option.none(),
+        outputDir: Option.none(),
+        skipBuild: Option.some(false),
+        keepStage: Option.some(false),
+        signed: Option.some(false),
+        verbose: Option.some(false),
+        mockUpdates: Option.some(false),
+        mockUpdateServerPort: Option.none(),
+        posthogKey: Option.some("  phc_flag  "),
+      }).pipe(
+        Effect.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromEnv({
+              env: {
+                T3CODE_DESKTOP_POSTHOG_KEY: "phc_env",
+              },
+            }),
+          ),
+        ),
+      );
+
+      assert.equal(resolved.posthogKey, "phc_flag");
+    }),
+  );
+
+  it.effect("falls back to T3CODE_DESKTOP_POSTHOG_KEY when --posthog-key is omitted", () =>
+    Effect.gen(function* () {
+      const resolved = yield* resolveBuildOptions({
+        platform: Option.some("mac"),
+        target: Option.none(),
+        arch: Option.some("arm64"),
+        buildVersion: Option.none(),
+        outputDir: Option.none(),
+        skipBuild: Option.some(false),
+        keepStage: Option.some(false),
+        signed: Option.some(false),
+        verbose: Option.some(false),
+        mockUpdates: Option.some(false),
+        mockUpdateServerPort: Option.none(),
+        posthogKey: Option.none(),
+      }).pipe(
+        Effect.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromEnv({
+              env: {
+                T3CODE_DESKTOP_POSTHOG_KEY: "  phc_env_only  ",
+              },
+            }),
+          ),
+        ),
+      );
+
+      assert.equal(resolved.posthogKey, "phc_env_only");
+    }),
+  );
+
+  it.effect("leaves posthogKey undefined when neither flag nor env is provided", () =>
+    Effect.gen(function* () {
+      const resolved = yield* resolveBuildOptions({
+        platform: Option.some("mac"),
+        target: Option.none(),
+        arch: Option.some("arm64"),
+        buildVersion: Option.none(),
+        outputDir: Option.none(),
+        skipBuild: Option.some(false),
+        keepStage: Option.some(false),
+        signed: Option.some(false),
+        verbose: Option.some(false),
+        mockUpdates: Option.some(false),
+        mockUpdateServerPort: Option.none(),
+        posthogKey: Option.none(),
+      });
+
+      assert.equal(resolved.posthogKey, undefined);
     }),
   );
 });

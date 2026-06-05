@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 
 import ThreadSidebar from "./Sidebar";
@@ -14,6 +14,8 @@ const THREAD_SIDEBAR_WIDTH_STORAGE_KEY = "chat_thread_sidebar_width";
 const THREAD_SIDEBAR_WIDTH = 5 * 16;
 const THREAD_MAIN_CONTENT_MIN_WIDTH = 40 * 16;
 const SETTINGS_SIDEBAR_WIDTH = 13 * 16;
+const SIDEBAR_CLOSE_DELAY_MS = 200;
+
 export function AppSidebarLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,13 +82,87 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
       data-pipper-id="app-sidebar-layout"
       className="h-dvh! min-h-0!"
       data-active-space={activeSpace}
-      defaultOpen
-      style={{ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties}
+      defaultOpen={false}
+      style={
+        isElectron
+          ? ({
+              "--sidebar-width": `${sidebarWidth}px`,
+              "--sidebar-floating-top-offset": "2.5rem",
+            } as CSSProperties)
+          : ({ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties)
+      }
     >
+      <SidebarLayoutInner
+        isImproveSpace={isImproveSpace}
+        isOnSettings={isOnSettings}
+        sidebarMaxWidth={sidebarMaxWidth}
+        sidebarMinWidth={sidebarMinWidth}
+        sidebarWidth={sidebarWidth}
+      >
+        {children}
+      </SidebarLayoutInner>
+    </SidebarProvider>
+  );
+}
+
+function SidebarLayoutInner({
+  children,
+  isImproveSpace,
+  isOnSettings,
+  sidebarMaxWidth,
+  sidebarMinWidth,
+  sidebarWidth,
+}: {
+  children: ReactNode;
+  isImproveSpace: boolean;
+  isOnSettings: boolean;
+  sidebarMaxWidth: number;
+  sidebarMinWidth: number;
+  sidebarWidth: number;
+}) {
+  const { setOpen, isMobile } = useSidebar();
+  const closeTimerRef = useRef<number | null>(null);
+
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    cancelClose();
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      void setOpen(false);
+    }, SIDEBAR_CLOSE_DELAY_MS);
+  }, [cancelClose, setOpen]);
+
+  const handleHoverZoneEnter = useCallback(() => {
+    cancelClose();
+    void setOpen(true);
+  }, [cancelClose, setOpen]);
+
+  useEffect(() => {
+    return () => {
+      cancelClose();
+    };
+  }, [cancelClose]);
+
+  const sidebarMouseHandlers = isMobile
+    ? {}
+    : {
+        onMouseEnter: cancelClose,
+        onMouseLeave: scheduleClose,
+      };
+
+  return (
+    <>
       {isImproveSpace ? null : (
         <Sidebar
           data-pipper-id="app-sidebar-shell"
           side="left"
+          variant="floating"
           collapsible="offcanvas"
           className={
             isOnSettings
@@ -109,16 +185,37 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
                   storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
                 }
           }
+          {...sidebarMouseHandlers}
         >
           <ThreadSidebar />
           <SidebarRail />
         </Sidebar>
       )}
       {isElectron && !isImproveSpace ? <SidebarKeyboardShortcutListener /> : null}
+      {!isImproveSpace ? <SidebarHoverZone onOpenSidebar={handleHoverZoneEnter} /> : null}
       <div data-pipper-id="app-main-shell" className="flex min-h-0 min-w-0 flex-1">
         {children}
       </div>
-    </SidebarProvider>
+    </>
+  );
+}
+
+function SidebarHoverZone({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+  const { state, isMobile } = useSidebar();
+
+  if (isMobile || state === "expanded") {
+    return null;
+  }
+
+  return (
+    <button
+      aria-label="Open sidebar"
+      className="fixed bottom-0 left-0 top-[var(--sidebar-floating-top-offset,0.5rem)] z-30 w-2 cursor-e-resize bg-primary/25 transition-colors hover:bg-primary/45"
+      onMouseEnter={onOpenSidebar}
+      tabIndex={-1}
+      title="Open sidebar"
+      type="button"
+    />
   );
 }
 

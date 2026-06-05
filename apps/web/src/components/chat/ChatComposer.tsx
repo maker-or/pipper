@@ -1882,29 +1882,6 @@ export const ChatComposer = memo(
           )}
         >
           <div className="-m-1 flex min-w-0 flex-1 flex-wrap items-center justify-start gap-x-1 gap-y-1.5 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <ProviderModelPicker
-              compact={isComposerFooterCompact}
-              activeInstanceId={selectedInstanceId}
-              model={selectedModelForPickerWithCustomFallback}
-              lockedProvider={lockedProvider}
-              lockedContinuationGroupKey={lockedContinuationGroupKey}
-              instanceEntries={providerInstanceEntries}
-              keybindings={keybindings}
-              modelOptionsByInstance={modelOptionsByInstance}
-              terminalOpen={terminalOpen}
-              open={isComposerModelPickerOpen}
-              composerDraftTarget={composerDraftTarget}
-              {...(composerProviderState.modelPickerIconClassName
-                ? {
-                    activeProviderIconClassName: composerProviderState.modelPickerIconClassName,
-                  }
-                : {})}
-              onOpenChange={(open) => {
-                setIsComposerModelPickerOpen(open);
-              }}
-              onInstanceModelChange={onProviderModelSelect}
-            />
-
             {isComposerFooterCompact ? (
               <CompactComposerControlsMenu
                 activePlan={showPlanSidebarToggle}
@@ -1942,6 +1919,38 @@ export const ChatComposer = memo(
           ) : null}
         </div>
       ) : null;
+
+    // Float the model selector to the bottom-center of the viewport on
+    // non-mobile viewports. On mobile the composer occupies the bottom of
+    // the screen and the floating pill would cover the input, so we keep
+    // the legacy footer-mounted model picker there instead.
+    const shouldRenderFloatingModelPicker =
+      !isMobileViewport && !isComposerCollapsedMobile && !activePendingApproval;
+
+    const floatingModelPicker = shouldRenderFloatingModelPicker ? (
+      <ProviderModelPicker
+        floating
+        activeInstanceId={selectedInstanceId}
+        model={selectedModelForPickerWithCustomFallback}
+        lockedProvider={lockedProvider}
+        lockedContinuationGroupKey={lockedContinuationGroupKey}
+        instanceEntries={providerInstanceEntries}
+        keybindings={keybindings}
+        modelOptionsByInstance={modelOptionsByInstance}
+        terminalOpen={terminalOpen}
+        open={isComposerModelPickerOpen}
+        composerDraftTarget={composerDraftTarget}
+        {...(composerProviderState.modelPickerIconClassName
+          ? {
+              activeProviderIconClassName: composerProviderState.modelPickerIconClassName,
+            }
+          : {})}
+        onOpenChange={(open) => {
+          setIsComposerModelPickerOpen(open);
+        }}
+        onInstanceModelChange={onProviderModelSelect}
+      />
+    ) : null;
 
     // Render
     // ------------------------------------------------------------------
@@ -2061,6 +2070,7 @@ export const ChatComposer = memo(
             </div>
           </form>
           {composerSecondaryToolbar}
+          {floatingModelPicker}
         </>
       );
     }
@@ -2482,6 +2492,7 @@ export const ChatComposer = memo(
         ) : (
           composerSecondaryToolbar
         )}
+        {floatingModelPicker}
       </form>
     );
   }),

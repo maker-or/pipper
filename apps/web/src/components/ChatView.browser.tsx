@@ -5785,16 +5785,12 @@ describe("ChatView timeline estimator parity (full app)", () => {
     });
 
     try {
-      const footer = await waitForElement(
-        () => document.querySelector<HTMLElement>('[data-chat-composer-footer="true"]'),
-        "Unable to find composer footer.",
-      );
       const initialModelPicker = await waitForElement(
         findComposerProviderModelPicker,
         "Unable to find provider model picker.",
       );
-      const initialModelPickerOffset =
-        initialModelPicker.getBoundingClientRect().left - footer.getBoundingClientRect().left;
+      const initialPickerRect = initialModelPicker.getBoundingClientRect();
+      const initialPickerCenter = initialPickerRect.left + initialPickerRect.width / 2;
       const initialImplementButton = await waitForButtonByText("Implement");
       const initialImplementWidth = initialImplementButton.getBoundingClientRect().width;
 
@@ -5824,15 +5820,18 @@ describe("ChatView timeline estimator parity (full app)", () => {
           const compactModelPicker = findComposerProviderModelPicker();
           expect(compactModelPicker).toBeTruthy();
 
-          const compactModelPickerOffset =
-            compactModelPicker!.getBoundingClientRect().left - footer.getBoundingClientRect().left;
+          // The model picker floats at the bottom-center of the viewport, so
+          // its center should remain at the viewport center across resizes.
+          const pickerRect = compactModelPicker!.getBoundingClientRect();
+          const pickerCenter = pickerRect.left + pickerRect.width / 2;
+          const viewportCenter = window.innerWidth / 2;
+          const pickerCenterDelta = Math.abs(pickerCenter - viewportCenter);
 
           expect(Math.abs(implementRect.right - implementActionsRect.left)).toBeLessThanOrEqual(1);
           expect(Math.abs(implementRect.top - implementActionsRect.top)).toBeLessThanOrEqual(1);
           expect(Math.abs(implementRect.width - initialImplementWidth)).toBeLessThanOrEqual(1);
-          expect(Math.abs(compactModelPickerOffset - initialModelPickerOffset)).toBeLessThanOrEqual(
-            1,
-          );
+          expect(Math.abs(pickerCenter - initialPickerCenter)).toBeLessThanOrEqual(2);
+          expect(pickerCenterDelta).toBeLessThanOrEqual(2);
         },
         { timeout: 8_000, interval: 16 },
       );

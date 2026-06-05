@@ -75,6 +75,7 @@ interface BuildCliInput {
   readonly verbose: Option.Option<boolean>;
   readonly mockUpdates: Option.Option<boolean>;
   readonly mockUpdateServerPort: Option.Option<number>;
+  readonly posthogKey: Option.Option<string>;
 }
 
 function detectHostBuildPlatform(hostPlatform: string): typeof BuildPlatform.Type | undefined {
@@ -206,6 +207,7 @@ interface ResolvedBuildOptions {
   readonly verbose: boolean;
   readonly mockUpdates: boolean;
   readonly mockUpdateServerPort: number | undefined;
+  readonly posthogKey: string | undefined;
 }
 
 interface StagePackageJson {
@@ -213,6 +215,7 @@ interface StagePackageJson {
   readonly version: string;
   readonly buildVersion: string;
   readonly pipperCommitHash: string;
+  readonly pipperPosthogKey?: string;
   readonly private: true;
   readonly description: string;
   readonly author: string;
@@ -251,6 +254,7 @@ const BuildEnvConfig = Config.all({
   verbose: Config.boolean("T3CODE_DESKTOP_VERBOSE").pipe(Config.withDefault(false)),
   mockUpdates: Config.boolean("T3CODE_DESKTOP_MOCK_UPDATES").pipe(Config.withDefault(false)),
   mockUpdateServerPort: Config.string("T3CODE_DESKTOP_MOCK_UPDATE_SERVER_PORT").pipe(Config.option),
+  posthogKey: Config.string("T3CODE_DESKTOP_POSTHOG_KEY").pipe(Config.option),
 });
 
 const MockUpdateServerPortSchema = Schema.NumberFromString.check(
@@ -263,6 +267,16 @@ const resolveBooleanFlag = (flag: Option.Option<boolean>, envValue: boolean) =>
   Option.getOrElse(flag, () => envValue);
 const mergeOptions = <A>(a: Option.Option<A>, b: Option.Option<A>, defaultValue: A) =>
   Option.getOrElse(a, () => Option.getOrElse(b, () => defaultValue));
+const resolveOptionalString = (
+  flag: Option.Option<string>,
+  envValue: Option.Option<string>,
+): string | undefined => {
+  const fromFlag = Option.getOrUndefined(flag)?.trim();
+  if (fromFlag && fromFlag.length > 0) return fromFlag;
+  const fromEnv = Option.getOrUndefined(envValue)?.trim();
+  if (fromEnv && fromEnv.length > 0) return fromEnv;
+  return undefined;
+};
 
 export const resolveMockUpdateServerPort = Effect.fn("resolveMockUpdateServerPort")(function* (
   mockUpdateServerPort: string | undefined,
@@ -323,6 +337,8 @@ export const resolveBuildOptions = Effect.fn("resolveBuildOptions")(function* (
       ),
     ));
 
+  const posthogKey = resolveOptionalString(input.posthogKey, env.posthogKey);
+
   return {
     platform,
     target,
@@ -335,6 +351,7 @@ export const resolveBuildOptions = Effect.fn("resolveBuildOptions")(function* (
     verbose,
     mockUpdates,
     mockUpdateServerPort,
+    posthogKey,
   } satisfies ResolvedBuildOptions;
 });
 
@@ -784,6 +801,7 @@ const buildDesktopArtifact = Effect.fn("buildDesktopArtifact")(function* (
     version: appVersion,
     buildVersion: appVersion,
     pipperCommitHash: commitHash,
+    ...(options.posthogKey ? { pipperPosthogKey: options.posthogKey } : {}),
     private: true,
     description: "polarish desktop build",
     author: "T3 Tools",
@@ -944,6 +962,12 @@ const buildDesktopArtifactCli = Command.make("build-desktop-artifact", {
   mockUpdateServerPort: Flag.integer("mock-update-server-port").pipe(
     Flag.withSchema(Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 65535 }))),
     Flag.withDescription("Mock update server port (env: T3CODE_DESKTOP_MOCK_UPDATE_SERVER_PORT)."),
+    Flag.optional,
+  ),
+  posthogKey: Flag.string("posthog-key").pipe(
+    Flag.withDescription(
+      "PostHog project API key to embed in the packaged desktop app for anonymous telemetry (env: T3CODE_DESKTOP_POSTHOG_KEY).",
+    ),
     Flag.optional,
   ),
 }).pipe(

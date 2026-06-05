@@ -56,3 +56,91 @@ Spacing follows a disciplined rhythm: compact headers, moderate internal padding
 Large screens preserve persistent navigation and parallel work surfaces. Smaller screens collapse into sheets and inset panels so the hierarchy stays intact. Safe-area insets are respected, scrollbars are thin, and overflow is carefully managed to keep the interface stable during long sessions, reconnects, and streaming updates.
 
 Depth is used sparingly but intentionally: the default impression is flat and practical, while hover, focus, and modal surfaces receive just enough softness to separate layers. This keeps the interface calm under load and ensures the content always remains the focal point.
+
+## Motion Design
+
+Motion in T3 Code is functional, not decorative. Every animation has a reason — spatial consistency, state indication, or feedback — and the interface must feel calm under sustained, repeated use. The default is no animation; motion is added only when it earns its place.
+
+### When to animate
+
+Frequency decides. The more often a user sees an animation, the shorter and quieter it must be.
+
+- **High frequency** (keyboard shortcuts, command palette, repeated toggles): no animation. Raycast ships no open/close motion on its command bar for exactly this reason.
+- **Medium frequency** (hover, row selection, list navigation): minimal, short transitions — under 200ms, no travel.
+- **Occasional** (modals, drawers, toasts, side panels): standard motion — 150–300ms with a clear curve.
+- **Rare** (onboarding, first success, launch moments): can be expressive, layered, and slightly longer.
+
+### Easing
+
+Built-in CSS easings are too weak. Use these instead:
+
+- `ease-out` for elements entering the screen (starts fast, feels responsive).
+- `ease-in-out` for on-screen movement and morphing (natural acceleration and deceleration).
+- `ease` for color, fill, and hover changes.
+- `linear` for constant motion (progress bars, marquees, hold-to-confirm fills).
+
+**Never use `ease-in` for UI animation.** It delays the initial movement — exactly the moment the user is watching — and makes the interface feel sluggish. The project default curve is `cubic-bezier(0.22, 1, 0.36, 1)` (declared as `--improve-enter-ease` and used throughout `index.css`). Reach for stronger custom curves (e.g. `cubic-bezier(0.2, 1, 0.3, 1)`) for the smallest, fastest interactions.
+
+### Duration
+
+UI animations stay under 300ms. Faster feels more responsive even when the underlying work is identical.
+
+- Button press feedback: 100–160ms
+- Icon swap, text-state swap, tooltip open: 125–200ms
+- Dropdowns, selects, sidebars, hover fills: 150–250ms
+- Modals, drawers, panels: 200–500ms
+- Onboarding reveals, success checks: can extend to 600–1000ms
+
+### Specificity
+
+Specify exact properties. **Never use `transition: all`** — it lets unrelated style changes ride in for free and produces surprising mid-flight changes. Use Tailwind's `transition-transform` for transform-only changes, or write the property list explicitly: `transition: transform 160ms ease-out, opacity 200ms ease-out`.
+
+### Hardware acceleration
+
+Animate only `transform` and `opacity` when possible. Both skip layout and paint and run on the GPU. `filter: blur(...)` is acceptable but kept under 20px — Safari pays a real cost for heavy blur.
+
+When using Framer Motion, write `transform: "translateX(...)"` instead of the `x`/`y` shorthand. The shorthand is convenient but uses `requestAnimationFrame` on the main thread and drops frames when the browser is loading, parsing, or painting. CSS animations remain smooth when the main thread is busy; use CSS for predetermined animations, JS only for dynamic, interruptible ones.
+
+Use `will-change` sparingly. Only `transform`, `opacity`, and `filter` qualify. Never `will-change: all`. Add it only after spotting first-frame stutter, and remove it when the work is done.
+
+### Press feedback
+
+Pressable elements scale to **`0.97` on `:active`** with `transition: transform 160ms ease-out`. The scale is intentional and subtle — anything below `0.95` feels exaggerated. The default pressable scale across this project is `0.96`–`0.97`.
+
+### Enter and exit
+
+Elements that pop into existence must start at `scale(0.95)` with `opacity: 0` (or an equivalent small offset), never `scale(0)`. Nothing in the real world appears from nothing. Exit animations are softer than enters: a smaller `translateY` and a shorter duration (often ~60% of the enter duration). The user pressed something; the system should respond quickly.
+
+### Interruptibility
+
+Use CSS transitions for interactive state changes — they can be retargeted mid-animation when the user changes their mind. Reserve `@keyframes` for staged sequences that play once (page load reveals, launch animations). For dynamically added UI (toasts, list items, badges, streaming events), keyframes restart from zero on every re-render and feel broken.
+
+### Stagger
+
+When multiple elements enter together, stagger their appearance with **30–80ms** delays between siblings. Stagger is decorative — never block interaction while a stagger plays out. Skip the stagger on subsequent opens (use `initial={false}` on `AnimatePresence`) so repeat visits feel instant.
+
+### Origin awareness
+
+Popovers, dropdowns, menus, and tooltips scale from their trigger, not from the center. Use Radix or Base UI's transform-origin variable (`var(--radix-popover-content-transform-origin)` or `var(--transform-origin)`). **Modals are the exception** — they stay centered because they have no trigger.
+
+### Icon swap
+
+Cross-fade two icons in the same slot with `opacity`, `scale`, and a small `blur(2px)`. With `motion` or `framer-motion`, use a spring with `bounce: 0` and `duration: 0.3`. Without a motion library, keep both icons in the DOM (one absolute-positioned) and cross-fade with a CSS transition using `cubic-bezier(0.2, 0, 0, 1)`. The exact values: `scale 0.25 → 1`, `opacity 0 → 1`, `blur 4px → 0`.
+
+### List detail
+
+Dynamic numbers (counters, timers, token counts) must use `font-variant-numeric: tabular-nums` to prevent layout shift on update. Headings use `text-wrap: balance`; body text uses `text-wrap: pretty` to avoid orphans.
+
+### Accessibility
+
+Respect `prefers-reduced-motion: reduce` by removing movement and position animations. Keep opacity and color transitions that aid comprehension. Gate hover transforms behind `@media (hover: hover) and (pointer: fine)` to avoid false-positive hover states on touch devices. Animations can cause motion sickness — reduced motion means gentler animation, not zero.
+
+### Project rhythm
+
+- `--improve-enter-dur: 420ms`, `--improve-enter-ease: cubic-bezier(0.22, 1, 0.36, 1)` — the project-wide open curve.
+- `--improve-ripple-dur: 720ms` — the launch ripple's bloom.
+- `--improve-mesh-drift-dur: 12s` — slow ambient drift for the Improve space background.
+- `--improve-hold-dur: 900ms` — hold-to-confirm fills.
+- `--resize-dur: 200ms`, `--resize-ease: cubic-bezier(0.2, 1, 0.3, 1)` — card resize and similar layout tweens.
+
+When a new motion is added, declare a named token for its duration and easing rather than inlining values — this keeps the project rhythm coherent and makes timing tweaks global.

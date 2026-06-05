@@ -149,7 +149,7 @@ import { ChatHeader } from "./chat/ChatHeader";
 import { type ExpandedImagePreview } from "./chat/ExpandedImagePreview";
 import { NoActiveThreadState } from "./NoActiveThreadState";
 import { resolveEffectiveEnvMode, resolveEnvironmentOptionLabel } from "./BranchToolbar.logic";
-import { ProviderStatusBanner } from "./chat/ProviderStatusBanner";
+import { useProviderStatusToast } from "./chat/useProviderStatusToast";
 import { ThreadErrorBanner } from "./chat/ThreadErrorBanner";
 import { ComposerBannerStack, type ComposerBannerStackItem } from "./chat/ComposerBannerStack";
 import {
@@ -1491,6 +1491,7 @@ export default function ChatView(props: ChatViewProps) {
     const defaultInstanceId = defaultInstanceIdForDriver(selectedProvider);
     return providerStatuses.find((status) => status.instanceId === defaultInstanceId) ?? null;
   }, [activeProviderInstanceId, providerStatuses, selectedProvider]);
+  useProviderStatusToast(activeProviderStatus);
   const activeProjectCwd = activeProject?.cwd ?? null;
   const activeThreadWorktreePath = activeThread?.worktreePath ?? null;
   const activeWorkspaceRoot = activeThreadWorktreePath ?? activeProjectCwd ?? undefined;
@@ -3437,7 +3438,7 @@ export default function ChatView(props: ChatViewProps) {
       <div
         data-pipper-id="chat-view-tabbar"
         className={cn(
-          "flex h-10 shrink-0 items-center border-t border-border/60 bg-[var(--surface-canvas)] px-3",
+          "flex h-10 shrink-0 items-stretch border-t border-border/60 bg-[var(--surface-canvas)] px-2",
           isElectron &&
             reserveTitleBarControlInset &&
             "wco:pr-[calc(100vw-env(titlebar-area-width)-env(titlebar-area-x)+1em)]",
@@ -3469,7 +3470,6 @@ export default function ChatView(props: ChatViewProps) {
       </div>
 
       {/* Error banner */}
-      <ProviderStatusBanner status={activeProviderStatus} />
       <ThreadErrorBanner
         error={activeThread.error}
         onDismiss={() => setThreadError(activeThread.id, null)}

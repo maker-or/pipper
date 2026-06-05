@@ -90,13 +90,25 @@ jobs:
       - name: Build unsigned desktop artifact
         if: ${{ github.event.inputs.platform == matrix.platform }}
         shell: bash
+        env:
+          T3CODE_DESKTOP_POSTHOG_KEY: ${{ secrets.T3CODE_POSTHOG_KEY }}
         run: |
-          bun run dist:desktop:artifact -- \
-            --platform "${{ matrix.platform }}" \
-            --target "${{ matrix.target }}" \
-            --arch "${{ matrix.arch }}" \
-            --build-version "${{ steps.build_version.outputs.value }}" \
+          args=(
+            --platform "${{ matrix.platform }}"
+            --target "${{ matrix.target }}"
+            --arch "${{ matrix.arch }}"
+            --build-version "${{ steps.build_version.outputs.value }}"
             --verbose
+          )
+
+          if [[ -n "$T3CODE_DESKTOP_POSTHOG_KEY" ]]; then
+            args+=(--posthog-key "$T3CODE_DESKTOP_POSTHOG_KEY")
+            echo "PostHog telemetry enabled."
+          else
+            echo "PostHog telemetry disabled (T3CODE_POSTHOG_KEY secret not set)."
+          fi
+
+          bun run dist:desktop:artifact -- "${args[@]}"
 
       - name: Upload desktop artifact
         if: ${{ github.event.inputs.platform == matrix.platform }}

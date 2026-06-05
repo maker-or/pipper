@@ -326,6 +326,7 @@ let restartTimer: ReturnType<typeof setTimeout> | null = null;
 let isQuitting = false;
 let desktopProtocolRegistered = false;
 let aboutCommitHashCache: string | null | undefined;
+let embeddedPosthogKeyCache: string | undefined | "missing" = "missing";
 let desktopLogSink: RotatingFileSink | null = null;
 let backendLogSink: RotatingFileSink | null = null;
 let restoreStdIoCapture: (() => void) | null = null;
@@ -438,6 +439,12 @@ function backendChildEnv(): NodeJS.ProcessEnv {
   delete env.T3CODE_DESKTOP_HTTPS_ENDPOINTS;
   delete env.T3CODE_TAILSCALE_SERVE;
   delete env.T3CODE_TAILSCALE_SERVE_PORT;
+  const bakedPosthogKey = resolveBakedPosthogKey();
+  if (bakedPosthogKey) {
+    env.T3CODE_POSTHOG_KEY = bakedPosthogKey;
+  } else {
+    delete env.T3CODE_POSTHOG_KEY;
+  }
   return env;
 }
 
@@ -1329,6 +1336,38 @@ function resolveEmbeddedCommitHash(): string | null {
   } catch {
     return null;
   }
+}
+
+function resolveEmbeddedPosthogKey(): string | undefined {
+  const packageJsonPath = Path.join(resolveAppRoot(), "package.json");
+  if (!FS.existsSync(packageJsonPath)) {
+    return undefined;
+  }
+
+  try {
+    const raw = FS.readFileSync(packageJsonPath, "utf8");
+    const parsed = JSON.parse(raw) as { pipperPosthogKey?: unknown };
+    if (typeof parsed.pipperPosthogKey !== "string") {
+      return undefined;
+    }
+    const trimmed = parsed.pipperPosthogKey.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveBakedPosthogKey(): string | undefined {
+  if (embeddedPosthogKeyCache !== "missing") {
+    return embeddedPosthogKeyCache;
+  }
+  const envOverride = process.env.T3CODE_POSTHOG_KEY?.trim();
+  if (envOverride && envOverride.length > 0) {
+    embeddedPosthogKeyCache = envOverride;
+    return embeddedPosthogKeyCache;
+  }
+  embeddedPosthogKeyCache = resolveEmbeddedPosthogKey();
+  return embeddedPosthogKeyCache;
 }
 
 function resolveAboutCommitHash(): string | null {

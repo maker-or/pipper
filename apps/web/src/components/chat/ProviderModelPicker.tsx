@@ -41,6 +41,14 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
   disabled?: boolean;
   terminalOpen?: boolean;
   open?: boolean;
+  /**
+   * Float the trigger to the bottom-center of the viewport. The popover
+   * anchors above the trigger and is horizontally centered so the popup
+   * sits directly above the floating pill. The trigger still lives inside
+   * the caller's DOM tree (Portal-wrapped popover), but its containing
+   * `div` is `position: fixed` and does not affect surrounding layout.
+   */
+  floating?: boolean;
   triggerVariant?: VariantProps<typeof buttonVariants>["variant"];
   triggerClassName?: string;
   composerDraftTarget?: ScopedThreadRef | DraftId;
@@ -132,102 +140,116 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
     setIsMenuOpen(false);
   };
 
+  const isFloating = props.floating ?? false;
+
   return (
-    <Popover
-      data-pipper-id="provider-model-picker"
-      open={isMenuOpen}
-      onOpenChange={(open) => {
-        if (props.disabled) {
-          setIsMenuOpen(false);
-          return;
-        }
-        setIsMenuOpen(open);
-      }}
+    <div
+      data-pipper-id="provider-model-picker-anchor"
+      data-provider-model-picker-floating={isFloating ? "true" : "false"}
+      className={cn(
+        isFloating && "pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center",
+      )}
     >
-      <PopoverTrigger
-        render={
-          <Button
-            data-pipper-id="provider-model-picker-trigger"
-            size="sm"
-            variant={props.triggerVariant ?? "ghost"}
-            data-chat-provider-model-picker="true"
-            className={cn(
-              "min-w-0 justify-start overflow-hidden whitespace-nowrap px-2 text-muted-foreground/70 hover:text-foreground/80 [&_svg]:mx-0",
-              "rounded-none before:rounded-none",
-              props.compact ? "max-w-42 shrink-0" : "max-w-48 shrink sm:max-w-56 sm:px-3",
-              props.triggerClassName,
-            )}
-            disabled={props.disabled}
-          />
-        }
+      <Popover
+        data-pipper-id="provider-model-picker"
+        open={isMenuOpen}
+        onOpenChange={(open) => {
+          if (props.disabled) {
+            setIsMenuOpen(false);
+            return;
+          }
+          setIsMenuOpen(open);
+        }}
       >
-        <span
-          className={cn(
-            "flex min-w-0 w-full box-border items-center gap-2 overflow-hidden",
-            props.compact ? "max-w-36 sm:pl-1" : undefined,
-          )}
-        >
-          {activeEntry ? (
-            <ProviderInstanceIcon
-              driverKind={activeEntry.driverKind}
-              displayName={activeEntry.displayName}
-              accentColor={activeEntry.accentColor}
-              showBadge={showInstanceBadge}
-              className={showInstanceBadge ? "size-5" : "size-4"}
-              iconClassName={cn("size-4", props.activeProviderIconClassName)}
-              badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 text-[7px]"
-            />
-          ) : null}
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <span
-                  className={cn(
-                    "min-w-0 flex-1 overflow-hidden",
-                    triggerSubtitle
-                      ? "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1"
-                      : "truncate",
-                  )}
-                />
-              }
-            >
-              {triggerSubtitle ? (
-                <>
-                  <span className="min-w-0 truncate">{triggerSubtitle}</span>
-                  <span aria-hidden="true" className="shrink-0 opacity-60">
-                    ·
-                  </span>
-                  <span className="min-w-0 truncate">{triggerTitle}</span>
-                </>
-              ) : (
-                triggerTitle
+        <PopoverTrigger
+          render={
+            <Button
+              data-pipper-id="provider-model-picker-trigger"
+              size="sm"
+              variant={props.triggerVariant ?? "ghost"}
+              data-chat-provider-model-picker="true"
+              className={cn(
+                "min-w-0 justify-start overflow-hidden whitespace-nowrap px-2 text-muted-foreground/70 hover:text-foreground/80 [&_svg]:mx-0",
+                "rounded-none before:rounded-none",
+                props.compact ? "max-w-42 shrink-0" : "max-w-48 shrink sm:max-w-56 sm:px-3",
+                isFloating &&
+                  "pointer-events-auto rounded-full border border-border/40 bg-background/70 px-3 shadow-md shadow-black/5 backdrop-blur-md transition-colors hover:bg-background/85 dark:bg-zinc-900/70",
+                props.triggerClassName,
               )}
-            </TooltipTrigger>
-            <TooltipPopup side="top">{triggerLabel}</TooltipPopup>
-          </Tooltip>
-          <ChevronDownIcon aria-hidden="true" className="size-3 shrink-0 opacity-60" />
-        </span>
-      </PopoverTrigger>
-      <PopoverPopup
-        data-pipper-id="provider-model-picker-popup"
-        ref={popupRef}
-        align="start"
-        className="border-0 bg-transparent p-0 shadow-none before:hidden [--viewport-inline-padding:0] *:data-[slot=popover-viewport]:p-0"
-      >
-        <ModelPickerContent
-          activeInstanceId={activeInstanceId}
-          model={props.model}
-          lockedProvider={props.lockedProvider}
-          lockedContinuationGroupKey={props.lockedContinuationGroupKey ?? null}
-          instanceEntries={props.instanceEntries}
-          {...(props.keybindings ? { keybindings: props.keybindings } : {})}
-          modelOptionsByInstance={props.modelOptionsByInstance}
-          terminalOpen={props.terminalOpen ?? false}
-          composerDraftTarget={props.composerDraftTarget}
-          onRequestClose={() => setIsMenuOpen(false)}
-          onInstanceModelChange={handleInstanceModelChange}
-        />
-      </PopoverPopup>
-    </Popover>
+              disabled={props.disabled}
+            />
+          }
+        >
+          <span
+            className={cn(
+              "flex min-w-0 w-full box-border items-center gap-2 overflow-hidden",
+              props.compact ? "max-w-36 sm:pl-1" : undefined,
+            )}
+          >
+            {activeEntry ? (
+              <ProviderInstanceIcon
+                driverKind={activeEntry.driverKind}
+                displayName={activeEntry.displayName}
+                accentColor={activeEntry.accentColor}
+                showBadge={showInstanceBadge}
+                className={showInstanceBadge ? "size-5" : "size-4"}
+                iconClassName={cn("size-4", props.activeProviderIconClassName)}
+                badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 text-[7px]"
+              />
+            ) : null}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <span
+                    className={cn(
+                      "min-w-0 flex-1 overflow-hidden",
+                      triggerSubtitle
+                        ? "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1"
+                        : "truncate",
+                    )}
+                  />
+                }
+              >
+                {triggerSubtitle ? (
+                  <>
+                    <span className="min-w-0 truncate">{triggerSubtitle}</span>
+                    <span aria-hidden="true" className="shrink-0 opacity-60">
+                      ·
+                    </span>
+                    <span className="min-w-0 truncate">{triggerTitle}</span>
+                  </>
+                ) : (
+                  triggerTitle
+                )}
+              </TooltipTrigger>
+              <TooltipPopup side="top">{triggerLabel}</TooltipPopup>
+            </Tooltip>
+            <ChevronDownIcon aria-hidden="true" className="size-3 shrink-0 opacity-60" />
+          </span>
+        </PopoverTrigger>
+        <PopoverPopup
+          data-pipper-id="provider-model-picker-popup"
+          ref={popupRef}
+          align={isFloating ? "center" : "start"}
+          side={isFloating ? "top" : "bottom"}
+          sideOffset={isFloating ? 10 : 4}
+          className="border-0 bg-transparent p-0 shadow-none before:hidden [--viewport-inline-padding:0] *:data-[slot=popover-viewport]:p-0"
+        >
+          <ModelPickerContent
+            activeInstanceId={activeInstanceId}
+            model={props.model}
+            lockedProvider={props.lockedProvider}
+            lockedContinuationGroupKey={props.lockedContinuationGroupKey ?? null}
+            instanceEntries={props.instanceEntries}
+            {...(props.keybindings ? { keybindings: props.keybindings } : {})}
+            modelOptionsByInstance={props.modelOptionsByInstance}
+            terminalOpen={props.terminalOpen ?? false}
+            composerDraftTarget={props.composerDraftTarget}
+            onRequestClose={() => setIsMenuOpen(false)}
+            onInstanceModelChange={handleInstanceModelChange}
+          />
+        </PopoverPopup>
+      </Popover>
+    </div>
   );
 });

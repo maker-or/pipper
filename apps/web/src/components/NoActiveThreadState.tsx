@@ -1,14 +1,29 @@
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./ui/empty";
-import { EvolutionSpace } from "./EvolutionSpace";
+import { useMemo } from "react";
+import { LiquidMetal } from "@paper-design/shaders-react";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { isElectron } from "../env";
 import { useAppSpaceStore } from "../appSpaceStore";
-import { ImproveEvolutionActions } from "./ImproveEvolutionActions";
+import { useTheme } from "../hooks/useTheme";
+import { THEMES } from "../themes";
 import { cn } from "~/lib/utils";
+import { EvolutionSpace } from "./EvolutionSpace";
+import { ImproveEvolutionActions } from "./ImproveEvolutionActions";
+
+function readBackgroundColor(resolvedTheme: "light" | "dark"): string {
+  if (typeof document !== "undefined") {
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue("--background")
+      .trim();
+    if (value) return value;
+  }
+  return THEMES[resolvedTheme]?.tokens["--background"] ?? "#070707";
+}
 
 export function NoActiveThreadState() {
   const activeSpace = useAppSpaceStore((store) => store.activeSpace);
   const isImproveSpace = activeSpace === "improve";
+  const { resolvedTheme } = useTheme();
+  const backgroundColor = useMemo(() => readBackgroundColor(resolvedTheme), [resolvedTheme]);
 
   if (isImproveSpace) {
     return <EvolutionSpace />;
@@ -44,16 +59,30 @@ export function NoActiveThreadState() {
           )}
         </header>
 
-        <Empty className="flex-1">
-          <div className="w-full max-w-lg rounded-3xl border border-border/55 bg-card/20 px-8 py-12 shadow-sm/5">
-            <EmptyHeader className="max-w-none">
-              <EmptyTitle className="text-foreground text-xl">Pick a thread to continue</EmptyTitle>
-              <EmptyDescription className="mt-2 text-sm text-muted-foreground/78">
-                Select an existing thread or create a new one to get started.
-              </EmptyDescription>
-            </EmptyHeader>
+        <div
+          data-pipper-id="no-active-thread-shader"
+          className="relative flex min-h-0 flex-1 items-center justify-center p-6 md:p-10"
+        >
+          <div className="relative aspect-video w-full max-w-5xl overflow-hidden ">
+            <LiquidMetal
+              width="100%"
+              height="100%"
+              image="/pipper.svg"
+              colorBack={backgroundColor}
+              colorTint="#93521582"
+              repetition={10}
+              softness={0.6}
+              shiftRed={0.62}
+              shiftBlue={0.62}
+              distortion={1}
+              contour={0}
+              angle={70}
+              speed={0.64}
+              scale={0.76}
+              fit="contain"
+            />
           </div>
-        </Empty>
+        </div>
       </div>
     </SidebarInset>
   );

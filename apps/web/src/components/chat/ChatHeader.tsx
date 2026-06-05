@@ -284,7 +284,7 @@ export const ChatHeader = memo(function ChatHeader({
   return (
     <div
       data-pipper-id="chat-header"
-      className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-center gap-2"
+      className="@container/header-actions mt-1.5 flex h-full min-w-0 flex-1 items-stretch gap-2"
     >
       <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-hidden">
         <Popover open={createMenuOpen} onOpenChange={setCreateMenuOpen}>
@@ -379,7 +379,7 @@ export const ChatHeader = memo(function ChatHeader({
 
                     tabRefs.current.set(railKey, node);
                   }}
-                  className="group/tab relative z-10 flex shrink-0 items-center"
+                  className="group/tab relative z-10 flex h-full shrink-0 items-stretch"
                 >
                   <Link
                     to="/$environmentId/$threadId"
@@ -437,7 +437,7 @@ export const ChatHeader = memo(function ChatHeader({
 
                         tabRefs.current.set(railKey, node);
                       }}
-                      className="group/tab relative z-10 flex shrink-0 items-center"
+                      className="group/tab relative z-10 flex h-full shrink-0 items-stretch"
                     >
                       <button
                         data-pipper-id="chat-header-terminal-tab-button"

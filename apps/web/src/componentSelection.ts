@@ -300,13 +300,6 @@ export const componentRegistryEntries = [
     children: [],
   },
   {
-    id: "provider-status-banner",
-    name: "Provider Status Banner",
-    location: "apps/web/src/components/chat/ProviderStatusBanner.tsx",
-    usedIn: ["apps/web/src/components/ChatView.tsx"],
-    children: [],
-  },
-  {
     id: "skill-inline-text",
     name: "Skill Inline Text",
     location: "apps/web/src/components/chat/SkillInlineText.tsx",

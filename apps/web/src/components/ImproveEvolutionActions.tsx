@@ -1,15 +1,8 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  CircleAlertIcon,
-  Loader2Icon,
-  PackageIcon,
-  PlayIcon,
-  SquareIcon,
-} from "lucide-react";
+import { CheckCircleIcon, CircleAlertIcon, Loader2Icon } from "lucide-react";
+import { CheckIcon, PackageIcon, PlayIcon, SquareIcon } from "@phosphor-icons/react";
 
 import { useDevDesktopProcess } from "../hooks/useDevDesktopProcess";
 import { IMPROVE_WORKSPACE_ROOT } from "../hooks/useOpenImproveSpace";
@@ -65,7 +58,13 @@ function readDesktopBridge() {
   return window.desktopBridge;
 }
 
-export function ImproveEvolutionActions({ className }: { readonly className?: string }) {
+export function ImproveEvolutionActions({
+  className,
+  iconOnly = false,
+}: {
+  readonly className?: string;
+  readonly iconOnly?: boolean;
+}) {
   const bridge = readDesktopBridge();
   const routeTarget = useParams({
     strict: false,
@@ -105,12 +104,15 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
   const runIcon: ReactNode = running ? (
     <SquareIcon aria-hidden="true" className="size-4" />
   ) : (
-    <PlayIcon aria-hidden="true" className="size-4" fill="currentColor" />
+    <PlayIcon aria-hidden="true" className="size-4" />
   );
 
   const applyChanges = async () => {
     if (!activeThreadRef || !activeThread) {
-      setActionStatus({ tone: "error", text: "Open the Improve thread before applying changes." });
+      setActionStatus({
+        tone: "error",
+        text: "Open the Improve thread before applying changes.",
+      });
       toastManager.add(
         stackedThreadToast({
           type: "error",
@@ -122,7 +124,10 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
     }
 
     if (activeThread.session?.status === "running") {
-      setActionStatus({ tone: "error", text: "Wait for the current turn to finish." });
+      setActionStatus({
+        tone: "error",
+        text: "Wait for the current turn to finish.",
+      });
       toastManager.add(
         stackedThreadToast({
           type: "error",
@@ -135,7 +140,10 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
 
     const api = readEnvironmentApi(activeThreadRef.environmentId);
     if (!api) {
-      setActionStatus({ tone: "error", text: "Improve environment is not connected." });
+      setActionStatus({
+        tone: "error",
+        text: "Improve environment is not connected.",
+      });
       return;
     }
 
@@ -189,7 +197,10 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
   const portRelease = async () => {
     if (!bridge?.portEvolutionRelease) return;
     setPortStatus("building");
-    setActionStatus({ tone: "loading", text: "Building the macOS DMG into the release folder." });
+    setActionStatus({
+      tone: "loading",
+      text: "Building the macOS DMG into the release folder.",
+    });
     try {
       const result = await bridge.portEvolutionRelease();
       setPortStatus("done");
@@ -244,7 +255,7 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
         className,
       )}
     >
-      {actionStatus ? (
+      {actionStatus && !iconOnly ? (
         <div
           className={cn(
             "hidden min-w-0 max-w-[24rem] items-center gap-1.5 truncate rounded-full border px-3 py-1.5 text-xs font-medium shadow-xs/5 lg:flex",
@@ -261,26 +272,28 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
         </div>
       ) : null}
       <div className="flex min-w-0 items-center gap-2">
-        <span
-          className="hidden max-w-[18rem] truncate rounded-full border border-orange-300/20 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-50/80 xl:inline"
-          title={IMPROVE_WORKSPACE_ROOT}
-        >
-          {IMPROVE_WORKSPACE_ROOT}
-        </span>
+        {iconOnly ? null : (
+          <span
+            className="hidden max-w-[18rem] truncate rounded-full border border-orange-300/20 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-50/80 xl:inline"
+            title={IMPROVE_WORKSPACE_ROOT}
+          >
+            {IMPROVE_WORKSPACE_ROOT}
+          </span>
+        )}
         {hasDevDesktopApi ? (
           <Button
             aria-label={runTitle}
             aria-pressed={running}
             className={cn(
-              "rounded-full border px-3 font-medium shadow-xs/5",
-              running
-                ? "border-emerald-300/35 bg-emerald-500/15 text-emerald-50 hover:bg-emerald-500/20"
-                : "border-orange-300/35 bg-orange-500/12 text-orange-50 hover:bg-orange-500/18",
+              "font-medium",
+              iconOnly
+                ? "rounded-md transition-[transform,color] duration-[600ms] ease-in-out"
+                : "rounded-full px-3",
             )}
             disabled={isDevDesktopBusy}
-            size="sm"
-            title={runTitle}
-            variant="outline"
+            size={iconOnly ? "icon-sm" : "sm"}
+            title={iconOnly ? undefined : runTitle}
+            variant="ghost"
             onClick={() => {
               void (async () => {
                 try {
@@ -299,22 +312,27 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
             }}
           >
             {runIcon}
-            <span className="min-w-0 truncate">{runLabel}</span>
+            {iconOnly ? null : <span className="min-w-0 truncate">{runLabel}</span>}
           </Button>
         ) : null}
         {hasApprovalApi ? (
           <Button
             aria-busy={isApproving}
+            aria-label="Continue the Improve thread so the agent commits locally and updates patch.md"
             className={cn(
-              "rounded-full border px-3 font-medium text-sky-50 shadow-xs/5 transition-[background-color,border-color,box-shadow,transform]",
-              isApproving
-                ? "border-sky-200/60 bg-sky-500/25 shadow-[0_0_0_1px_rgb(125_211_252_/_0.18),0_0_22px_rgb(14_165_233_/_0.22)]"
-                : "border-sky-300/30 bg-sky-500/12 hover:bg-sky-500/18",
+              "font-medium",
+              iconOnly
+                ? "rounded-md transition-[transform,color] duration-[600ms] ease-in-out"
+                : "rounded-full px-3",
             )}
             disabled={isApproving || isPortBusy}
-            size="sm"
-            title="Continue the Improve thread so the agent commits locally and updates patch.md"
-            variant="outline"
+            size={iconOnly ? "icon-sm" : "sm"}
+            title={
+              iconOnly
+                ? undefined
+                : "Continue the Improve thread so the agent commits locally and updates patch.md"
+            }
+            variant="ghost"
             onClick={() => void applyChanges()}
           >
             {isApproving ? (
@@ -322,25 +340,35 @@ export function ImproveEvolutionActions({ className }: { readonly className?: st
             ) : (
               <CheckIcon aria-hidden="true" className="size-4" />
             )}
-            <span className="min-w-0 truncate">Apply Change</span>
+            {iconOnly ? null : <span className="min-w-0 truncate">Apply Change</span>}
           </Button>
         ) : null}
         {hasPortApi ? (
           <Button
             aria-busy={isPortBusy}
-            className="rounded-full border border-violet-300/35 bg-violet-500/14 px-3 font-medium text-violet-50 shadow-xs/5 hover:bg-violet-500/20 disabled:opacity-45"
+            aria-label="Run the macOS DMG build, copy it to the release folder, and open the installer"
+            className={cn(
+              "font-medium",
+              iconOnly
+                ? "rounded-md transition-[transform,color] duration-[600ms] ease-in-out"
+                : "rounded-full px-3",
+            )}
             disabled={isPortBusy || isApproving}
-            size="sm"
-            title="Run the macOS DMG build, copy it to the release folder, and open the installer"
-            variant="outline"
+            size={iconOnly ? "icon-sm" : "sm"}
+            title={
+              iconOnly
+                ? undefined
+                : "Run the macOS DMG build, copy it to the release folder, and open the installer"
+            }
+            variant="ghost"
             onClick={() => void portRelease()}
           >
             {portIcon}
-            <span className="min-w-0 truncate">Port</span>
+            {iconOnly ? null : <span className="min-w-0 truncate">Port</span>}
           </Button>
         ) : null}
       </div>
-      {actionStatus ? (
+      {actionStatus && !iconOnly ? (
         <div
           className={cn(
             "flex max-w-[calc(100vw-1.5rem)] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-[11px] font-medium shadow-xs/5 lg:hidden",
