@@ -45,6 +45,14 @@ import { SkillInlineText } from "./SkillInlineText";
 
 import { MessageCopyButton } from "./MessageCopyButton";
 import {
+  ThinkingSteps,
+  ThinkingStepsHeader,
+  ThinkingStepsContent,
+  ThinkingStep,
+  ThinkingStepDetails,
+} from "../ui/thinking-steps";
+import { ThinkingIndicator } from "../ui/thinking-indicator";
+import {
   computeStableMessagesTimelineRows,
   MAX_VISIBLE_WORK_LOG_ENTRIES,
   deriveMessagesTimelineRows,
@@ -687,9 +695,7 @@ function ProposedPlanTimelineRow({
 function WorkingTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "working" }> }) {
   return (
     <div data-pipper-id="messages-timeline-working-row" className="py-1 pl-1.5 flex justify-start">
-      <span className="text-shimmer font-sans text-xs font-semibold uppercase tracking-wider">
-        Working
-      </span>
+      <ThinkingIndicator />
     </div>
   );
 }
@@ -714,6 +720,71 @@ function WorkingTimer({ createdAt }: { createdAt: string }) {
 // Extracted row sections — own their state / store subscriptions so changes
 // re-render only the affected row, not the entire list.
 // ---------------------------------------------------------------------------
+
+const ThinkingStepWrapper = memo(function ThinkingStepWrapper(props: {
+  workEntry: TimelineWorkEntry;
+  workspaceRoot: string | undefined;
+  inlineToolStyle?: boolean;
+  index: number;
+  isLast: boolean;
+}) {
+  const { workEntry, workspaceRoot, inlineToolStyle = false, index, isLast } = props;
+  const heading = inlineToolStyle
+    ? inlineToolEntryHeading(workEntry)
+    : toolWorkEntryHeading(workEntry);
+  const rawPreview = workEntryPreview(workEntry, workspaceRoot);
+  const preview =
+    rawPreview &&
+    normalizeCompactToolLabel(rawPreview).toLowerCase() ===
+      normalizeCompactToolLabel(heading).toLowerCase()
+      ? null
+      : rawPreview;
+  const rawCommand = workEntryRawCommand(workEntry);
+  const hasChangedFiles = (workEntry.changedFiles?.length ?? 0) > 0;
+  const isRunning = workEntry.status === "running";
+
+  const descriptionText = preview && !rawCommand ? preview : undefined;
+
+  return (
+    <ThinkingStep
+      index={index}
+      isLast={isLast}
+      showIcon={false}
+      status={isRunning ? "active" : "complete"}
+      label={heading}
+      description={descriptionText}
+    >
+      {rawCommand && (
+        <ThinkingStepDetails summary="Command">
+          <div className="font-mono text-[11px] leading-4 bg-muted/40 dark:bg-card/25 border border-border/40 p-2 rounded-md whitespace-pre-wrap overflow-x-auto text-muted-foreground/90 w-full">
+            {rawCommand}
+          </div>
+        </ThinkingStepDetails>
+      )}
+      {hasChangedFiles && (
+        <div className="mt-1 flex flex-wrap gap-1.5 pl-0">
+          {workEntry.changedFiles?.slice(0, 4).map((filePath) => {
+            const displayPath = formatWorkspaceRelativePath(filePath, workspaceRoot);
+            return (
+              <span
+                key={filePath}
+                className="inline-flex items-center rounded-md border border-border/30 dark:border-border-variant/60 bg-muted/30 dark:bg-card/20 hover:bg-muted/50 dark:hover:bg-card/35 px-2 py-0.5 font-mono text-[10px] text-muted-foreground/85 transition-colors"
+                title={displayPath}
+              >
+                {displayPath}
+              </span>
+            );
+          })}
+          {(workEntry.changedFiles?.length ?? 0) > 4 && (
+            <span className="px-1 text-[10px] text-muted-foreground/55 flex items-center">
+              +{(workEntry.changedFiles?.length ?? 0) - 4}
+            </span>
+          )}
+        </div>
+      )}
+    </ThinkingStep>
+  );
+});
 
 /** Owns its own expand/collapse state so toggling re-renders only this row.
  *  State resets on unmount which is fine — work groups start collapsed. */
@@ -743,20 +814,31 @@ const WorkGroupSection = memo(function WorkGroupSection({
       : "",
   );
 
+  if (!showHeader && visibleEntries[0]) {
+    return (
+      <div className={containerClassName}>
+        <ThinkingStepWrapper
+          workEntry={visibleEntries[0]}
+          workspaceRoot={workspaceRoot}
+          inlineToolStyle={onlyToolEntries}
+          index={0}
+          isLast={true}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div data-pipper-id="messages-timeline-work-group" className={containerClassName}>
-      {showHeader && (
-        <div
-          data-pipper-id="messages-timeline-work-group-header"
-          className="flex items-center justify-between gap-2 px-0.5"
-        >
-          {onlyToolEntries ? (
-            <button
-              type="button"
-              className="group/btn flex items-center justify-between w-full min-w-0 rounded-lg p-1.5 -m-1.5 text-left transition-all duration-200 hover:bg-muted-foreground/5 active:scale-[0.98]"
-              aria-expanded={isExpanded}
-              onClick={() => setIsExpanded((value) => !value)}
-            >
+    <div className={containerClassName}>
+      <ThinkingSteps
+        className="w-full max-w-none"
+        open={isExpanded}
+        onOpenChange={setIsExpanded}
+        defaultOpen={false}
+      >
+        <ThinkingStepsHeader className="w-full justify-between hover:no-underline border-b-0 py-0 px-0.5 [&>span:first-child]:w-full">
+          <div className="flex items-center justify-between w-full pr-4">
+            {onlyToolEntries ? (
               <div className="flex min-w-0 items-center gap-2">
                 <span className="font-sans text-[13px] font-semibold tracking-wide text-foreground/90">
                   Exploring
@@ -765,51 +847,38 @@ const WorkGroupSection = memo(function WorkGroupSection({
                   &mdash; {groupLabel}
                 </span>
               </div>
-              <ChevronDownIcon
-                className={cn(
-                  "size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-200 ease-[cubic-bezier(0.2,1,0.3,1)]",
-                  isExpanded ? "rotate-180" : "",
-                )}
-              />
-            </button>
-          ) : (
-            <div className="flex min-w-0 items-center gap-2">
+            ) : (
               <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/65">
                 {groupLabel} ({groupedEntries.length})
               </span>
-            </div>
-          )}
-          {hasOverflow && !onlyToolEntries && (
-            <button
-              type="button"
-              className="rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/60 transition-all duration-150 hover:text-foreground/85 hover:bg-muted-foreground/5 active:scale-[0.96]"
-              onClick={() => setIsExpanded((v) => !v)}
-            >
-              {isExpanded ? "Show less" : `Show ${hiddenCount} more`}
-            </button>
-          )}
-        </div>
-      )}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows] duration-200 ease-out",
-          isExpanded || !isCollapsibleToolGroup ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-          showHeader ? "mt-2" : "",
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className="space-y-1.5 pt-0.5">
-            {visibleEntries.map((workEntry) => (
-              <SimpleWorkEntryRow
-                key={`work-row:${workEntry.id}`}
-                workEntry={workEntry}
-                workspaceRoot={workspaceRoot}
-                inlineToolStyle={onlyToolEntries}
-              />
-            ))}
+            )}
+            {hasOverflow && !onlyToolEntries && (
+              <button
+                type="button"
+                className="rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/60 transition-all duration-150 hover:text-foreground/85 hover:bg-muted-foreground/5 active:scale-[0.96] no-drag stop-propagation"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded((v) => !v);
+                }}
+              >
+                {isExpanded ? "Show less" : `Show ${hiddenCount} more`}
+              </button>
+            )}
           </div>
-        </div>
-      </div>
+        </ThinkingStepsHeader>
+        <ThinkingStepsContent className="space-y-1.5 pt-3">
+          {visibleEntries.map((workEntry, index) => (
+            <ThinkingStepWrapper
+              key={`work-row:${workEntry.id}`}
+              workEntry={workEntry}
+              workspaceRoot={workspaceRoot}
+              inlineToolStyle={onlyToolEntries}
+              index={index}
+              isLast={index === visibleEntries.length - 1}
+            />
+          ))}
+        </ThinkingStepsContent>
+      </ThinkingSteps>
     </div>
   );
 });
@@ -1114,142 +1183,3 @@ function inlineToolEntryHeading(workEntry: TimelineWorkEntry): string {
   }
   return toolWorkEntryHeading(workEntry);
 }
-
-const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
-  workEntry: TimelineWorkEntry;
-  workspaceRoot: string | undefined;
-  inlineToolStyle?: boolean;
-}) {
-  const { workEntry, workspaceRoot, inlineToolStyle = false } = props;
-  const heading = inlineToolStyle
-    ? inlineToolEntryHeading(workEntry)
-    : toolWorkEntryHeading(workEntry);
-  const rawPreview = workEntryPreview(workEntry, workspaceRoot);
-  const preview =
-    rawPreview &&
-    normalizeCompactToolLabel(rawPreview).toLowerCase() ===
-      normalizeCompactToolLabel(heading).toLowerCase()
-      ? null
-      : rawPreview;
-  const rawCommand = workEntryRawCommand(workEntry);
-  const separator = inlineToolStyle ? " " : " - ";
-  const displayText = preview ? `${heading}${separator}${preview}` : heading;
-  const hasChangedFiles = (workEntry.changedFiles?.length ?? 0) > 0;
-  const previewIsChangedFiles = hasChangedFiles && !workEntry.command && !workEntry.detail;
-  const isRunning = workEntry.status === "running";
-
-  const inlineMutedTextClassName = inlineToolStyle
-    ? isRunning
-      ? "text-muted-foreground/72"
-      : "text-muted-foreground/48"
-    : workToneClass(workEntry.tone);
-
-  const textClassName = cn(
-    "font-sans text-[13px] leading-relaxed",
-    inlineMutedTextClassName,
-    preview ? "text-muted-foreground/70" : "text-foreground/80",
-    inlineToolStyle && isRunning ? "tool-call-shimmer" : "",
-  );
-
-  return (
-    <div
-      data-pipper-id="messages-timeline-work-entry"
-      className="group/row flex flex-col gap-1 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-border/5 hover:bg-muted-foreground/5 dark:hover:bg-white/5 transition-all duration-150 ease-out"
-    >
-      <div
-        className={cn(
-          "flex items-center transition-[opacity,translate] duration-200",
-          inlineToolStyle ? "min-h-6" : "",
-        )}
-      >
-        <div
-          data-pipper-id="messages-timeline-work-entry-body"
-          className="min-w-0 flex-1 overflow-hidden"
-        >
-          {rawCommand ? (
-            <div className="max-w-full">
-              <p className={cn("truncate", textClassName)} title={displayText}>
-                <span className={cn("font-semibold text-foreground/90", inlineMutedTextClassName)}>
-                  {heading}
-                </span>
-                {preview && (
-                  <Tooltip>
-                    <TooltipTrigger
-                      closeDelay={0}
-                      delay={75}
-                      render={
-                        <span className="inline-block max-w-full font-mono text-[11px] text-muted-foreground/60 dark:text-muted-foreground/50 bg-muted-foreground/5 dark:bg-white/5 px-1.5 py-0.5 rounded border border-border/40 font-medium cursor-pointer transition-colors hover:text-foreground/80 hover:bg-muted-foreground/10 ml-2">
-                          {preview}
-                        </span>
-                      }
-                    />
-                    <TooltipPopup
-                      align="start"
-                      className="max-w-[min(56rem,calc(100vw-2rem))] px-0 py-0"
-                      side="top"
-                    >
-                      <div className="max-w-[min(56rem,calc(100vw-2rem))] overflow-x-auto px-2 py-1.5 font-mono text-[11px] leading-4 whitespace-nowrap bg-card border border-border/55 rounded-md shadow-md">
-                        {rawCommand}
-                      </div>
-                    </TooltipPopup>
-                  </Tooltip>
-                )}
-              </p>
-            </div>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger
-                className="block min-w-0 w-full text-left"
-                title={displayText}
-                aria-label={displayText}
-              >
-                <p className={cn("truncate", textClassName)}>
-                  <span
-                    className={cn("font-semibold text-foreground/90", inlineMutedTextClassName)}
-                  >
-                    {heading}
-                  </span>
-                  {preview && (
-                    <span className="font-mono text-[11.5px] text-muted-foreground/60 dark:text-muted-foreground/50 ml-2">
-                      {preview}
-                    </span>
-                  )}
-                </p>
-              </TooltipTrigger>
-              <TooltipPopup className="max-w-[min-content]">
-                <p className="whitespace-pre-wrap wrap-break-word text-xs leading-5">
-                  {displayText}
-                </p>
-              </TooltipPopup>
-            </Tooltip>
-          )}
-        </div>
-      </div>
-      {hasChangedFiles && !previewIsChangedFiles && (
-        <div
-          data-pipper-id="messages-timeline-work-entry-files"
-          className="mt-1 flex flex-wrap gap-1.5 pl-0"
-        >
-          {workEntry.changedFiles?.slice(0, 4).map((filePath) => {
-            const displayPath = formatWorkspaceRelativePath(filePath, workspaceRoot);
-            return (
-              <span
-                data-pipper-id="messages-timeline-work-entry-file-chip"
-                key={`${workEntry.id}:${filePath}`}
-                className="inline-flex items-center rounded-md border border-border/30 dark:border-border-variant/60 bg-muted/30 dark:bg-card/20 hover:bg-muted/50 dark:hover:bg-card/35 px-2 py-0.5 font-mono text-[10px] text-muted-foreground/85 transition-colors"
-                title={displayPath}
-              >
-                {displayPath}
-              </span>
-            );
-          })}
-          {(workEntry.changedFiles?.length ?? 0) > 4 && (
-            <span className="px-1 text-[10px] text-muted-foreground/55 flex items-center">
-              +{(workEntry.changedFiles?.length ?? 0) - 4}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-});

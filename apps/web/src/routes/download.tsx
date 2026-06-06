@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRightIcon, DownloadIcon, GithubIcon, MonitorIcon, PlayIcon } from "lucide-react";
+import { ArrowRightIcon, DownloadIcon, MonitorIcon, PlayIcon } from "lucide-react";
 import { useEffect } from "react";
+import { GitHubIcon } from "../components/Icons";
 
 import { Button } from "../components/ui/button";
 import { trackPosthogEvent } from "../telemetry/posthog";
@@ -140,7 +141,7 @@ function DownloadRouteView() {
               });
             }}
           >
-            <GithubIcon className="size-4" />
+            <GitHubIcon className="size-4" />
             View release notes on GitHub
           </a>
         </div>
