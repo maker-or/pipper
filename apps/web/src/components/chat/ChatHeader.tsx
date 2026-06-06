@@ -22,7 +22,7 @@ const EMPTY_THREAD_SUMMARIES: readonly SidebarThreadSummary[] = [];
 const DOCK_ICON_BUTTON_CLASS_NAME =
   "inline-flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40";
 const TAB_INDICATOR_CLASS_NAME =
-  "pointer-events-none absolute inset-0 left-0 z-0 rounded-t-sm bg-[var(--surface-subtle)] transition-[width,transform,opacity] duration-180 ease-out motion-reduce:transition-none";
+  "pointer-events-none absolute inset-0 left-0 z-0 rounded-t-md bg-[var(--surface-subtle)] transition-[width,transform,opacity] duration-180 ease-out motion-reduce:transition-none";
 
 interface ChatHeaderProps {
   activeThreadEnvironmentId: EnvironmentId;
@@ -387,7 +387,7 @@ export const ChatHeader = memo(function ChatHeader({
                       environmentId: thread.environmentId,
                       threadId: thread.id,
                     })}
-                    className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+                    className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-md px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
                       selected
                         ? "bg-[var(--surface-subtle)] text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -442,7 +442,7 @@ export const ChatHeader = memo(function ChatHeader({
                       <button
                         data-pipper-id="chat-header-terminal-tab-button"
                         type="button"
-                        className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-sm px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
+                        className={`relative flex h-full max-w-56 shrink-0 items-center gap-1.5 rounded-t-md px-4 pr-7 text-sm transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.96] ${
                           selected
                             ? "bg-[var(--surface-subtle)] text-foreground"
                             : "text-muted-foreground hover:text-foreground"

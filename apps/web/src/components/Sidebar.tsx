@@ -149,7 +149,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarSeparator,
   SidebarTrigger,
   useSidebar,
 } from "./ui/sidebar";
@@ -702,7 +701,7 @@ const SidebarThreadRow = memo(function SidebarThreadRow(props: SidebarThreadRowP
                 )}
                 {jumpLabel ? (
                   <span
-                    className="inline-flex h-5 items-center rounded-full border border-border/80 bg-background/90 px-1.5 font-mono text-[10px] font-medium tracking-tight text-foreground shadow-sm"
+                    className="inline-flex h-5 items-center rounded-full border border-border/80 bg-background px-1.5 font-mono text-[10px] font-medium tracking-tight text-foreground shadow-sm"
                     title={jumpLabel}
                   >
                     {jumpLabel}
@@ -2813,8 +2812,6 @@ const CompactSidebarProjectRail = memo(function CompactSidebarProjectRail(props:
           data-pipper-id="sidebar-compact-project-list"
           className="w-full items-center gap-3 overflow-y-auto px-2 py-2"
         >
-          {!isImproveSpace ? <div className="h-px w-7 bg-border/70" /> : null}
-
           {!isImproveSpace &&
             sortedProjects.map((project) => {
               const active = project.projectKey === activeRouteProjectKey;

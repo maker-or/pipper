@@ -150,7 +150,7 @@ import { type ExpandedImagePreview } from "./chat/ExpandedImagePreview";
 import { NoActiveThreadState } from "./NoActiveThreadState";
 import { resolveEffectiveEnvMode, resolveEnvironmentOptionLabel } from "./BranchToolbar.logic";
 import { useProviderStatusToast } from "./chat/useProviderStatusToast";
-import { ThreadErrorBanner } from "./chat/ThreadErrorBanner";
+
 import { ComposerBannerStack, type ComposerBannerStackItem } from "./chat/ComposerBannerStack";
 import {
   buildExpiredTerminalContextToastCopy,
@@ -1204,6 +1204,14 @@ export default function ChatView(props: ChatViewProps) {
     activeThread?.session ?? null,
     localDispatchStartedAt,
   );
+  useEffect(() => {
+    if (!activeThread?.error) return;
+    toastManager.add({
+      type: "error",
+      title: "Thread Error",
+      description: activeThread.error,
+    });
+  }, [activeThread?.error]);
   useEffect(() => {
     attachmentPreviewHandoffByMessageIdRef.current = attachmentPreviewHandoffByMessageId;
   }, [attachmentPreviewHandoffByMessageId]);
@@ -3469,11 +3477,6 @@ export default function ChatView(props: ChatViewProps) {
         />
       </div>
 
-      {/* Error banner */}
-      <ThreadErrorBanner
-        error={activeThread.error}
-        onDismiss={() => setThreadError(activeThread.id, null)}
-      />
       {/* Main content area with optional plan sidebar */}
       <div
         data-pipper-id="chat-view-body"
@@ -3541,7 +3544,7 @@ export default function ChatView(props: ChatViewProps) {
               {showScrollToBottom && (
                 <div
                   data-pipper-id="chat-view-scroll-to-bottom-region"
-                  className="pointer-events-none absolute bottom-1 left-1/2 z-30 flex -translate-x-1/2 justify-center py-1.5"
+                  className="pointer-events-none absolute bottom-4 right-4 z-30 flex justify-end"
                 >
                   <button
                     type="button"
