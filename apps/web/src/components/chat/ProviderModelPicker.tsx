@@ -4,7 +4,7 @@ import {
   type ResolvedKeybindingsConfig,
   type ScopedThreadRef,
 } from "@t3tools/contracts";
-import { memo, useEffect, useMemo, useState, useRef } from "react";
+import { memo, type ReactNode, useEffect, useMemo, useState, useRef } from "react";
 import type { VariantProps } from "class-variance-authority";
 import { ChevronDownIcon } from "lucide-react";
 import { gsap } from "gsap";
@@ -49,6 +49,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
    * `div` is `position: fixed` and does not affect surrounding layout.
    */
   floating?: boolean;
+  floatingAccessory?: ReactNode;
   triggerVariant?: VariantProps<typeof buttonVariants>["variant"];
   triggerClassName?: string;
   composerDraftTarget?: ScopedThreadRef | DraftId;
@@ -147,9 +148,18 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
       data-pipper-id="provider-model-picker-anchor"
       data-provider-model-picker-floating={isFloating ? "true" : "false"}
       className={cn(
-        isFloating && "pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center",
+        isFloating &&
+          "pointer-events-none fixed inset-x-0 bottom-4 z-40 flex items-center justify-center gap-2",
       )}
     >
+      {isFloating && props.floatingAccessory ? (
+        <div
+          data-pipper-id="provider-model-picker-floating-accessory"
+          className="pointer-events-auto flex shrink-0 items-center"
+        >
+          {props.floatingAccessory}
+        </div>
+      ) : null}
       <Popover
         data-pipper-id="provider-model-picker"
         open={isMenuOpen}

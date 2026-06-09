@@ -32,85 +32,81 @@ const words = [
   "Looking Extremely Busy",
 ];
 
-const ThinkingIndicator = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
-  const [index, setIndex] = useState(0);
+const ThinkingIndicator = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((i) => (i + 1) % words.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setIndex((i) => (i + 1) % words.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }, []);
 
-  return (
-    <div
-      ref={ref}
-      role="status"
-      className={cn("flex items-center gap-2 px-3 py-2", className)}
-      {...props}
-    >
-      <motion.svg
-        aria-hidden
-        width={20}
-        height={20}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-muted-foreground shrink-0"
+    return (
+      <div
+        ref={ref}
+        role="status"
+        className={cn("flex items-center gap-2 px-3 py-2", className)}
+        {...props}
       >
-        <motion.path
-          animate={{
-            d: [circleA, infinity, circleB, infinity, circleA],
-          }}
-          transition={{
-            d: {
-              duration: 6,
-              ease: "easeInOut",
-              repeat: Infinity,
-              times: [0, 0.25, 0.5, 0.75, 1.0],
-            },
-          }}
-        />
-      </motion.svg>
-      <span
-        className="inline-grid text-[13px] overflow-hidden"
-        style={{ fontVariationSettings: fontWeights.medium }}
-      >
-        <span
-          className="col-start-1 row-start-1 invisible text-shimmer"
-          aria-hidden="true"
+        <motion.svg
+          aria-hidden
+          width={20}
+          height={20}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-muted-foreground shrink-0"
         >
-          {words.reduce((a, b) => (a.length >= b.length ? a : b))}
-        </span>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={words[index]}
-            className="col-start-1 row-start-1 text-shimmer"
-            initial={{ y: "80%", opacity: 0 }}
+          <motion.path
             animate={{
-              y: 0,
-              opacity: 1,
-              transition: { duration: 0.24, ease: [0.4, 0, 0.2, 1] },
+              d: [circleA, infinity, circleB, infinity, circleA],
             }}
-            exit={{
-              y: "-80%",
-              opacity: 0,
-              transition: { duration: 0.16, ease: [0.4, 0, 0.2, 1] },
+            transition={{
+              d: {
+                duration: 6,
+                ease: "easeInOut",
+                repeat: Infinity,
+                times: [0, 0.25, 0.5, 0.75, 1.0],
+              },
             }}
-          >
-            {words[index]}
-          </motion.span>
-        </AnimatePresence>
-      </span>
-    </div>
-  );
-});
+          />
+        </motion.svg>
+        <span
+          className="inline-grid text-[13px] overflow-hidden"
+          style={{ fontVariationSettings: fontWeights.medium }}
+        >
+          <span className="col-start-1 row-start-1 invisible text-shimmer" aria-hidden="true">
+            {words.reduce((a, b) => (a.length >= b.length ? a : b))}
+          </span>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={words[index]}
+              className="col-start-1 row-start-1 text-shimmer"
+              initial={{ y: "80%", opacity: 0 }}
+              animate={{
+                y: 0,
+                opacity: 1,
+                transition: { duration: 0.24, ease: [0.4, 0, 0.2, 1] },
+              }}
+              exit={{
+                y: "-80%",
+                opacity: 0,
+                transition: { duration: 0.16, ease: [0.4, 0, 0.2, 1] },
+              }}
+            >
+              {words[index]}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      </div>
+    );
+  },
+);
 
 ThinkingIndicator.displayName = "ThinkingIndicator";
 

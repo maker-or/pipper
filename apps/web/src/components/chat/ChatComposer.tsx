@@ -207,55 +207,6 @@ const ComposerFooterModeControls = memo(function ComposerFooterModeControls(prop
   );
 });
 
-const ComposerFooterPrimaryActions = memo(function ComposerFooterPrimaryActions(props: {
-  compact: boolean;
-  activeContextWindow: ReturnType<typeof deriveLatestContextWindowSnapshot>;
-  isPreparingWorktree: boolean;
-  pendingAction: {
-    questionIndex: number;
-    isLastQuestion: boolean;
-    canAdvance: boolean;
-    isResponding: boolean;
-    isComplete: boolean;
-  } | null;
-  isRunning: boolean;
-  showPlanFollowUpPrompt: boolean;
-  promptHasText: boolean;
-  isSendBusy: boolean;
-  isConnecting: boolean;
-  isEnvironmentUnavailable: boolean;
-  hasSendableContent: boolean;
-  preserveComposerFocusOnPointerDown?: boolean;
-  onPreviousPendingQuestion: () => void;
-  onInterrupt: () => void;
-  onImplementPlanInNewThread: () => void;
-}) {
-  return (
-    <>
-      {props.activeContextWindow ? <ContextWindowMeter usage={props.activeContextWindow} /> : null}
-      {props.isPreparingWorktree ? (
-        <span className="text-muted-foreground/70 text-xs">Preparing worktree...</span>
-      ) : null}
-      <ComposerPrimaryActions
-        compact={props.compact}
-        pendingAction={props.pendingAction}
-        isRunning={props.isRunning}
-        showPlanFollowUpPrompt={props.showPlanFollowUpPrompt}
-        promptHasText={props.promptHasText}
-        isSendBusy={props.isSendBusy}
-        isConnecting={props.isConnecting}
-        isEnvironmentUnavailable={props.isEnvironmentUnavailable}
-        isPreparingWorktree={props.isPreparingWorktree}
-        hasSendableContent={props.hasSendableContent}
-        preserveComposerFocusOnPointerDown={props.preserveComposerFocusOnPointerDown ?? false}
-        onPreviousPendingQuestion={props.onPreviousPendingQuestion}
-        onInterrupt={props.onInterrupt}
-        onImplementPlanInNewThread={props.onImplementPlanInNewThread}
-      />
-    </>
-  );
-});
-
 // --------------------------------------------------------------------------
 // Handle exposed to ChatView
 // --------------------------------------------------------------------------
@@ -1903,7 +1854,7 @@ export const ChatComposer = memo(
               />
             )}
           </div>
-          {activeContextWindow || isPreparingWorktree ? (
+          {isPreparingWorktree ? (
             <div
               data-chat-composer-actions="right"
               data-chat-composer-primary-actions-compact={
@@ -1911,10 +1862,7 @@ export const ChatComposer = memo(
               }
               className="flex shrink-0 flex-nowrap items-center justify-end gap-2 self-center"
             >
-              {activeContextWindow ? <ContextWindowMeter usage={activeContextWindow} /> : null}
-              {isPreparingWorktree ? (
-                <span className="text-muted-foreground/70 text-xs">Preparing worktree...</span>
-              ) : null}
+              <span className="text-muted-foreground/70 text-xs">Preparing worktree...</span>
             </div>
           ) : null}
         </div>
@@ -1940,6 +1888,9 @@ export const ChatComposer = memo(
         terminalOpen={terminalOpen}
         open={isComposerModelPickerOpen}
         composerDraftTarget={composerDraftTarget}
+        floatingAccessory={
+          activeContextWindow ? <ContextWindowMeter usage={activeContextWindow} /> : null
+        }
         {...(composerProviderState.modelPickerIconClassName
           ? {
               activeProviderIconClassName: composerProviderState.modelPickerIconClassName,
